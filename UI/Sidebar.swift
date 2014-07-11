@@ -6,11 +6,11 @@ extension Msr.UI {
             weak var sidebar: Sidebar!
             init(sidebar: Sidebar, width: CGFloat) {
                 self.sidebar = sidebar
-                super.init(frame: CGRect(x: sidebar.bounds.width - width, y: 0, width: width, height: UIScreen.mainScreen().bounds.height))
-                backgroundColor = UIColor.clearColor()
+                super.init(frame: CGRect(x: UIScreen.mainScreen().bounds.width, y: 0, width: width, height: UIScreen.mainScreen().bounds.height))
                 let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
                 panGestureRecognizer.maximumNumberOfTouches = 1
                 addGestureRecognizer(panGestureRecognizer)
+                backgroundColor = UIColor.clearColor()
             }
             override func drawRect(rect: CGRect) {
                 let context = UIGraphicsGetCurrentContext()
@@ -44,7 +44,7 @@ extension Msr.UI {
                         sidebar.frame = frame
                         break
                     case .Ended:
-                        if velocity.x > 0 || location.x > sidebar.bounds.width - sidebar.offset {
+                        if velocity.x > 0 || location.x > sidebar.width {
                             sidebar.show(completion: nil)
                         } else {
                             sidebar.hide(completion: nil)
@@ -70,6 +70,8 @@ extension Msr.UI {
         let scrollView: UIScrollView
         let handle: Handle!
         let offset: CGFloat
+        let width: CGFloat
+        let blankView: UIView
         override var hidden: Bool {
             get {
                 return frame.origin.x != -offset
@@ -84,14 +86,19 @@ extension Msr.UI {
         }
         init(width: CGFloat, blurEffect: UIBlurEffect) {
             scrollView = UIScrollView()
+            blankView = UIView()
+            self.width = width
             let handleWidth = CGFloat(12)
             offset = UIScreen.mainScreen().bounds.width - width + handleWidth
             var frame = UIScreen.mainScreen().bounds
+            frame.size.width *= 2
             frame.size.width += handleWidth
             frame.origin.x = -offset
             super.init(frame: frame)
             let backgroundView = UIVisualEffectView(effect: blurEffect)
-            backgroundView.frame = bounds
+            frame = UIScreen.mainScreen().bounds
+            frame.size.width += handleWidth
+            backgroundView.frame = frame
             addSubview(backgroundView)
             handle = Handle(sidebar: self, width: handleWidth)
             let vibrancyEffectView = UIVisualEffectView(effect: UIVibrancyEffect(forBlurEffect: blurEffect))
@@ -101,6 +108,15 @@ extension Msr.UI {
             scrollView.frame = CGRect(x: offset, y: 0, width: width - handle.bounds.width, height: backgroundView.bounds.height)
             scrollView.alwaysBounceVertical = true
             backgroundView.contentView.addSubview(scrollView)
+            frame = bounds
+            frame.origin.x = backgroundView.bounds.width
+            frame.size.width = UIScreen.mainScreen().bounds.width
+            blankView.frame = frame
+            addSubview(blankView)
+            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
+            blankView.addGestureRecognizer(panGestureRecognizer)
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
+            blankView.addGestureRecognizer(tapGestureRecognizer)
         }
         override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView! {
             if let view = handle.hitTest(point, withEvent: event) {
@@ -130,16 +146,52 @@ extension Msr.UI {
                 animations: {
                     [weak self] in
                     var frame = self!.frame
-                    frame.origin.x = -frame.width
+                    frame.origin.x = -(UIScreen.mainScreen().bounds.width + self!.handle.bounds.width)
                     self!.frame = frame
                 }, completion: completion)
         }
-        func toggleShow(#completion: ((Bool) -> Void)!) {
-            if hidden {
-                show(completion)
-            } else {
-                hide(completion)
+        func pan(gestureRecognizer: UIPanGestureRecognizer?) {
+            if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
+                let offset = recognizer.locationInView(handle).x
+                switch recognizer.state {
+                case .Began:
+                    UIView.animateWithDuration(0.2,
+                        delay: 0,
+                        usingSpringWithDamping: 1,
+                        initialSpringVelocity: 0,
+                        options: UIViewAnimationOptions.BeginFromCurrentState,
+                        animations: {
+                            [weak self] in
+                            var frame = self!.frame
+                            frame.origin.x = offset - self!.offset
+                            self!.frame = frame
+                        }, completion: nil)
+                    handle.pan(recognizer)
+                    break
+                case .Changed:
+                    handle.pan(recognizer)
+                    break
+                case .Ended:
+                    handle.pan(recognizer)
+                default:
+                    break
+                }
             }
+        }
+        func tap(gestureRecognizer: UITapGestureRecognizer?) {
+            if let recognizer = gestureRecognizer as? UITapGestureRecognizer {
+                hide(completion: nil)
+            }
+        }
+    }
+}
+
+extension Msr.UI.Sidebar {
+    func toggleShow(#completion: ((Bool) -> Void)!) {
+        if hidden {
+            show(completion)
+        } else {
+            hide(completion)
         }
     }
 }
