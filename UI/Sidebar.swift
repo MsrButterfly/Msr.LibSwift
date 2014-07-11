@@ -45,9 +45,9 @@ extension Msr.UI {
                         break
                     case .Ended:
                         if velocity.x > 0 || location.x > sidebar.bounds.width - sidebar.offset {
-                            sidebar.show(nil)
+                            sidebar.show(completion: nil)
                         } else {
-                            sidebar.hide(nil)
+                            sidebar.hide(completion: nil)
                         }
                         break
                     default:
@@ -70,15 +70,17 @@ extension Msr.UI {
         let scrollView: UIScrollView
         let handle: Handle!
         let offset: CGFloat
-        var showing: Bool {
-        get {
-            return frame.origin.x == -offset
-        }
-        }
-        var hiding: Bool {
-        get {
-            return !showing
-        }
+        override var hidden: Bool {
+            get {
+                return frame.origin.x != -offset
+            }
+            set(value) {
+                if value {
+                    hide(completion: nil)
+                } else {
+                    show(completion: nil)
+                }
+            }
         }
         init(width: CGFloat, blurEffect: UIBlurEffect) {
             scrollView = UIScrollView()
@@ -106,7 +108,7 @@ extension Msr.UI {
             }
             return super.hitTest(point, withEvent: event)
         }
-        func show(completion: ((Bool) -> Void)!) {
+        func show(#completion: ((Bool) -> Void)!) {
             UIView.animateWithDuration(0.3,
                 delay: 0,
                 usingSpringWithDamping: 1,
@@ -119,7 +121,7 @@ extension Msr.UI {
                     self!.frame = frame
                 }, completion: completion)
         }
-        func hide(completion: ((Bool) -> Void)!) {
+        func hide(#completion: ((Bool) -> Void)!) {
             UIView.animateWithDuration(0.3,
                 delay: 0,
                 usingSpringWithDamping: 1,
@@ -132,11 +134,11 @@ extension Msr.UI {
                     self!.frame = frame
                 }, completion: completion)
         }
-        func toggleShow(completion: ((Bool) -> Void)!) {
-            if showing {
-                hide(completion)
-            } else {
+        func toggleShow(#completion: ((Bool) -> Void)!) {
+            if hidden {
                 show(completion)
+            } else {
+                hide(completion)
             }
         }
     }
