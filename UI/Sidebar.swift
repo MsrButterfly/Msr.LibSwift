@@ -44,19 +44,19 @@ extension Msr.UI {
                                 var frame = self!.sidebar.frame
                                 frame.origin.x = self!.sidebar.offsetForTouchPoint(location)
                                 self!.sidebar.frame = frame
-                                self!.sidebar.blankView.alpha = self!.sidebar.alphaForTouchPoint(location)
+                                self!.sidebar.overlay.alpha = self!.sidebar.alphaForTouchPoint(location)
                             }, completion: nil)
                         break
                     case .Changed:
                         frame.origin.x = sidebar.offsetForTouchPoint(location)
                         sidebar.frame = frame
-                        sidebar.blankView.alpha = sidebar.alphaForTouchPoint(location)
+                        sidebar.overlay.alpha = sidebar.alphaForTouchPoint(location)
                         break
                     case .Ended:
                         if velocity.x > 0 || location.x > sidebar.width {
-                            sidebar.show(completion: nil)
+                            sidebar.show(completion: nil, animated: true)
                         } else {
-                            sidebar.hide(completion: nil)
+                            sidebar.hide(completion: nil, animated: true)
                         }
                         break
                     default:
@@ -80,23 +80,23 @@ extension Msr.UI {
         let handle: Handle!
         let offset: CGFloat
         let width: CGFloat
-        let blankView: UIView
-        let blankViewMaxAlpha: CGFloat
+        let overlay: UIView
+        let overlayMaxAlpha = CGFloat(0.5)
         override var hidden: Bool {
             get {
                 return frame.origin.x != -offset
             }
             set(value) {
                 if value {
-                    hide(completion: nil)
+                    hide(completion: nil, animated: false)
                 } else {
-                    show(completion: nil)
+                    show(completion: nil, animated: false)
                 }
             }
         }
         init(width: CGFloat, blurEffectStyle: UIBlurEffectStyle) {
             scrollView = UIScrollView()
-            blankView = UIView()
+            overlay = UIView()
             self.width = width
             let handleWidth = CGFloat(12)
             offset = UIScreen.mainScreen().bounds.width - width + handleWidth
@@ -104,11 +104,6 @@ extension Msr.UI {
             frame.size.width *= 2
             frame.size.width += handleWidth
             frame.origin.x = -offset
-            if blurEffectStyle == .Dark {
-                blankViewMaxAlpha = 0
-            } else {
-                blankViewMaxAlpha = 0.5
-            }
             super.init(frame: frame)
             let backgroundView = UIVisualEffectView(effect: UIBlurEffect(style: blurEffectStyle))
             frame = UIScreen.mainScreen().bounds
@@ -126,14 +121,18 @@ extension Msr.UI {
             frame = bounds
             frame.origin.x = backgroundView.bounds.width
             frame.size.width = UIScreen.mainScreen().bounds.width
-            blankView.frame = frame
-            blankView.backgroundColor = UIColor.blackColor()
-            blankView.alpha = blankViewMaxAlpha
-            addSubview(blankView)
+            if blurEffectStyle == .Dark {
+                overlay.backgroundColor = UIColor.clearColor()
+            } else {
+                overlay.backgroundColor = UIColor.blackColor()
+            }
+            overlay.frame = frame
+            overlay.alpha = overlayMaxAlpha
+            addSubview(overlay)
             let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
-            blankView.addGestureRecognizer(panGestureRecognizer)
+            overlay.addGestureRecognizer(panGestureRecognizer)
             let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
-            blankView.addGestureRecognizer(tapGestureRecognizer)
+            overlay.addGestureRecognizer(tapGestureRecognizer)
         }
         override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView! {
             if let view = handle.hitTest(point, withEvent: event) {
@@ -141,33 +140,45 @@ extension Msr.UI {
             }
             return super.hitTest(point, withEvent: event)
         }
-        func show(#completion: ((Bool) -> Void)!) {
-            UIView.animateWithDuration(0.3,
-                delay: 0,
-                usingSpringWithDamping: 1,
-                initialSpringVelocity: 0,
-                options: UIViewAnimationOptions.BeginFromCurrentState,
-                animations: {
-                    [weak self] in
-                    var frame = self!.frame
-                    frame.origin.x = -self!.offset
-                    self!.frame = frame
-                    self!.blankView.alpha = self!.blankViewMaxAlpha
-                }, completion: completion)
+        func show(#completion: ((Bool) -> Void)!, animated: Bool) {
+            let animations: () -> Void = {
+                [weak self] in
+                var frame = self!.frame
+                frame.origin.x = -self!.offset
+                self!.frame = frame
+                self!.overlay.alpha = self!.overlayMaxAlpha
+            }
+            if animated {
+                UIView.animateWithDuration(0.3,
+                    delay: 0,
+                    usingSpringWithDamping: 1,
+                    initialSpringVelocity: 0,
+                    options: UIViewAnimationOptions.BeginFromCurrentState,
+                    animations: animations,
+                    completion: completion)
+            } else {
+                animations()
+            }
         }
-        func hide(#completion: ((Bool) -> Void)!) {
-            UIView.animateWithDuration(0.3,
-                delay: 0,
-                usingSpringWithDamping: 1,
-                initialSpringVelocity: 0,
-                options: UIViewAnimationOptions.BeginFromCurrentState,
-                animations: {
-                    [weak self] in
-                    var frame = self!.frame
-                    frame.origin.x = -(UIScreen.mainScreen().bounds.width + self!.handle.bounds.width)
-                    self!.frame = frame
-                    self!.blankView.alpha = 0
-                }, completion: completion)
+        func hide(#completion: ((Bool) -> Void)!, animated: Bool) {
+            let animations: () -> Void = {
+                [weak self] in
+                var frame = self!.frame
+                frame.origin.x = -(UIScreen.mainScreen().bounds.width + self!.handle.bounds.width)
+                self!.frame = frame
+                self!.overlay.alpha = 0
+            }
+            if animated {
+                UIView.animateWithDuration(0.3,
+                    delay: 0,
+                    usingSpringWithDamping: 1,
+                    initialSpringVelocity: 0,
+                    options: UIViewAnimationOptions.BeginFromCurrentState,
+                    animations: animations,
+                    completion: completion)
+            } else {
+                animations()
+            }
         }
         func pan(gestureRecognizer: UIPanGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
@@ -188,7 +199,7 @@ extension Msr.UI {
         }
         func tap(gestureRecognizer: UITapGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UITapGestureRecognizer {
-                hide(completion: nil)
+                hide(completion: nil, animated: true)
             }
         }
         func offsetForTouchPoint(point: CGPoint) -> CGFloat {
@@ -199,19 +210,19 @@ extension Msr.UI {
         }
         func alphaForTouchPoint(point: CGPoint) -> CGFloat {
             if point.x < width {
-                return point.x / width * blankViewMaxAlpha
+                return point.x / width * overlayMaxAlpha
             }
-            return blankViewMaxAlpha
+            return overlayMaxAlpha
         }
     }
 }
 
 extension Msr.UI.Sidebar {
-    func toggleShow(#completion: ((Bool) -> Void)!) {
+    func toggleShow(#completion: ((Bool) -> Void)!, animated: Bool) {
         if hidden {
-            show(completion)
+            show(completion: completion, animated: animated)
         } else {
-            hide(completion)
+            hide(completion: completion, animated: animated)
         }
     }
 }
