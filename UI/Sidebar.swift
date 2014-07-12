@@ -28,7 +28,6 @@ extension Msr.UI {
                 CGContextStrokePath(context)
                 CGContextRestoreGState(context)
             }
-            var sidebarInitFrame: CGRect!
             func pan(gestureRecognizer: UIPanGestureRecognizer?) {
                 if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
                     let translation = recognizer.translationInView(self)
@@ -37,11 +36,21 @@ extension Msr.UI {
                     var frame = sidebar!.frame
                     switch recognizer.state {
                     case .Began:
-                        sidebarInitFrame = sidebar.frame
+                        UIView.animateWithDuration(0.1,
+                            delay: 0,
+                            options: UIViewAnimationOptions.BeginFromCurrentState,
+                            animations: {
+                                [weak self] in
+                                var frame = self!.sidebar.frame
+                                frame.origin.x = self!.sidebar.offsetForTouchPoint(location)
+                                self!.sidebar.frame = frame
+                                self!.sidebar.blankView.alpha = self!.sidebar.alphaForTouchPoint(location)
+                            }, completion: nil)
                         break
                     case .Changed:
-                        frame.origin.x = sidebarInitFrame.origin.x + translation.x
+                        frame.origin.x = sidebar.offsetForTouchPoint(location)
                         sidebar.frame = frame
+                        sidebar.blankView.alpha = sidebar.alphaForTouchPoint(location)
                         break
                     case .Ended:
                         if velocity.x > 0 || location.x > sidebar.width {
@@ -72,6 +81,7 @@ extension Msr.UI {
         let offset: CGFloat
         let width: CGFloat
         let blankView: UIView
+        let blankViewMaxAlpha = CGFloat(0.5)
         override var hidden: Bool {
             get {
                 return frame.origin.x != -offset
@@ -112,6 +122,8 @@ extension Msr.UI {
             frame.origin.x = backgroundView.bounds.width
             frame.size.width = UIScreen.mainScreen().bounds.width
             blankView.frame = frame
+            blankView.backgroundColor = UIColor.blackColor()
+            blankView.alpha = blankViewMaxAlpha
             addSubview(blankView)
             let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
             blankView.addGestureRecognizer(panGestureRecognizer)
@@ -135,6 +147,7 @@ extension Msr.UI {
                     var frame = self!.frame
                     frame.origin.x = -self!.offset
                     self!.frame = frame
+                    self!.blankView.alpha = self!.blankViewMaxAlpha
                 }, completion: completion)
         }
         func hide(#completion: ((Bool) -> Void)!) {
@@ -148,6 +161,7 @@ extension Msr.UI {
                     var frame = self!.frame
                     frame.origin.x = -(UIScreen.mainScreen().bounds.width + self!.handle.bounds.width)
                     self!.frame = frame
+                    self!.blankView.alpha = 0
                 }, completion: completion)
         }
         func pan(gestureRecognizer: UIPanGestureRecognizer?) {
@@ -155,17 +169,6 @@ extension Msr.UI {
                 let offset = recognizer.locationInView(handle).x
                 switch recognizer.state {
                 case .Began:
-                    UIView.animateWithDuration(0.2,
-                        delay: 0,
-                        usingSpringWithDamping: 1,
-                        initialSpringVelocity: 0,
-                        options: UIViewAnimationOptions.BeginFromCurrentState,
-                        animations: {
-                            [weak self] in
-                            var frame = self!.frame
-                            frame.origin.x = offset - self!.offset
-                            self!.frame = frame
-                        }, completion: nil)
                     handle.pan(recognizer)
                     break
                 case .Changed:
@@ -182,6 +185,18 @@ extension Msr.UI {
             if let recognizer = gestureRecognizer as? UITapGestureRecognizer {
                 hide(completion: nil)
             }
+        }
+        func offsetForTouchPoint(point: CGPoint) -> CGFloat {
+            if point.x < width {
+                return point.x - (UIScreen.mainScreen().bounds.width + handle.bounds.width)
+            }
+            return 0.5 * (point.x + width) - (UIScreen.mainScreen().bounds.width + handle.bounds.width)
+        }
+        func alphaForTouchPoint(point: CGPoint) -> CGFloat {
+            if point.x < width {
+                return point.x / width * blankViewMaxAlpha
+            }
+            return blankViewMaxAlpha
         }
     }
 }
