@@ -4,10 +4,11 @@ extension Msr.UI {
     class Sidebar: UIView {
         class Handle: UIView {
             weak var sidebar: Sidebar!
+            var panGestureRecognizer: UIPanGestureRecognizer!
             init(sidebar: Sidebar, width: CGFloat) {
                 self.sidebar = sidebar
                 super.init(frame: CGRect(x: UIScreen.mainScreen().bounds.width, y: 0, width: width, height: UIScreen.mainScreen().bounds.height))
-                let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
+                panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
                 panGestureRecognizer.maximumNumberOfTouches = 1
                 addGestureRecognizer(panGestureRecognizer)
                 backgroundColor = UIColor.clearColor()
@@ -36,6 +37,12 @@ extension Msr.UI {
                     var frame = sidebar!.frame
                     switch recognizer.state {
                     case .Began:
+                        if recognizer == panGestureRecognizer {
+                            sidebar.overlayPanGestureRecognizer.enabled = false
+                            sidebar.overlayTapGestureRecognizer.enabled = false
+                        } else {
+                            panGestureRecognizer.enabled = false
+                        }
                         UIView.animateWithDuration(0.1,
                             delay: 0,
                             options: UIViewAnimationOptions.BeginFromCurrentState,
@@ -53,6 +60,9 @@ extension Msr.UI {
                         sidebar.overlay.alpha = sidebar.alphaForTouchPoint(location)
                         break
                     case .Ended:
+                        sidebar.overlayPanGestureRecognizer.enabled = true
+                        sidebar.overlayTapGestureRecognizer.enabled = true
+                        panGestureRecognizer.enabled = true
                         if velocity.x > 0 || location.x > sidebar.width {
                             sidebar.show(completion: nil, animated: true)
                         } else {
@@ -82,6 +92,8 @@ extension Msr.UI {
         let width: CGFloat
         let overlay: UIView
         let overlayMaxAlpha = CGFloat(0.5)
+        var overlayPanGestureRecognizer: UIPanGestureRecognizer!
+        var overlayTapGestureRecognizer: UITapGestureRecognizer!
         override var hidden: Bool {
             get {
                 return frame.origin.x != -offset
@@ -103,7 +115,7 @@ extension Msr.UI {
             var frame = UIScreen.mainScreen().bounds
             frame.size.width *= 2
             frame.size.width += handleWidth
-            frame.origin.x = -offset
+            frame.origin.x = -(offset + width)
             super.init(frame: frame)
             let backgroundView = UIVisualEffectView(effect: UIBlurEffect(style: blurEffectStyle))
             frame = UIScreen.mainScreen().bounds
@@ -127,12 +139,12 @@ extension Msr.UI {
                 overlay.backgroundColor = UIColor.blackColor()
             }
             overlay.frame = frame
-            overlay.alpha = overlayMaxAlpha
+            overlay.alpha = 0
             addSubview(overlay)
-            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
-            overlay.addGestureRecognizer(panGestureRecognizer)
-            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
-            overlay.addGestureRecognizer(tapGestureRecognizer)
+            overlayPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
+            overlay.addGestureRecognizer(overlayPanGestureRecognizer)
+            overlayTapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
+            overlay.addGestureRecognizer(overlayTapGestureRecognizer)
         }
         override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView! {
             if let view = handle.hitTest(point, withEvent: event) {
