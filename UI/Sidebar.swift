@@ -81,7 +81,7 @@ extension Msr.UI {
         let offset: CGFloat
         let width: CGFloat
         let blankView: UIView
-        let blankViewMaxAlpha = CGFloat(0.5)
+        let blankViewMaxAlpha: CGFloat
         override var hidden: Bool {
             get {
                 return frame.origin.x != -offset
@@ -94,7 +94,7 @@ extension Msr.UI {
                 }
             }
         }
-        init(width: CGFloat, blurEffect: UIBlurEffect) {
+        init(width: CGFloat, blurEffectStyle: UIBlurEffectStyle) {
             scrollView = UIScrollView()
             blankView = UIView()
             self.width = width
@@ -104,14 +104,19 @@ extension Msr.UI {
             frame.size.width *= 2
             frame.size.width += handleWidth
             frame.origin.x = -offset
+            if blurEffectStyle == .Dark {
+                blankViewMaxAlpha = 0
+            } else {
+                blankViewMaxAlpha = 0.5
+            }
             super.init(frame: frame)
-            let backgroundView = UIVisualEffectView(effect: blurEffect)
+            let backgroundView = UIVisualEffectView(effect: UIBlurEffect(style: blurEffectStyle))
             frame = UIScreen.mainScreen().bounds
             frame.size.width += handleWidth
             backgroundView.frame = frame
             addSubview(backgroundView)
             handle = Handle(sidebar: self, width: handleWidth)
-            let vibrancyEffectView = UIVisualEffectView(effect: UIVibrancyEffect(forBlurEffect: blurEffect))
+            let vibrancyEffectView = UIVisualEffectView(effect: UIVibrancyEffect(forBlurEffect: backgroundView.effect as UIBlurEffect))
             vibrancyEffectView.frame = bounds
             backgroundView.contentView.addSubview(vibrancyEffectView)
             vibrancyEffectView.contentView.addSubview(handle)
