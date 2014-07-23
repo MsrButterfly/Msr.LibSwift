@@ -23,10 +23,10 @@ extension Msr.UI {
             CGContextSetFillColorWithColor(context, color.CGColor);
             let w = size.width
             let h = size.height
-            let tl = cornerRadius.topLeft
-            let tr = cornerRadius.topRight
-            let br = cornerRadius.bottomRight
-            let bl = cornerRadius.bottomLeft
+            let tl = cornerRadius.bottomLeft
+            let tr = cornerRadius.bottomRight
+            let br = cornerRadius.topRight
+            let bl = cornerRadius.topRight
             CGContextMoveToPoint(context, tl, 0);
             CGContextAddLineToPoint(context, w - tr, 0);
             CGContextAddArcToPoint(context, w, 0, w, tr, tr);
