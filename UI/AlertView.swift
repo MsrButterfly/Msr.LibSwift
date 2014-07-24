@@ -1,44 +1,44 @@
 import UIKit
 
 extension Msr.UI {
-    class AlertView: UIView, UITextFieldDelegate {
+    class AlertView: UIScrollView, UITextFieldDelegate {
+        private let _contentView: UIView
         let contentView: UIView
-        let backgroundView: UIScrollView
-        var actions: [AlertAction]
-        var buttons: [UIButton]
+        let backgroundView: UIView
+        var cornerRadius: CGFloat
+        private var _backgroundColor: UIColor!
+        override var backgroundColor: UIColor! {
+            get {
+                return _backgroundColor
+            }
+            set {
+                _backgroundColor = newValue
+            }
+        }
+        private(set) var actions: [AlertAction]
+        private(set) var buttons: [UIButton]
         init() {
-            contentView = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: 270, height: 0)))
+            _contentView = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: 270, height: 0)))
+            contentView = UIView(frame: _contentView.bounds)
             backgroundView = UIScrollView(frame: UIScreen.mainScreen().bounds)
             backgroundView.backgroundColor = UIColor(white: 0, alpha: 0.5)
-            backgroundView.alwaysBounceVertical = true
             actions = []
             buttons = []
+            cornerRadius = 0
             super.init(frame: UIScreen.mainScreen().bounds)
-            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
-            backgroundView.addGestureRecognizer(tapGestureRecognizer)
-            contentView.center = center
-            contentView.layer.cornerRadius = 7
+            alwaysBounceVertical = true
+            _contentView.center = center
             addSubview(backgroundView)
-            addSubview(contentView)
+            insertSubview(_contentView, aboveSubview: backgroundView)
+            _contentView.addSubview(contentView)
             alpha = 0
         }
         convenience init(title: String?, message: String?, cancelButtonTitle: String?, otherButtonTitles: String?, [String]?) {
             self.init()
         }
-        func tap(gestureRecognizor: UITapGestureRecognizer?) {
-            if let recognizor = gestureRecognizor {
-                switch recognizor.state {
-                case .Ended:
-                    hide()
-                    break
-                default:
-                    break
-                }
-            }
-        }
         func show() {
             alpha = 0
-            contentView.transform = CGAffineTransformMakeScale(0.5, 0.5)
+            _contentView.transform = CGAffineTransformMakeScale(0.5, 0.5)
             UIView.animateWithDuration(0.5,
                 delay: 0,
                 usingSpringWithDamping: 0.7,
@@ -47,13 +47,13 @@ extension Msr.UI {
                 animations: {
                     [weak self] in
                     self!.alpha = 1
-                    self!.contentView.transform = CGAffineTransformMakeScale(1, 1)
+                    self!._contentView.transform = CGAffineTransformMakeScale(1, 1)
                 }, completion: nil)
         }
         func hide() {
             resignFirstResponderOfAllSubviews()
             alpha = 1
-            contentView.transform = CGAffineTransformMakeScale(1, 1)
+            _contentView.transform = CGAffineTransformMakeScale(1, 1)
             UIView.animateWithDuration(0.5,
                 delay: 0,
                 usingSpringWithDamping: 0.7,
@@ -62,72 +62,98 @@ extension Msr.UI {
                 animations: {
                     [weak self] in
                     self!.alpha = 0
-                    self!.contentView.transform = CGAffineTransformMakeScale(0.5, 0.5)
+                    self!._contentView.transform = CGAffineTransformMakeScale(0.5, 0.5)
                 }, completion: nil)
-            
-            UIView.animateWithDuration(0.7) {
-                
-            }
         }
         func addAction(action: AlertAction) {
             actions += action
             let button = UIButton(frame: CGRectZero)
-            button.titleLabel.text = action.title
-            button.titleLabel.textAlignment = .Center
+            let textColorOfStyle = {
+                (style: AlertAction.Style) -> UIColor in
+                switch style {
+                case .Cancel:
+                    return UIColor.darkTextColor()
+                case .Default:
+                    return UIColor.whiteColor()
+                case .Destructive:
+                    return UIColor.whiteColor()
+                default:
+                    return UIColor.clearColor()
+                }
+            }
+            button.setTitle(action.title, forState: .Normal)
+            button.setAttributedTitle(NSAttributedString(
+                string: action.title,
+                attributes: [
+                    NSFontAttributeName: UIFont.systemFontOfSize(16),
+                    NSForegroundColorAttributeName: textColorOfStyle(action.style)
+                ]), forState: .Normal)
             button.addTarget(self, action: "handleButtonActions:", forControlEvents: .TouchUpInside)
             buttons += button
-            contentView.addSubview(buttons[buttons.endIndex - 1])
+            _contentView.addSubview(buttons[buttons.endIndex - 1])
         }
         override func layoutSubviews() {
-            let width = contentView.bounds.width / CGFloat(buttons.count)
+            let width = _contentView.bounds.width / CGFloat(buttons.count)
             let height = 43 as CGFloat
-            let radius = contentView.layer.cornerRadius
+            let radius = cornerRadius
             for (i, button) in enumerate(buttons) {
-                button.frame = CGRect(x: width * CGFloat(i), y: contentView.bounds.height - height, width: width, height: height)
+                button.frame = CGRect(x: width * CGFloat(i), y: contentView.bounds.height, width: width, height: height)
+            }
+            _contentView.bounds = CGRect(origin: CGPointZero, size: CGSize(width: contentView.bounds.width, height: contentView.bounds.height + height))
+            _contentView.center = center
+            contentView.frame = contentView.bounds
+            let defaultColor = self.backgroundColor.colorWithAlphaComponent(0.9)
+            contentView.backgroundColor = UIColor(
+                patternImage: RoundedRectangle(
+                    color: backgroundColor,
+                    size: contentView.bounds.size,
+                    cornerRadius: (radius, radius, 0, 0)).image)
+            let backgroundColorOfStyle = {
+                (style: AlertAction.Style) -> UIColor in
+                switch style {
+                case .Cancel:
+                    return UIColor.whiteColor().colorWithAlphaComponent(0.9)
+                case .Default:
+                    return defaultColor
+                case .Destructive:
+                    return UIColor.redColor().colorWithAlphaComponent(0.9)
+                default:
+                    return UIColor.clearColor()
+                }
             }
             switch buttons.count {
             case 0:
-                var bounds = contentView.bounds
-                bounds.size.height = height
-                contentView.bounds = bounds
                 break
             case 1:
-                var bounds = contentView.bounds
-                bounds.size.height = height + 78
-                contentView.bounds = bounds
                 buttons[0].setBackgroundImage(
                     RoundedRectangle(
-                        color: UIColor.randomColor(true),
+                        color: backgroundColorOfStyle(actions[0].style),
                         size: buttons[0].bounds.size,
                         cornerRadius: (0, 0, radius, radius)).image,
                     forState: .Normal)
                 break
             default:
-                var bounds = contentView.bounds
-                bounds.size.height = height + 78
-                contentView.bounds = bounds
                 buttons[0].setBackgroundImage(
                     RoundedRectangle(
-                        color: UIColor.randomColor(true),
+                        color: backgroundColorOfStyle(actions[0].style),
                         size: buttons[0].bounds.size,
                         cornerRadius: (0, 0, 0, radius)).image,
                     forState: .Normal)
                 buttons[buttons.endIndex - 1].setBackgroundImage(
                     RoundedRectangle(
-                        color: UIColor.randomColor(true),
+                        color: backgroundColorOfStyle(actions[buttons.endIndex - 1].style),
                         size: buttons[0].bounds.size,
                         cornerRadius: (0, 0, radius, 0)).image,
                     forState: .Normal)
-                for button in buttons[1..<buttons.count - 1] {
+                for (i, button) in enumerate(buttons[1..<buttons.count - 1]) {
                     button.setBackgroundImage(
                         Rectangle(
-                            color: UIColor.randomColor(true),
+                            color: backgroundColorOfStyle(actions[i + 1].style),
                             size: button.bounds.size).image,
                         forState: .Normal)
                 }
                 break
             }
-            contentView.center = center
         }
         func handleButtonActions(button: UIButton?) {
             var index: Array<UIButton>.IndexType!
