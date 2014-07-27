@@ -39,9 +39,14 @@ extension Msr.UI {
                         self?.transformAtPercentage(1)
                         return
                     },
-                    completion: completion)
+                    completion: {
+                        [weak self] finished in
+                        self?.previousWrapper?.removeFromSuperview()
+                        completion?(finished)
+                    })
             } else {
                 transformAtPercentage(1)
+                previousWrapper?.removeFromSuperview()
                 completion?(true)
             }
         }
@@ -53,6 +58,7 @@ extension Msr.UI {
             }
             switch gesture.state {
             case .Began, .Changed:
+                view.insertSubview(previousWrapper, belowSubview: currentWrapper)
                 transformAtPercentage(percentage)
                 break
             case .Ended, .Cancelled:
@@ -69,7 +75,11 @@ extension Msr.UI {
                             self?.transformAtPercentage(1)
                             return
                         },
-                        completion: nil)
+                        completion: {
+                            [weak self] finished in
+                            self?.previousWrapper?.removeFromSuperview()
+                            return
+                        })
                 }
                 break
             default:
@@ -77,6 +87,10 @@ extension Msr.UI {
             }
         }
         func popViewController(animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
+            assert(viewControllers.count > 1, "Already at root view controller. Nothing to be popped.")
+            if previousWrapper?.superview == nil {
+                view.insertSubview(previousWrapper?, belowSubview: currentWrapper)
+            }
             let viewController = viewControllers.lastOne
             UIView.animateWithDuration(0.5,
                 delay: 0,
@@ -90,16 +104,40 @@ extension Msr.UI {
                 },
                 completion: {
                     [weak self] finished in
-                    self!.currentViewController.removeFromParentViewController()
-                    self!.currentViewController.view.removeFromSuperview()
-                    self!.wrappers.removeLast()
-                    self!.viewControllers.removeLast()
-                    self!.gestures.removeLast()
-                    if self!.viewControllers.count > 1 {
-                        self!.currentGesture.enabled = true
+                    if finished {
+                        self!.currentViewController.removeFromParentViewController()
+                        self!.currentViewController.view.removeFromSuperview()
+                        self!.wrappers.removeLast()
+                        self!.viewControllers.removeLast()
+                        self!.gestures.removeLast()
+                        if self!.viewControllers.count > 1 {
+                            self!.currentGesture.enabled = true
+                        }
                     }
+                    completion?(finished)
                 })
             return viewController
+        }
+        func popToViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
+            assert(contains(viewControllers, viewController), "The specific view controller is not in the view controller hierarchy.")
+            let p = find(viewControllers, viewController)
+            var viewControllersToBePopped = [UIViewController]()
+            viewControllersToBePopped.extend(viewControllers[p! + 1..<viewControllers.endIndex])
+            let count = viewControllersToBePopped.count
+            for _ in 1..<count {
+                println("???")
+                let penultimate = viewControllers.endIndex - 2
+                viewControllers[penultimate].removeFromParentViewController()
+                wrappers[penultimate].removeFromSuperview()
+                viewControllers.removeAtIndex(penultimate)
+                gestures.removeAtIndex(penultimate)
+                wrappers.removeAtIndex(penultimate)
+            }
+            popViewController(animated, completion: completion)
+            return viewControllersToBePopped
+        }
+        func popToRootViewControllerAnimated(animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
+            return popToViewController(viewControllers.firstOne, animated: animated, completion: completion)
         }
         func transformAtPercentage(percentage: CGFloat) {
             var frame = view.bounds
@@ -107,46 +145,51 @@ extension Msr.UI {
             currentWrapper.frame = frame
             if previousWrapper != nil {
                 previousWrapper!.transform = CGAffineTransformMakeScale(1 - percentage * 0.2, 1 - percentage * 0.2)
-                previousWrapper!.alpha = 1 - percentage
+                previousWrapper!.overlay.alpha = percentage
             }
         }
         var currentViewController: UIViewController! {
-            get {
-                return viewControllers.lastOne
-            }
+            return viewControllers.count > 0 ? viewControllers.lastOne : nil
         }
         var previousViewController: UIViewController! {
-            get {
-                return viewControllers.count > 1 ? viewControllers[viewControllers.lastIndex - 1] : nil
-            }
+            return viewControllers.count > 1 ? viewControllers[viewControllers.endIndex - 2] : nil
         }
         private var currentWrapper: WrapperView! {
-            get {
-                return wrappers.lastOne
-            }
+            return wrappers.count > 0 ? wrappers.lastOne : nil
         }
         private var previousWrapper: WrapperView! {
-            get {
-                return wrappers.count > 1 ? wrappers[wrappers.lastIndex - 1] : nil
-            }
+            return wrappers.count > 1 ? wrappers[wrappers.endIndex - 2] : nil
         }
         private var currentGesture: UIPanGestureRecognizer! {
-            get {
-                return gestures.lastOne
-            }
+            return gestures.count > 0 ? gestures.lastOne : nil
         }
         private var previousGesture: UIPanGestureRecognizer! {
-            get {
-                return gestures.count > 1 ? gestures[gestures.lastIndex - 1] : nil
-            }
+            return gestures.count > 1 ? gestures[gestures.endIndex - 2] : nil
         }
         class WrapperView: UIView {
             let navigationBar = UINavigationController().navigationBar
+            let overlay = UIView()
             init(frame: CGRect) {
                 super.init(frame: frame)
+                overlay.frame = bounds
+                overlay.backgroundColor = UIColor.blackColor()
+                overlay.alpha = 0
                 navigationBar.center.x = center.x
                 addSubview(navigationBar)
+                addSubview(overlay)
             }
         }
+    }
+}
+
+extension UIViewController {
+    @objc var msrNavigationController: Msr.UI.NavigationController! {
+        var current = parentViewController
+        while current != nil {
+            if current is Msr.UI.NavigationController {
+                return current as Msr.UI.NavigationController
+            }
+        }
+        return nil
     }
 }
