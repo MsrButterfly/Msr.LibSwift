@@ -20,7 +20,16 @@ extension Msr.UI {
             frame = CGRectOffset(frame, frame.width, 0)
             currentWrapper.frame = frame
             currentWrapper.insertSubview(currentViewController.view, belowSubview: currentWrapper.navigationBar)
-            currentWrapper.navigationBar.setItems([UINavigationItem(title: currentViewController.title)], animated: false)
+            currentWrapper.navigationBar.setItems([currentViewController.navigationItem], animated: false)
+            if let scrollView = currentViewController.view as? UIScrollView {
+                var inset = scrollView.contentInset
+                inset.top += currentWrapper.navigationBar.bounds.height
+                scrollView.contentInset = inset
+            } else {
+                var frame = currentViewController.view.frame
+                frame.size.height -= currentWrapper.navigationBar.bounds.height
+                frame.origin.y += currentWrapper.navigationBar.bounds.height
+            }
             currentGesture?.setValue(false, forKey: "enabled")
             gestures += UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
             currentWrapper.addGestureRecognizer(currentGesture)
@@ -52,7 +61,6 @@ extension Msr.UI {
         }
         func didPerformPanGesture(gesture: UIPanGestureRecognizer) {
             var percentage = 1 - gesture.translationInView(currentWrapper).x / view.bounds.width
-            println(percentage)
             if percentage > 1 {
                 percentage = 1
             }
@@ -125,7 +133,6 @@ extension Msr.UI {
             viewControllersToBePopped.extend(viewControllers[p! + 1..<viewControllers.endIndex])
             let count = viewControllersToBePopped.count
             for _ in 1..<count {
-                println("???")
                 let penultimate = viewControllers.endIndex - 2
                 viewControllers[penultimate].removeFromParentViewController()
                 wrappers[penultimate].removeFromSuperview()
