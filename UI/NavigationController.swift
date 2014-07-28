@@ -13,6 +13,7 @@ extension Msr.UI {
             super.init(nibName: nil, bundle: nil)
             pushViewController(rootViewController, animated: false, completion: nil)
             view.backgroundColor = UIColor.blackColor()
+
         }
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
             viewControllers += viewController
@@ -175,7 +176,7 @@ extension Msr.UI {
             wrapper.alpha = 0
             view.addSubview(wrapper)
             let viewControllerToBeReplaced = viewControllers.lastOne
-            let animations: (Bool) -> Void = {
+            let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
                     self.removeWrapper(self.wrappers.lastOne, fromViewController: self.viewControllers.lastOne)
@@ -191,6 +192,7 @@ extension Msr.UI {
                         self.currentGesture.enabled = false
                     }
                 }
+                completion?(finished)
             }
             if animated {
                 UIView.animateWithDuration(0.5,
@@ -200,15 +202,12 @@ extension Msr.UI {
                     options: .BeginFromCurrentState,
                     animations: {
                         wrapper.alpha = 1
-                    }) {
-                        finished in
-                        animations(finished)
-                        completion?(finished)
-                }
+                        self.currentWrapper.alpha = 0
+                    }, completion: combinedCompletion)
             } else {
                 wrapper.alpha = 1
-                animations(true)
-                completion?(true)
+                currentWrapper.alpha = 0
+                combinedCompletion(true)
             }
             return viewControllerToBeReplaced
         }
