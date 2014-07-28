@@ -64,9 +64,9 @@ extension Msr.UI {
                         sidebar.overlayTapGestureRecognizer.enabled = true
                         panGestureRecognizer.enabled = true
                         if velocity.x > 0 || location.x > sidebar.width {
-                            sidebar.show(completion: nil, animated: true)
+                            sidebar.show(animated: true, completion: nil)
                         } else {
-                            sidebar.hide(completion: nil, animated: true)
+                            sidebar.hide(animated: true, completion: nil)
                         }
                         break
                     default:
@@ -86,7 +86,8 @@ extension Msr.UI {
                 return CGRectContainsPoint(bounds, point)
             }
         }
-        let scrollView: UIScrollView
+        let contentView: UIView
+        let backgroundEffect: UIBlurEffect
         let handle: Handle!
         let offset: CGFloat
         let width: CGFloat
@@ -100,15 +101,16 @@ extension Msr.UI {
             }
             set(value) {
                 if value {
-                    hide(completion: nil, animated: false)
+                    hide(animated: false, completion: nil)
                 } else {
-                    show(completion: nil, animated: false)
+                    show(animated: false, completion: nil)
                 }
             }
         }
         init(width: CGFloat, blurEffectStyle: UIBlurEffectStyle) {
-            scrollView = UIScrollView()
+            contentView = UIView()
             overlay = UIView()
+            backgroundEffect = UIBlurEffect(style: blurEffectStyle)
             self.width = width
             let handleWidth = CGFloat(12)
             offset = UIScreen.mainScreen().bounds.width - width + handleWidth
@@ -117,7 +119,7 @@ extension Msr.UI {
             frame.size.width += handleWidth
             frame.origin.x = -(offset + width)
             super.init(frame: frame)
-            let backgroundView = UIVisualEffectView(effect: UIBlurEffect(style: blurEffectStyle))
+            let backgroundView = UIVisualEffectView(effect: backgroundEffect)
             frame = UIScreen.mainScreen().bounds
             frame.size.width += handleWidth
             backgroundView.frame = frame
@@ -127,9 +129,8 @@ extension Msr.UI {
             vibrancyEffectView.frame = bounds
             backgroundView.contentView.addSubview(vibrancyEffectView)
             vibrancyEffectView.contentView.addSubview(handle)
-            scrollView.frame = CGRect(x: offset, y: 0, width: width - handle.bounds.width, height: backgroundView.bounds.height)
-            scrollView.alwaysBounceVertical = true
-            backgroundView.contentView.addSubview(scrollView)
+            contentView.frame = CGRect(x: offset, y: 0, width: width - handle.bounds.width, height: backgroundView.bounds.height)
+            backgroundView.contentView.addSubview(contentView)
             frame = bounds
             frame.origin.x = backgroundView.bounds.width
             frame.size.width = UIScreen.mainScreen().bounds.width
@@ -152,7 +153,7 @@ extension Msr.UI {
             }
             return super.hitTest(point, withEvent: event)
         }
-        func show(#completion: ((Bool) -> Void)!, animated: Bool) {
+        func show(#animated: Bool, completion: ((Bool) -> Void)!) {
             let animations: () -> Void = {
                 [weak self] in
                 var frame = self!.frame
@@ -172,7 +173,7 @@ extension Msr.UI {
                 animations()
             }
         }
-        func hide(#completion: ((Bool) -> Void)!, animated: Bool) {
+        func hide(#animated: Bool, completion: ((Bool) -> Void)!) {
             let animations: () -> Void = {
                 [weak self] in
                 var frame = self!.frame
@@ -211,7 +212,7 @@ extension Msr.UI {
         }
         func tap(gestureRecognizer: UITapGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UITapGestureRecognizer {
-                hide(completion: nil, animated: true)
+                hide(animated: true, completion: nil)
             }
         }
         func offsetForTouchPoint(point: CGPoint) -> CGFloat {
@@ -230,11 +231,11 @@ extension Msr.UI {
 }
 
 extension Msr.UI.Sidebar {
-    func toggleShow(#completion: ((Bool) -> Void)!, animated: Bool) {
+    func toggleShow(#animated: Bool, completion: ((Bool) -> Void)!) {
         if hidden {
-            show(completion: completion, animated: animated)
+            show(animated: animated, completion: completion)
         } else {
-            hide(completion: completion, animated: animated)
+            hide(animated: animated, completion: completion)
         }
     }
 }
