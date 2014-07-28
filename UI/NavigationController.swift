@@ -13,7 +13,6 @@ extension Msr.UI {
             super.init(nibName: nil, bundle: nil)
             pushViewController(rootViewController, animated: false, completion: nil)
             view.backgroundColor = UIColor.blackColor()
-
         }
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
             viewControllers += viewController
@@ -40,11 +39,13 @@ extension Msr.UI {
                     completion: {
                         finished in
                         self.previousWrapper?.removeFromSuperview()
+                        self.setNeedsStatusBarAppearanceUpdate()
                         completion?(finished)
                     })
             } else {
                 transformAtPercentage(1, frontView: currentWrapper, backView: previousWrapper)
                 previousWrapper?.removeFromSuperview()
+                setNeedsStatusBarAppearanceUpdate()
                 completion?(true)
             }
         }
@@ -107,7 +108,7 @@ extension Msr.UI {
                 view.insertSubview(previousWrapper?, belowSubview: currentWrapper)
             }
             let viewController = viewControllers.lastOne
-            let animations: (Bool) -> Void = {
+            let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
                     self.removeWrapper(self.currentWrapper, fromViewController:self.currentViewController)
@@ -119,7 +120,9 @@ extension Msr.UI {
                     if self.viewControllers.count > 1 {
                         self.currentGesture.enabled = true
                     }
+                    self.setNeedsStatusBarAppearanceUpdate()
                 }
+                completion?(finished)
             }
             if animated {
                 UIView.animateWithDuration(0.5,
@@ -132,15 +135,10 @@ extension Msr.UI {
                         self.transformAtPercentage(0, frontView: self.currentWrapper, backView: self.previousWrapper)
                         return
                     },
-                    completion: {
-                        finished in
-                        animations(finished)
-                        completion?(finished)
-                    })
+                    completion: combinedCompletion)
             } else {
                 self.transformAtPercentage(0, frontView: currentWrapper, backView: previousWrapper)
-                animations(true)
-                completion?(true)
+                combinedCompletion(true)
             }
             return viewController
         }
@@ -191,6 +189,7 @@ extension Msr.UI {
                     if self.viewControllers.count == 1 {
                         self.currentGesture.enabled = false
                     }
+                    self.setNeedsStatusBarAppearanceUpdate()
                 }
                 completion?(finished)
             }
@@ -234,7 +233,6 @@ extension Msr.UI {
             // 6. <- x   : popCount > 1, pushCount = 1
             // 7. <- ->  : popCount > 1, pushCount > 1, i > 0
             // 8. <- x ->: popCount > 1, pushCount > 1, i == 0
-            println("popCount = \(popCount); pushCount = \(pushCount)")
             if popCount == 1 && pushCount == 1 {
                 replaceCurrentViewControllerWithViewController(viewControllersToBePushed.firstOne, animated: animated, completion: completion)
             } else if popCount == 0 && pushCount > 0 {
@@ -309,10 +307,9 @@ extension Msr.UI {
             var frame = view.bounds
             viewController.view.frame = frame
             viewController.view.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-            let wrapper = WrapperView(frame: frame)
+            let wrapper = WrapperView(frame: frame, barStyle: .Black)
             wrapper.insertSubview(viewController.view, belowSubview: wrapper.navigationBar)
             wrapper.navigationBar.setItems([viewController.navigationItem], animated: false)
-            println(wrapper.navigationBar.frame)
             if let scrollView = viewController.view as? UIScrollView {
                 var inset = scrollView.contentInset
                 inset.top += wrapper.navigationBar.bounds.height
@@ -343,15 +340,23 @@ extension Msr.UI {
         class WrapperView: UIView {
             let navigationBar = UINavigationController().navigationBar
             let overlay = UIView()
-            init(frame: CGRect) {
+            init(frame: CGRect, barStyle: UIBarStyle) {
+                navigationBar.barStyle = barStyle
                 super.init(frame: frame)
                 overlay.frame = bounds
                 overlay.backgroundColor = UIColor.blackColor()
                 overlay.alpha = 0
                 navigationBar.center.x = center.x
+                var navigationBarFrame = navigationBar.frame
+                navigationBarFrame.size.height += UIApplication.sharedApplication().statusBarFrame.height
+                navigationBarFrame.origin.y = 0
+                navigationBar.frame = navigationBarFrame
                 addSubview(navigationBar)
                 addSubview(overlay)
             }
+        }
+        override func preferredStatusBarStyle() -> UIStatusBarStyle {
+            return currentViewController.preferredStatusBarStyle()
         }
     }
 }
