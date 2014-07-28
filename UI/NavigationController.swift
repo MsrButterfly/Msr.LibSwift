@@ -34,12 +34,12 @@ extension Msr.UI {
                     animations: {
                         finished in
                         self.transformAtPercentage(1, frontView: self.currentWrapper, backView: self.previousWrapper)
+                        self.setNeedsStatusBarAppearanceUpdate()
                         return
                     },
                     completion: {
                         finished in
                         self.previousWrapper?.removeFromSuperview()
-                        self.setNeedsStatusBarAppearanceUpdate()
                         completion?(finished)
                     })
             } else {
@@ -107,20 +107,19 @@ extension Msr.UI {
             if previousWrapper?.superview == nil {
                 view.insertSubview(previousWrapper?, belowSubview: currentWrapper)
             }
-            let viewController = viewControllers.lastOne
+            let viewControllerToBePopped = viewControllers.lastOne
+            self.currentViewController.removeFromParentViewController()
+            self.viewControllers.removeLast()
             let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
-                    self.removeWrapper(self.currentWrapper, fromViewController:self.currentViewController)
-                    self.currentViewController.removeFromParentViewController()
-                    self.currentViewController.view.removeFromSuperview()
+                    self.removeWrapper(self.currentWrapper, fromViewController:viewControllerToBePopped)
+                    self.currentWrapper.removeFromSuperview()
                     self.wrappers.removeLast()
-                    self.viewControllers.removeLast()
                     self.gestures.removeLast()
                     if self.viewControllers.count > 1 {
                         self.currentGesture.enabled = true
                     }
-                    self.setNeedsStatusBarAppearanceUpdate()
                 }
                 completion?(finished)
             }
@@ -133,6 +132,7 @@ extension Msr.UI {
                     animations: {
                         finished in
                         self.transformAtPercentage(0, frontView: self.currentWrapper, backView: self.previousWrapper)
+                        self.setNeedsStatusBarAppearanceUpdate()
                         return
                     },
                     completion: combinedCompletion)
@@ -140,7 +140,7 @@ extension Msr.UI {
                 self.transformAtPercentage(0, frontView: currentWrapper, backView: previousWrapper)
                 combinedCompletion(true)
             }
-            return viewController
+            return viewControllerToBePopped
         }
         func popToViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
             assert(contains(viewControllers, viewController), "The specific view controller is not in the view controller hierarchy.")
@@ -174,22 +174,21 @@ extension Msr.UI {
             wrapper.alpha = 0
             view.addSubview(wrapper)
             let viewControllerToBeReplaced = viewControllers.lastOne
+            self.viewControllers.lastOne.removeFromParentViewController()
+            self.viewControllers.removeLast()
+            self.viewControllers += viewController
             let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
-                    self.removeWrapper(self.wrappers.lastOne, fromViewController: self.viewControllers.lastOne)
+                    self.removeWrapper(self.wrappers.lastOne, fromViewController: viewControllerToBeReplaced)
                     self.wrappers.lastOne.removeFromSuperview()
                     self.wrappers.removeLast()
                     self.wrappers += wrapper
                     self.gestures.removeLast()
                     self.gestures += gesture
-                    self.viewControllers.lastOne.removeFromParentViewController()
-                    self.viewControllers.removeLast()
-                    self.viewControllers += viewController
                     if self.viewControllers.count == 1 {
                         self.currentGesture.enabled = false
                     }
-                    self.setNeedsStatusBarAppearanceUpdate()
                 }
                 completion?(finished)
             }
@@ -202,6 +201,7 @@ extension Msr.UI {
                     animations: {
                         wrapper.alpha = 1
                         self.currentWrapper.alpha = 0
+                        self.setNeedsStatusBarAppearanceUpdate()
                     }, completion: combinedCompletion)
             } else {
                 wrapper.alpha = 1
@@ -307,7 +307,7 @@ extension Msr.UI {
             var frame = view.bounds
             viewController.view.frame = frame
             viewController.view.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-            let wrapper = WrapperView(frame: frame, barStyle: .Black)
+            let wrapper = WrapperView(frame: frame, statusBarStyle: viewController.preferredStatusBarStyle())
             wrapper.insertSubview(viewController.view, belowSubview: wrapper.navigationBar)
             wrapper.navigationBar.setItems([viewController.navigationItem], animated: false)
             if let scrollView = viewController.view as? UIScrollView {
@@ -340,8 +340,20 @@ extension Msr.UI {
         class WrapperView: UIView {
             let navigationBar = UINavigationController().navigationBar
             let overlay = UIView()
-            init(frame: CGRect, barStyle: UIBarStyle) {
-                navigationBar.barStyle = barStyle
+            init(frame: CGRect, statusBarStyle: UIStatusBarStyle) {
+                switch statusBarStyle {
+                case .Default:
+                    navigationBar.barStyle = UIBarStyle.Default
+                    break
+                case .LightContent:
+                    navigationBar.barStyle = UIBarStyle.Black
+                    break
+                case .BlackOpaque:
+                    navigationBar.barStyle = UIBarStyle.BlackTranslucent
+                    break
+                default:
+                    break
+                }
                 super.init(frame: frame)
                 overlay.frame = bounds
                 overlay.backgroundColor = UIColor.blackColor()
