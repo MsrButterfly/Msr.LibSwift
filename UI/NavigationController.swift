@@ -281,8 +281,8 @@ extension Msr.UI {
                 frontView.frame = frame
             }
             if backView != nil {
-                backView.transform = CGAffineTransformMakeScale(1 - percentage * 0.2, 1 - percentage * 0.2)
-                backView.overlay.alpha = percentage
+                backView.transform = CGAffineTransformMakeTranslation(-view.bounds.width / 4 * percentage, 0)// CGAffineTransformMakeScale(1 - percentage * 0.2, 1 - percentage * 0.2)
+                backView.overlay.alpha = percentage * 0.5
             }
         }
         var currentViewController: UIViewController! {
@@ -355,6 +355,11 @@ extension Msr.UI {
                     break
                 }
                 super.init(frame: frame)
+                layer.shadowColor = UIColor.darkGrayColor().CGColor
+                layer.shadowOpacity = 1
+                layer.shadowOffset = CGSize(width: 0, height: 0)
+                layer.masksToBounds = false
+                layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
                 overlay.frame = bounds
                 overlay.backgroundColor = UIColor.blackColor()
                 overlay.alpha = 0
