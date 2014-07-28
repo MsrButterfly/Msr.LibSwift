@@ -277,10 +277,11 @@ extension Msr.UI {
         private func transformAtPercentage(percentage: CGFloat, frontView: WrapperView!, backView: WrapperView!) {
             if frontView != nil {
                 frontView.transform = CGAffineTransformMakeTranslation(frontView.bounds.width * (1 - percentage), 0)
+                frontView.layer.shadowOpacity = Float(percentage)
             }
             if backView != nil {
                 backView.transform = CGAffineTransformMakeTranslation(-view.bounds.width / 4 * percentage, 0)
-                backView.overlay.alpha = percentage * 0.5
+                backView.overlay.alpha = percentage * 0.3
             }
         }
         var currentViewController: UIViewController! {
@@ -353,7 +354,7 @@ extension Msr.UI {
                     break
                 }
                 super.init(frame: frame)
-                layer.shadowColor = UIColor.darkGrayColor().CGColor
+                layer.shadowColor = UIColor.grayColor().CGColor
                 layer.shadowOpacity = 1
                 layer.shadowOffset = CGSize(width: 0, height: 0)
                 layer.masksToBounds = false
