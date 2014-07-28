@@ -18,7 +18,7 @@ extension Msr.UI {
             viewControllers += viewController
             addChildViewController(currentViewController)
             wrappers += createWrapperForViewController(viewController)
-            currentWrapper.frame = CGRectOffset(currentWrapper.frame, currentWrapper.frame.width, 0)
+            currentWrapper.transform = CGAffineTransformMakeTranslation(currentWrapper.bounds.width, 0)
             currentGesture?.setValue(false, forKey: "enabled")
             gestures += createPanGestureRecognizerForWrapper(currentWrapper)
             if viewControllers.count == 1 {
@@ -275,13 +275,11 @@ extension Msr.UI {
             }
         }
         private func transformAtPercentage(percentage: CGFloat, frontView: WrapperView!, backView: WrapperView!) {
-            var frame = view.bounds
-            frame.origin.x = frame.width * (1 - percentage)
             if frontView != nil {
-                frontView.frame = frame
+                frontView.transform = CGAffineTransformMakeTranslation(frontView.bounds.width * (1 - percentage), 0)
             }
             if backView != nil {
-                backView.transform = CGAffineTransformMakeTranslation(-view.bounds.width / 4 * percentage, 0)// CGAffineTransformMakeScale(1 - percentage * 0.2, 1 - percentage * 0.2)
+                backView.transform = CGAffineTransformMakeTranslation(-view.bounds.width / 4 * percentage, 0)
                 backView.overlay.alpha = percentage * 0.5
             }
         }
