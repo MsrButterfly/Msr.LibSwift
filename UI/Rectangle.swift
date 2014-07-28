@@ -3,7 +3,7 @@ import UIKit
 extension Msr.UI {
     class Rectangle: Shape {
         init(color: UIColor, size: CGSize) {
-            UIGraphicsBeginImageContext(size)
+            UIGraphicsBeginImageContextWithOptions(size, true, UIScreen.mainScreen().scale)
             let context = UIGraphicsGetCurrentContext()
             CGContextBeginTransparencyLayer(context, nil)
             CGContextSetFillColorWithColor(context, color.CGColor)
@@ -17,7 +17,7 @@ extension Msr.UI {
     }
     class RoundedRectangle: Shape {
         init(color: UIColor, size: CGSize, cornerRadius: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat)) {
-            UIGraphicsBeginImageContext(size)
+            UIGraphicsBeginImageContextWithOptions(size, true, UIScreen.mainScreen().scale)
             let context = UIGraphicsGetCurrentContext()
             CGContextBeginTransparencyLayer(context, nil)
             CGContextSetFillColorWithColor(context, color.CGColor);
