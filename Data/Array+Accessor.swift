@@ -11,3 +11,9 @@ extension Array {
         return self[endIndex - 1]
     }
 }
+
+extension Array {
+    mutating func removeFirst() -> T {
+        return removeAtIndex(startIndex)
+    }
+}
