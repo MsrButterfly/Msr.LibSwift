@@ -317,6 +317,7 @@ extension Msr.UI {
                 var frame = viewController.view.frame
                 frame.size.height -= wrapper.navigationBar.bounds.height
                 frame.origin.y += wrapper.navigationBar.bounds.height
+                viewController.view.frame = frame
             }
             return wrapper
         }
@@ -329,6 +330,7 @@ extension Msr.UI {
                 var frame = viewController.view.frame
                 frame.size.height += wrapper.navigationBar.bounds.height
                 frame.origin.y -= wrapper.navigationBar.bounds.height
+                viewController.view.frame = frame
             }
         }
         private func createPanGestureRecognizerForWrapper(wrapper: WrapperView) -> UIPanGestureRecognizer {
