@@ -21,7 +21,11 @@ extension Msr.Data {
             return value as String
         }
         func asInt() -> Int {
-            return value as Int
+            if value is Int {
+                return value as Int
+            } else {
+                return (value as String).toInt()!
+            }
         }
         func asFloat() -> Float {
             return value as Float
@@ -45,19 +49,16 @@ extension Msr.Data {
             return NSURL(string: asString())
         }
         subscript(key: String) -> Property {
-            get {
-                return Property(value: value[key])
-            }
+            return Property(value: value[key])
+        }
+        subscript(key: Int) -> Property {
+            return Property(value: value[key])
         }
         var description: String {
-            get {
-                return value.description!
-            }
+            return value.description!
         }
         var debugDescription: String {
-            get {
-                return value.debugDescription!
-            }
+            return value.debugDescription!
         }
     }
 }
