@@ -12,6 +12,9 @@ extension Msr.UI {
             return gesture
         }
         private var wrappers = [WrapperView]()
+        let maxDuration = NSTimeInterval(0.5)
+        let minDuration = NSTimeInterval(0.3)
+        let maxVelocity = CGFloat(10)
         init(rootViewController: UIViewController) {
             super.init(nibName: nil, bundle: nil)
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
@@ -29,7 +32,7 @@ extension Msr.UI {
             }
             view.addSubview(currentWrapper)
             if animated && previousViewController != nil {
-                UIView.animateWithDuration(0.5,
+                UIView.animateWithDuration(maxDuration,
                     delay: 0,
                     usingSpringWithDamping: 1.0,
                     initialSpringVelocity: 0.2,
@@ -78,16 +81,18 @@ extension Msr.UI {
                 transformAtPercentage(percentage, frontView: currentWrapper, backView: previousWrapper)
                 break
             case .Ended, .Cancelled:
-                if gesture.velocityInView(currentWrapper).x > 0 {
+                if gesture.velocityInView(view).x >= 0 {
                     popViewController(true, completion: nil)
                 } else {
-                    UIView.animateWithDuration(0.5,
+                    let distance = view.bounds.width - gesture.locationInView(view).x
+                    let velocity = -gesture.velocityInView(view).x
+                    let duration = NSTimeInterval(distance / velocity)
+                    UIView.animateWithDuration(max(min(duration, maxDuration), minDuration),
                         delay: 0,
                         usingSpringWithDamping: 1.0,
-                        initialSpringVelocity: 0.2,
+                        initialSpringVelocity: min(velocity / distance, maxVelocity),
                         options: .BeginFromCurrentState,
                         animations: {
-                            finished in
                             self.transformAtPercentage(1, frontView: self.currentWrapper, backView: self.previousWrapper)
                             return
                         },
@@ -123,10 +128,13 @@ extension Msr.UI {
                 completion?(finished)
             }
             if animated {
-                UIView.animateWithDuration(0.5,
+                let distance = view.bounds.width - gesture.locationInView(view).x
+                let velocity = gesture.velocityInView(view).x
+                let duration = NSTimeInterval(distance / velocity)
+                UIView.animateWithDuration(max(min(duration, maxDuration), minDuration),
                     delay: 0,
                     usingSpringWithDamping: 1.0,
-                    initialSpringVelocity: 0.2,
+                    initialSpringVelocity: min(velocity / distance, maxVelocity),
                     options: .BeginFromCurrentState,
                     animations: {
                         finished in
