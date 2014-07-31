@@ -7,10 +7,14 @@ extension Msr.UI {
         var rootViewController: UIViewController {
             return viewControllers.firstOne
         }
-        private var gestures = [UIPanGestureRecognizer]()
+        private var gesture: UIPanGestureRecognizer!
+        var interactivePopGestureRecognizer: UIPanGestureRecognizer {
+            return gesture
+        }
         private var wrappers = [WrapperView]()
         init(rootViewController: UIViewController) {
             super.init(nibName: nil, bundle: nil)
+            gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
             pushViewController(rootViewController, animated: false, completion: nil)
             view.backgroundColor = UIColor.blackColor()
         }
@@ -19,10 +23,9 @@ extension Msr.UI {
             addChildViewController(currentViewController)
             wrappers += createWrapperForViewController(viewController)
             currentWrapper.transform = CGAffineTransformMakeTranslation(currentWrapper.bounds.width, 0)
-            currentGesture?.setValue(false, forKey: "enabled")
-            gestures += createPanGestureRecognizerForWrapper(currentWrapper)
-            if viewControllers.count == 1 {
-                currentGesture.enabled = false
+            previousWrapper?.removeGestureRecognizer(gesture)
+            if viewControllers.count > 1 {
+                currentWrapper!.addGestureRecognizer(gesture)
             }
             view.addSubview(currentWrapper)
             if animated && previousViewController != nil {
@@ -56,12 +59,9 @@ extension Msr.UI {
                     for viewController in viewControllers[0..<viewControllers.count - 1] {
                         self.addChildViewController(viewController)
                         let wrapper = self.createWrapperForViewController(viewController)
-                        let gesture = self.createPanGestureRecognizerForWrapper(wrapper)
-                        gesture.enabled = false
                         self.transformAtPercentage(1, frontView: nil, backView: wrapper)
                         self.viewControllers.insert(viewController, atIndex: self.viewControllers.endIndex - 1)
                         self.wrappers.insert(wrapper, atIndex: self.wrappers.endIndex - 1)
-                        self.gestures.insert(gesture, atIndex: self.gestures.endIndex - 1)
                     }
                 }
                 completion?(finished)
@@ -116,9 +116,8 @@ extension Msr.UI {
                     self.removeWrapper(self.currentWrapper, fromViewController:viewControllerToBePopped)
                     self.currentWrapper.removeFromSuperview()
                     self.wrappers.removeLast()
-                    self.gestures.removeLast()
                     if self.viewControllers.count > 1 {
-                        self.currentGesture.enabled = true
+                        self.currentWrapper.addGestureRecognizer(self.gesture)
                     }
                 }
                 completion?(finished)
@@ -155,7 +154,6 @@ extension Msr.UI {
                     viewControllers[penultimate].removeFromParentViewController()
                     wrappers[penultimate].removeFromSuperview()
                     viewControllers.removeAtIndex(penultimate)
-                    gestures.removeAtIndex(penultimate)
                     wrappers.removeAtIndex(penultimate)
                 }
                 popViewController(animated, completion: completion)
@@ -170,7 +168,6 @@ extension Msr.UI {
         func replaceCurrentViewControllerWithViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
             addChildViewController(viewController)
             let wrapper = createWrapperForViewController(viewController)
-            let gesture = createPanGestureRecognizerForWrapper(wrapper)
             wrapper.alpha = 0
             view.addSubview(wrapper)
             let viewControllerToBeReplaced = viewControllers.lastOne
@@ -184,10 +181,8 @@ extension Msr.UI {
                     self.wrappers.lastOne.removeFromSuperview()
                     self.wrappers.removeLast()
                     self.wrappers += wrapper
-                    self.gestures.removeLast()
-                    self.gestures += gesture
-                    if self.viewControllers.count == 1 {
-                        self.currentGesture.enabled = false
+                    if self.viewControllers.count > 1 {
+                        self.currentWrapper.addGestureRecognizer(self.gesture)
                     }
                 }
                 completion?(finished)
@@ -296,12 +291,6 @@ extension Msr.UI {
         private var previousWrapper: WrapperView! {
             return wrappers.count > 1 ? wrappers[wrappers.endIndex - 2] : nil
         }
-        private var currentGesture: UIPanGestureRecognizer! {
-            return gestures.count > 0 ? gestures.lastOne : nil
-        }
-        private var previousGesture: UIPanGestureRecognizer! {
-            return gestures.count > 1 ? gestures[gestures.endIndex - 2] : nil
-        }
         private func createWrapperForViewController(viewController: UIViewController) -> WrapperView {
             var frame = view.bounds
             viewController.view.frame = frame
@@ -332,11 +321,6 @@ extension Msr.UI {
                 frame.origin.y -= wrapper.navigationBar.bounds.height
                 viewController.view.frame = frame
             }
-        }
-        private func createPanGestureRecognizerForWrapper(wrapper: WrapperView) -> UIPanGestureRecognizer {
-            let gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
-            wrapper.addGestureRecognizer(gesture)
-            return gesture
         }
         class WrapperView: UIView {
             let navigationBar = UINavigationController().navigationBar
