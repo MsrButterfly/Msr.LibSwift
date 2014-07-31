@@ -24,11 +24,10 @@ extension Msr.UI {
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
             viewControllers += viewController
             addChildViewController(currentViewController)
-            wrappers += createWrapperForViewController(viewController)
+            wrappers += createWrapperForViewController(viewController, previousViewController: previousViewController)
             currentWrapper.transform = CGAffineTransformMakeTranslation(currentWrapper.bounds.width, 0)
-            previousWrapper?.removeGestureRecognizer(gesture)
             if viewControllers.count > 1 {
-                currentWrapper!.addGestureRecognizer(gesture)
+                currentWrapper.addGestureRecognizer(gesture)
             }
             view.addSubview(currentWrapper)
             if animated && previousViewController != nil {
@@ -56,14 +55,16 @@ extension Msr.UI {
             }
         }
         func pushViewControllers(viewControllers: [UIViewController], animated: Bool, completion: ((Bool) -> Void)?) {
+            for viewController in viewControllers[viewControllers.startIndex..<viewControllers.endIndex - 1] {
+                self.viewControllers += viewController
+                self.addChildViewController(viewController)
+            }
             pushViewController(viewControllers.lastOne, animated: animated) {
                 finished in
                 if finished {
-                    for viewController in viewControllers[0..<viewControllers.count - 1] {
-                        self.addChildViewController(viewController)
-                        let wrapper = self.createWrapperForViewController(viewController)
+                    for (i, viewController) in enumerate(viewControllers[0..<viewControllers.count - 1]) {
+                        let wrapper = self.createWrapperForViewController(viewController, previousViewController: self.viewControllers[self.viewControllers.endIndex - viewControllers.count + i - 1])
                         self.transformAtPercentage(1, frontView: nil, backView: wrapper)
-                        self.viewControllers.insert(viewController, atIndex: self.viewControllers.endIndex - 1)
                         self.wrappers.insert(wrapper, atIndex: self.wrappers.endIndex - 1)
                     }
                 }
@@ -175,7 +176,7 @@ extension Msr.UI {
         }
         func replaceCurrentViewControllerWithViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
             addChildViewController(viewController)
-            let wrapper = createWrapperForViewController(viewController)
+            let wrapper = createWrapperForViewController(viewController, previousViewController: previousViewController)
             wrapper.alpha = 0
             view.addSubview(wrapper)
             let viewControllerToBeReplaced = viewControllers.lastOne
@@ -299,13 +300,18 @@ extension Msr.UI {
         private var previousWrapper: WrapperView! {
             return wrappers.count > 1 ? wrappers[wrappers.endIndex - 2] : nil
         }
-        private func createWrapperForViewController(viewController: UIViewController) -> WrapperView {
+        private func createWrapperForViewController(viewController: UIViewController, previousViewController: UIViewController?) -> WrapperView {
             var frame = view.bounds
             viewController.view.frame = frame
             viewController.view.autoresizingMask = .FlexibleWidth | .FlexibleHeight
             let wrapper = WrapperView(frame: frame, statusBarStyle: viewController.preferredStatusBarStyle())
             wrapper.insertSubview(viewController.view, belowSubview: wrapper.navigationBar)
-            wrapper.navigationBar.setItems([viewController.navigationItem], animated: false)
+            wrapper.navigationItem = viewController.navigationItem
+            if !viewController.navigationItem.leftBarButtonItems && previousViewController != nil {
+                let backButton = UIBarButtonItem(title: "《  ", style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
+                backButton.title = backButton.title! + (previousViewController!.title != nil ? previousViewController!.title! : "Back")
+                wrapper.navigationItem.leftBarButtonItem = backButton
+            }
             if let scrollView = viewController.view as? UIScrollView {
                 var inset = scrollView.contentInset
                 inset.top += wrapper.navigationBar.bounds.height
@@ -317,6 +323,9 @@ extension Msr.UI {
                 viewController.view.frame = frame
             }
             return wrapper
+        }
+        func didPressBackButton() {
+            popViewController(true, completion: nil)
         }
         private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
             if let scrollView = viewController.view as? UIScrollView {
@@ -332,17 +341,24 @@ extension Msr.UI {
         }
         class WrapperView: UIView {
             let navigationBar = UINavigationController().navigationBar
+            var navigationItem: UINavigationItem {
+                get {
+                    return navigationBar.items[0] as UINavigationItem
+                }
+                set {
+                    navigationBar.setItems([newValue], animated: false)
+                }
+            }
             let overlay = UIView()
             init(frame: CGRect, statusBarStyle: UIStatusBarStyle) {
                 switch statusBarStyle {
                 case .Default:
                     navigationBar.barStyle = UIBarStyle.Default
+                    navigationBar.tintColor = UIColor.blackColor()
                     break
                 case .LightContent:
                     navigationBar.barStyle = UIBarStyle.Black
-                    break
-                case .BlackOpaque:
-                    navigationBar.barStyle = UIBarStyle.BlackTranslucent
+                    navigationBar.tintColor = UIColor.whiteColor()
                     break
                 default:
                     break
