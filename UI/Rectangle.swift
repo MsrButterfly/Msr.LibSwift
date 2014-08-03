@@ -27,16 +27,16 @@ extension Msr.UI {
             let tr = cornerRadius.bottomRight
             let br = cornerRadius.topRight
             let bl = cornerRadius.topRight
-            CGContextMoveToPoint(context, tl, 0);
-            CGContextAddLineToPoint(context, w - tr, 0);
-            CGContextAddArcToPoint(context, w, 0, w, tr, tr);
-            CGContextAddLineToPoint(context, w, h - br);
-            CGContextAddArcToPoint(context, w, h, w - br, h, br);
-            CGContextAddLineToPoint(context, bl, h);
-            CGContextAddArcToPoint(context, 0, h, 0, h - bl, bl);
-            CGContextAddLineToPoint(context, 0, tl);
-            CGContextAddArcToPoint(context, 0, 0, tl, 0, tl);
-            CGContextFillPath(context);
+            CGContextMoveToPoint(context, tl, 0)
+            CGContextAddLineToPoint(context, w - tr, 0)
+            CGContextAddArcToPoint(context, w, 0, w, tr, tr)
+            CGContextAddLineToPoint(context, w, h - br)
+            CGContextAddArcToPoint(context, w, h, w - br, h, br)
+            CGContextAddLineToPoint(context, bl, h)
+            CGContextAddArcToPoint(context, 0, h, 0, h - bl, bl)
+            CGContextAddLineToPoint(context, 0, tl)
+            CGContextAddArcToPoint(context, 0, 0, tl, 0, tl)
+            CGContextFillPath(context)
             CGContextEndTransparencyLayer(context)
             let image = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()

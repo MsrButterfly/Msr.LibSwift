@@ -316,6 +316,9 @@ extension Msr.UI {
                 var inset = scrollView.contentInset
                 inset.top += wrapper.navigationBar.bounds.height
                 scrollView.contentInset = inset
+                if let tableView = scrollView as? UITableView {
+                    tableView.scrollIndicatorInsets = UIEdgeInsets(top: wrapper.navigationBar.bounds.height, left: 0, bottom: 0, right: 0)
+                }
             } else {
                 var frame = viewController.view.frame
                 frame.size.height -= wrapper.navigationBar.bounds.height
@@ -332,6 +335,9 @@ extension Msr.UI {
                 var inset = scrollView.contentInset
                 inset.top -= wrapper.navigationBar.bounds.height
                 scrollView.contentInset = inset
+                if let tableView = scrollView as? UITableView {
+                    tableView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+                }
             } else {
                 var frame = viewController.view.frame
                 frame.size.height += wrapper.navigationBar.bounds.height
@@ -364,6 +370,7 @@ extension Msr.UI {
                     break
                 }
                 super.init(frame: frame)
+                backgroundColor = UIColor.whiteColor()
                 layer.shadowColor = UIColor.grayColor().CGColor
                 layer.shadowOpacity = 1
                 layer.shadowOffset = CGSize(width: 0, height: 0)

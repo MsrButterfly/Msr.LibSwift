@@ -2,57 +2,60 @@ import UIKit
 
 extension Msr.Data {
     class Property: Printable, DebugPrintable {
-        let value: AnyObject
+        let value: NSObject!
         init(module: NSString, bundle: NSBundle) {
             let path = bundle.pathForResource(module, ofType: "plist")
             value = NSDictionary(contentsOfFile: path)
         }
-        init(value: AnyObject) {
+        init(value: NSObject) {
             self.value = value
         }
-        func asColor() -> UIColor {
+        func isNull() -> Bool {
+            return value is NSNull
+        }
+        func asColor() -> UIColor! {
             return UIColor(
-                red: value["Red"] as CGFloat / 255,
-                green: value["Green"] as CGFloat / 255,
-                blue: value["Blue"] as CGFloat / 255,
-                alpha: value["Alpha"] as CGFloat)
+                red: (value as NSDictionary)["Red"] as CGFloat / 255,
+                green: (value as NSDictionary)["Green"] as CGFloat / 255,
+                blue: (value as NSDictionary)["Blue"] as CGFloat / 255,
+                alpha: (value as NSDictionary)["Alpha"] as CGFloat)
         }
-        func asString() -> String {
-            return value as String
+        func asString() -> String! {
+            return value as? String
         }
-        func asInt() -> Int {
+        func asInt() -> Int! {
             if value is Int {
-                return value as Int
+                return value as? Int
             } else {
-                return (value as String).toInt()!
+                return (value as? String)?.toInt()
             }
         }
-        func asFloat() -> Float {
-            return value as Float
+        func asFloat() -> Float! {
+            return value as? Float
         }
-        func asData() -> NSData {
-            return value as NSData
+        func asData() -> NSData! {
+            return value as? NSData
         }
-        func asDate() -> NSDate {
-            return value as NSDate
+        func asDate() -> NSDate! {
+            return value as? NSDate
         }
-        func asBool() -> Bool {
-            return value as Bool
+        func asBool() -> Bool! {
+            return value as? Bool
         }
-        func asArray() -> [AnyObject] {
-            return value as [AnyObject]
+        func asArray() -> [AnyObject]! {
+            return value as? [AnyObject]
         }
-        func asDictionary() -> [String: AnyObject] {
-            return value as [String: AnyObject]
+        func asDictionary() -> [String: AnyObject]! {
+            return value as? [String: AnyObject]
         }
-        func asURL() -> NSURL {
+        func asURL() -> NSURL! {
             return NSURL(string: asString())
         }
         subscript(key: String) -> Property {
-            return Property(value: value[key])
+            return Property(value: (value as NSDictionary)[key] as NSObject)
         }
         subscript(key: Int) -> Property {
-            return Property(value: value[key])
+            return Property(value: (value as NSArray)[key] as NSObject)
         }
         var description: String {
             return value.description!
