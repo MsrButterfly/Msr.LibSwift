@@ -316,11 +316,9 @@ extension Msr.UI {
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
             if let scrollView = viewController.view as? UIScrollView {
-                var inset = scrollView.contentInset
-                inset.top += wrapper.navigationBar.bounds.height
-                scrollView.contentInset = inset
+                scrollView.contentInset.top += wrapper.navigationBar.bounds.height
                 if let tableView = scrollView as? UITableView {
-                    tableView.scrollIndicatorInsets = UIEdgeInsets(top: wrapper.navigationBar.bounds.height, left: 0, bottom: 0, right: 0)
+                    tableView.scrollIndicatorInsets.top += wrapper.navigationBar.bounds.height
                 }
             } else {
                 var frame = viewController.view.frame
@@ -335,17 +333,20 @@ extension Msr.UI {
         }
         private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
             if let scrollView = viewController.view as? UIScrollView {
-                var inset = scrollView.contentInset
-                inset.top -= wrapper.navigationBar.bounds.height
-                scrollView.contentInset = inset
+                scrollView.contentInset.top -= wrapper.navigationBar.bounds.height
                 if let tableView = scrollView as? UITableView {
-                    tableView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+                    tableView.scrollIndicatorInsets.top -= wrapper.navigationBar.bounds.height
                 }
             } else {
                 var frame = viewController.view.frame
                 frame.size.height += wrapper.navigationBar.bounds.height
                 frame.origin.y -= wrapper.navigationBar.bounds.height
                 viewController.view.frame = frame
+            }
+        }
+        override func viewDidLayoutSubviews() {
+            if let scrollView = viewControllers.last!.view as? UIScrollView {
+                scrollView.contentOffset.y = -scrollView.contentInset.top
             }
         }
         class WrapperView: UIView {

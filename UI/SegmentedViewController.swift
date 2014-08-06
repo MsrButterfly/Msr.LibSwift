@@ -1,0 +1,74 @@
+//
+//  SegmentedViewController.swift
+//  WeCenterMobile
+//
+//  Created by Darren Liu on 14/8/6.
+//  Copyright (c) 2014年 ifLab. All rights reserved.
+//
+
+import UIKit
+
+extension Msr.UI {
+    class SegmentedViewController: UIViewController, UIToolbarDelegate {
+        let viewControllers: [UIViewController]
+        let segmentedControl: UISegmentedControl
+        let toolBar: UIToolbar
+        required init(frame: CGRect, viewControllers: [UIViewController]) {
+            self.viewControllers = viewControllers
+            segmentedControl = UISegmentedControl(items: viewControllers.map({ $0.title }))
+            toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: frame.width, height: 44))
+            toolBar.barStyle = UIBarStyle.Black
+            super.init(nibName: nil, bundle: nil)
+            view = UIScrollView(frame: frame)
+            segmentedControl.bounds.size.width = toolBar.bounds.width - 20
+            segmentedControl.addTarget(self, action: "switchView", forControlEvents: .ValueChanged)
+            segmentedControl.selectedSegmentIndex = 0
+            toolBar.delegate = self
+            toolBar.tintColor = UIColor.whiteColor()
+            toolBar.setItems([
+                UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
+                UIBarButtonItem(customView: segmentedControl),
+                UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
+                ], animated: false)
+            view.addSubview(toolBar)
+            for viewController in viewControllers {
+                addChildViewController(viewController)
+                view.insertSubview(viewController.view, belowSubview: toolBar)
+            }
+            switchView()
+        }
+        required init(coder aDecoder: NSCoder!) {
+            viewControllers = aDecoder.decodeObjectForKey("viewControllers") as [UIViewController]
+            segmentedControl = aDecoder.decodeObjectForKey("segmentedController") as UISegmentedControl
+            toolBar = aDecoder.decodeObjectForKey("toolBar") as UIToolbar
+            super.init(coder: aDecoder)
+        }
+        func switchView() {
+            for viewController in viewControllers {
+                viewController.view.hidden = true
+            }
+            viewControllers[segmentedControl.selectedSegmentIndex].view.hidden = false
+        }
+        func positionForBar(bar: UIBarPositioning!) -> UIBarPosition {
+            return .TopAttached
+        }
+        override func viewDidLayoutSubviews() {
+            for viewController in viewControllers {
+                viewController.view.frame = view.bounds
+                if let scrollView = viewController.view as? UIScrollView {
+                    scrollView.contentInset.top = toolBar.bounds.height + (view as UIScrollView).contentInset.top
+                    scrollView.contentOffset.y = -scrollView.contentInset.top
+                    if let tableView = scrollView as? UITableView {
+                        tableView.scrollIndicatorInsets.top = toolBar.bounds.height + (view as UIScrollView).contentInset.top
+                    }
+                } else {
+                    viewController.view.frame.origin.y += toolBar.bounds.height
+                    viewController.view.frame.size.height += toolBar.bounds.height
+                }
+            }
+        }
+        override func preferredStatusBarStyle() -> UIStatusBarStyle {
+            return (toolBar.barStyle == .Default) ? .Default : .LightContent
+        }
+    }
+}
