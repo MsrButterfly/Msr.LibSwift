@@ -12,7 +12,7 @@ extension Msr.UI {
                 UIGraphicsBeginImageContext(image.size)
                 let context = UIGraphicsGetCurrentContext()
                 CGContextBeginTransparencyLayer(context, nil)
-                CGContextSetFillColorWithColor(context, color.CGColor)
+                CGContextSetFillColorWithColor(context, self.color.CGColor)
                 let frame = CGRect(origin: CGPointZero, size: image.size)
                 CGContextClipToMask(context, frame, image.CGImage)
                 CGContextFillRect(context, frame)

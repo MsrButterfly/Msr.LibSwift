@@ -17,7 +17,7 @@ extension Msr.UI {
         }
         private(set) var actions: [AlertAction]
         private(set) var buttons: [UIButton]
-        init() {
+        override init() {
             _contentView = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: 270, height: 0)))
             contentView = UIView(frame: _contentView.bounds)
             backgroundView = UIScrollView(frame: UIScreen.mainScreen().bounds)
@@ -32,6 +32,9 @@ extension Msr.UI {
             insertSubview(_contentView, aboveSubview: backgroundView)
             _contentView.addSubview(contentView)
             alpha = 0
+        }
+        required convenience init(coder aDecoder: NSCoder!) {
+            self.init()
         }
         convenience init(title: String?, message: String?, cancelButtonTitle: String?, otherButtonTitles: String?, [String]?) {
             self.init()
@@ -66,7 +69,7 @@ extension Msr.UI {
                 }, completion: nil)
         }
         func addAction(action: AlertAction) {
-            actions += action
+            actions.append(action)
             let button = UIButton(frame: CGRectZero)
             let textColorOfStyle = {
                 (style: AlertAction.Style) -> UIColor in
@@ -89,7 +92,7 @@ extension Msr.UI {
                     NSForegroundColorAttributeName: textColorOfStyle(action.style)
                 ]), forState: .Normal)
             button.addTarget(self, action: "handleButtonActions:", forControlEvents: .TouchUpInside)
-            buttons += button
+            buttons.append(button)
             _contentView.addSubview(buttons[buttons.endIndex - 1])
         }
         override func layoutSubviews() {
@@ -156,7 +159,7 @@ extension Msr.UI {
             }
         }
         func handleButtonActions(button: UIButton?) {
-            var index: Array<UIButton>.IndexType!
+            var index: Array<UIButton>.Index!
             for i in 0..<buttons.endIndex {
                 if buttons[i] == button {
                     index = i

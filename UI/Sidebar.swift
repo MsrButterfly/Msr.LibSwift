@@ -13,6 +13,9 @@ extension Msr.UI {
                 addGestureRecognizer(panGestureRecognizer)
                 backgroundColor = UIColor.clearColor()
             }
+            required init(coder aDecoder: NSCoder!) {
+                super.init(coder: aDecoder)
+            }
             override func drawRect(rect: CGRect) {
                 let context = UIGraphicsGetCurrentContext()
                 let x = rect.origin.x
@@ -29,7 +32,7 @@ extension Msr.UI {
                 CGContextStrokePath(context)
                 CGContextRestoreGState(context)
             }
-            func pan(gestureRecognizer: UIPanGestureRecognizer?) {
+            func pan(gestureRecognizer: UIGestureRecognizer?) {
                 if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
                     let translation = recognizer.translationInView(self)
                     let location = recognizer.locationInView(sidebar.window)
@@ -147,6 +150,14 @@ extension Msr.UI {
             overlayTapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
             overlay.addGestureRecognizer(overlayTapGestureRecognizer)
         }
+        required init(coder aDecoder: NSCoder!) {
+            contentView = aDecoder.decodeObjectForKey("contentView") as UIView
+            backgroundEffect = aDecoder.decodeObjectForKey("backgroundEffect") as UIBlurEffect
+            offset = aDecoder.decodeObjectForKey("offset") as CGFloat
+            width = aDecoder.decodeObjectForKey("width") as CGFloat
+            overlay = aDecoder.decodeObjectForKey("overlay") as UIView
+            super.init(coder: aDecoder)
+        }
         override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView! {
             if let view = handle.hitTest(point, withEvent: event) {
                 return view
@@ -193,7 +204,7 @@ extension Msr.UI {
                 animations()
             }
         }
-        func pan(gestureRecognizer: UIPanGestureRecognizer?) {
+        func pan(gestureRecognizer: UIGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
                 let offset = recognizer.locationInView(handle).x
                 switch recognizer.state {
@@ -210,7 +221,7 @@ extension Msr.UI {
                 }
             }
         }
-        func tap(gestureRecognizer: UITapGestureRecognizer?) {
+        func tap(gestureRecognizer: UIGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UITapGestureRecognizer {
                 hide(animated: true, completion: nil)
             }

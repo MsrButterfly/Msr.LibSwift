@@ -21,10 +21,13 @@ extension Msr.UI {
             pushViewController(rootViewController, animated: false, completion: nil)
             view.backgroundColor = UIColor.blackColor()
         }
+        required init(coder aDecoder: NSCoder!) {
+            super.init(coder: aDecoder)
+        }
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
-            viewControllers += viewController
+            viewControllers.append(viewController)
             addChildViewController(currentViewController)
-            wrappers += createWrapperForViewController(viewController, previousViewController: previousViewController)
+            wrappers.append(createWrapperForViewController(viewController, previousViewController: previousViewController))
             currentWrapper.transform = CGAffineTransformMakeTranslation(currentWrapper.bounds.width, 0)
             if viewControllers.count > 1 {
                 currentWrapper.addGestureRecognizer(gesture)
@@ -56,7 +59,7 @@ extension Msr.UI {
         }
         func pushViewControllers(viewControllers: [UIViewController], animated: Bool, completion: ((Bool) -> Void)?) {
             for viewController in viewControllers[viewControllers.startIndex..<viewControllers.endIndex - 1] {
-                self.viewControllers += viewController
+                self.viewControllers.append(viewController)
                 self.addChildViewController(viewController)
             }
             pushViewController(viewControllers.lastOne, animated: animated) {
@@ -111,7 +114,7 @@ extension Msr.UI {
         func popViewController(animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
             assert(viewControllers.count > 1, "Already at root view controller. Nothing to be popped.")
             if previousWrapper?.superview == nil {
-                view.insertSubview(previousWrapper?, belowSubview: currentWrapper)
+                view.insertSubview(previousWrapper, belowSubview: currentWrapper)
             }
             let viewControllerToBePopped = viewControllers.lastOne
             self.currentViewController.removeFromParentViewController()
@@ -182,14 +185,14 @@ extension Msr.UI {
             let viewControllerToBeReplaced = viewControllers.lastOne
             self.viewControllers.lastOne.removeFromParentViewController()
             self.viewControllers.removeLast()
-            self.viewControllers += viewController
+            self.viewControllers.append(viewController)
             let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
                     self.removeWrapper(self.wrappers.lastOne, fromViewController: viewControllerToBeReplaced)
                     self.wrappers.lastOne.removeFromSuperview()
                     self.wrappers.removeLast()
-                    self.wrappers += wrapper
+                    self.wrappers.append(wrapper)
                     if self.viewControllers.count > 1 {
                         self.currentWrapper.addGestureRecognizer(self.gesture)
                     }
@@ -386,6 +389,9 @@ extension Msr.UI {
                 navigationBar.frame = navigationBarFrame
                 addSubview(navigationBar)
                 addSubview(overlay)
+            }
+            required init(coder aDecoder: NSCoder!) {
+                super.init(coder: aDecoder)
             }
         }
         override func preferredStatusBarStyle() -> UIStatusBarStyle {
