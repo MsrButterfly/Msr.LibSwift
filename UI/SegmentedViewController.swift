@@ -5,18 +5,18 @@ extension Msr.UI {
         let viewControllers: [UIViewController]
         let segmentedControl: UISegmentedControl
         let toolBar: UIToolbar
-        required init(frame: CGRect, viewControllers: [UIViewController]) {
+        required init(frame: CGRect, toolBarStyle: UIBarStyle, viewControllers: [UIViewController]) {
             self.viewControllers = viewControllers
             segmentedControl = UISegmentedControl(items: viewControllers.map({ $0.title }))
             toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: frame.width, height: 44))
-            toolBar.barStyle = UIBarStyle.Black
+            toolBar.barStyle = toolBarStyle
             super.init(nibName: nil, bundle: nil)
             view = UIScrollView(frame: frame)
             segmentedControl.bounds.size.width = toolBar.bounds.width - 20
             segmentedControl.addTarget(self, action: "switchView", forControlEvents: .ValueChanged)
             segmentedControl.selectedSegmentIndex = 0
             toolBar.delegate = self
-            toolBar.tintColor = UIColor.whiteColor()
+            toolBar.tintColor = (toolBarStyle == .Default) ? UIColor.blackColor() : UIColor.whiteColor()
             toolBar.setItems([
                 UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
                 UIBarButtonItem(customView: segmentedControl),
@@ -39,7 +39,8 @@ extension Msr.UI {
             for viewController in viewControllers {
                 viewController.view.hidden = true
             }
-            viewControllers[segmentedControl.selectedSegmentIndex].view.hidden = false
+            let selectedViewController = viewControllers[segmentedControl.selectedSegmentIndex]
+            selectedViewController.view.hidden = false
         }
         func positionForBar(bar: UIBarPositioning!) -> UIBarPosition {
             return .TopAttached

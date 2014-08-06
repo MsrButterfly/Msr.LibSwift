@@ -326,6 +326,16 @@ extension Msr.UI {
                 frame.origin.y += wrapper.navigationBar.bounds.height
                 viewController.view.frame = frame
             }
+            if let segmentedViewController = viewController as? SegmentedViewController {
+                segmentedViewController.toolBar.removeFromSuperview()
+                segmentedViewController.segmentedControl.removeFromSuperview()
+                wrapper.navigationBar.bounds.size.height += segmentedViewController.toolBar.bounds.height
+                wrapper.navigationBar.frame.origin.y = 0
+                wrapper.navigationBar.setTitleVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
+                segmentedViewController.segmentedControl.center.x = wrapper.center.x
+                segmentedViewController.segmentedControl.center.y = wrapper.navigationBar.bounds.height - segmentedViewController.toolBar.bounds.height / 2
+                wrapper.navigationBar.addSubview(segmentedViewController.segmentedControl)
+            }
             return wrapper
         }
         func didPressBackButton() {
@@ -342,6 +352,16 @@ extension Msr.UI {
                 frame.size.height += wrapper.navigationBar.bounds.height
                 frame.origin.y -= wrapper.navigationBar.bounds.height
                 viewController.view.frame = frame
+            }
+            if let segmentedViewController = viewController as? SegmentedViewController {
+                (segmentedViewController.view as UIScrollView).contentInset.top += segmentedViewController.toolBar.bounds.height
+                segmentedViewController.segmentedControl.removeFromSuperview()
+                segmentedViewController.view.addSubview(segmentedViewController.toolBar)
+                segmentedViewController.toolBar.setItems([
+                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
+                    UIBarButtonItem(customView: segmentedViewController.segmentedControl),
+                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
+                    ], animated: true)
             }
         }
         override func viewDidLayoutSubviews() {
@@ -408,6 +428,7 @@ extension UIViewController {
             if current is Msr.UI.NavigationController {
                 return current as Msr.UI.NavigationController
             }
+            current = current.parentViewController
         }
         return nil
     }
