@@ -5,7 +5,7 @@ extension Msr.UI {
     class NavigationController: UIViewController, UINavigationBarDelegate, UIToolbarDelegate, UIGestureRecognizerDelegate {
         private(set) var viewControllers = [UIViewController]()
         var rootViewController: UIViewController {
-            return viewControllers.firstOne
+            return viewControllers.first!
         }
         private var gesture: UIPanGestureRecognizer!
         var interactivePopGestureRecognizer: UIPanGestureRecognizer {
@@ -62,7 +62,7 @@ extension Msr.UI {
                 self.viewControllers.append(viewController)
                 self.addChildViewController(viewController)
             }
-            pushViewController(viewControllers.lastOne, animated: animated) {
+            pushViewController(viewControllers.last!, animated: animated) {
                 finished in
                 if finished {
                     for (i, viewController) in enumerate(viewControllers[0..<viewControllers.count - 1]) {
@@ -116,7 +116,7 @@ extension Msr.UI {
             if previousWrapper?.superview == nil {
                 view.insertSubview(previousWrapper, belowSubview: currentWrapper)
             }
-            let viewControllerToBePopped = viewControllers.lastOne
+            let viewControllerToBePopped = viewControllers.last!
             self.currentViewController.removeFromParentViewController()
             self.viewControllers.removeLast()
             let combinedCompletion: (Bool) -> Void = {
@@ -182,15 +182,15 @@ extension Msr.UI {
             let wrapper = createWrapperForViewController(viewController, previousViewController: previousViewController)
             wrapper.alpha = 0
             view.addSubview(wrapper)
-            let viewControllerToBeReplaced = viewControllers.lastOne
-            self.viewControllers.lastOne.removeFromParentViewController()
+            let viewControllerToBeReplaced = viewControllers.last!
+            self.viewControllers.last!.removeFromParentViewController()
             self.viewControllers.removeLast()
             self.viewControllers.append(viewController)
             let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
-                    self.removeWrapper(self.wrappers.lastOne, fromViewController: viewControllerToBeReplaced)
-                    self.wrappers.lastOne.removeFromSuperview()
+                    self.removeWrapper(self.wrappers.last!, fromViewController: viewControllerToBeReplaced)
+                    self.wrappers.last!.removeFromSuperview()
                     self.wrappers.removeLast()
                     self.wrappers.append(wrapper)
                     if self.viewControllers.count > 1 {
@@ -241,13 +241,13 @@ extension Msr.UI {
             // 7. <- ->  : popCount > 1, pushCount > 1, i > 0
             // 8. <- x ->: popCount > 1, pushCount > 1, i == 0
             if popCount == 1 && pushCount == 1 {
-                replaceCurrentViewControllerWithViewController(viewControllersToBePushed.firstOne, animated: animated, completion: completion)
+                replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated, completion: completion)
             } else if popCount == 0 && pushCount > 0 {
                 pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
             } else if popCount > 0 && pushCount == 0 {
                 popToViewController(self.viewControllers[i - 1], animated: animated, completion: completion)
             } else if popCount == 1 && pushCount > 1 {
-                replaceCurrentViewControllerWithViewController(viewControllersToBePushed.firstOne, animated: animated) {
+                replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated) {
                     finished in
                     if finished {
                         viewControllersToBePushed.removeFirst()
@@ -255,10 +255,10 @@ extension Msr.UI {
                     }
                 }
             } else if popCount > 1 && pushCount == 1 {
-                popToViewController(viewControllersToBePopped.firstOne, animated: animated) {
+                popToViewController(viewControllersToBePopped.first!, animated: animated) {
                     finished in
                     if finished {
-                        self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.firstOne, animated: animated, completion: completion)
+                        self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated, completion: completion)
                     }
                 }
             } else if popCount > 1 && pushCount > 1 && i > 0 {
@@ -272,7 +272,7 @@ extension Msr.UI {
                 popToRootViewControllerAnimated(animated) {
                     finished in
                     if finished {
-                        self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.firstOne, animated: animated) {
+                        self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated) {
                             finished in
                             viewControllersToBePushed.removeFirst()
                             self.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
@@ -292,13 +292,13 @@ extension Msr.UI {
             }
         }
         var currentViewController: UIViewController! {
-            return viewControllers.count > 0 ? viewControllers.lastOne : nil
+            return viewControllers.count > 0 ? viewControllers.last! : nil
         }
         var previousViewController: UIViewController! {
             return viewControllers.count > 1 ? viewControllers[viewControllers.endIndex - 2] : nil
         }
         private var currentWrapper: WrapperView! {
-            return wrappers.count > 0 ? wrappers.lastOne : nil
+            return wrappers.count > 0 ? wrappers.last! : nil
         }
         private var previousWrapper: WrapperView! {
             return wrappers.count > 1 ? wrappers[wrappers.endIndex - 2] : nil
