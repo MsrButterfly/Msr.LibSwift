@@ -7,7 +7,7 @@ extension Msr.UI {
         let toolBar: UIToolbar
         init(frame: CGRect, toolBarStyle: UIBarStyle, viewControllers: [UIViewController]) {
             self.viewControllers = viewControllers
-            segmentedControl = UISegmentedControl(items: viewControllers.map({ $0.title }))
+            segmentedControl = UISegmentedControl(items: viewControllers.map({ $0.title ?? "" }))
             toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: frame.width, height: 44))
             toolBar.barStyle = toolBarStyle
             super.init(nibName: nil, bundle: nil)

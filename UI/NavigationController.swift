@@ -332,6 +332,18 @@ extension Msr.UI {
                 wrapper.navigationBar.bounds.size.height += segmentedViewController.toolBar.bounds.height
                 wrapper.navigationBar.frame.origin.y = 0
                 wrapper.navigationBar.setTitleVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
+                for navigationItem in wrapper.navigationBar.items as [UINavigationItem] {
+                    if navigationItem.leftBarButtonItems != nil {
+                        for item in navigationItem.leftBarButtonItems as [UIBarButtonItem] {
+                            item.setBackgroundVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
+                        }
+                    }
+                    if navigationItem.rightBarButtonItems != nil {
+                        for item in navigationItem.rightBarButtonItems as [UIBarButtonItem] {
+                            item.setBackgroundVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
+                        }
+                    }
+                }
                 segmentedViewController.segmentedControl.center.x = wrapper.center.x
                 segmentedViewController.segmentedControl.center.y = wrapper.navigationBar.bounds.height - segmentedViewController.toolBar.bounds.height / 2
                 wrapper.navigationBar.addSubview(segmentedViewController.segmentedControl)
