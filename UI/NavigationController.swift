@@ -311,8 +311,7 @@ extension Msr.UI {
             wrapper.insertSubview(viewController.view, belowSubview: wrapper.navigationBar)
             wrapper.navigationItem = viewController.navigationItem
             if !viewController.navigationItem.leftBarButtonItems && previousViewController != nil {
-                let backButton = UIBarButtonItem(title: "《  ", style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
-                backButton.title = backButton.title! + (previousViewController!.title != nil ? previousViewController!.title! : "Back")
+                let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
             if let scrollView = viewController.view as? UIScrollView {
