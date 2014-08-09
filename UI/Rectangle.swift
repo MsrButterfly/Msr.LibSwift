@@ -3,12 +3,10 @@ import UIKit
 extension Msr.UI {
     class Rectangle: Shape {
         init(color: UIColor, size: CGSize) {
-            UIGraphicsBeginImageContextWithOptions(size, true, UIScreen.mainScreen().scale)
+            UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.mainScreen().scale)
             let context = UIGraphicsGetCurrentContext()
-            CGContextBeginTransparencyLayer(context, nil)
             CGContextSetFillColorWithColor(context, color.CGColor)
             CGContextFillRect(context, CGRect(x: 0, y: 0, width: size.width, height: size.height))
-            CGContextEndTransparencyLayer(context)
             let image = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
             super.init(image: image)

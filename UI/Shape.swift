@@ -11,12 +11,10 @@ extension Msr.UI {
                 _color = newValue
                 UIGraphicsBeginImageContext(image.size)
                 let context = UIGraphicsGetCurrentContext()
-                CGContextBeginTransparencyLayer(context, nil)
                 CGContextSetFillColorWithColor(context, self.color.CGColor)
                 let frame = CGRect(origin: CGPointZero, size: image.size)
                 CGContextClipToMask(context, frame, image.CGImage)
                 CGContextFillRect(context, frame)
-                CGContextEndTransparencyLayer(context)
                 image = UIGraphicsGetImageFromCurrentImageContext()
                 UIGraphicsEndImageContext()
             }
