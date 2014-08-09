@@ -40,6 +40,11 @@ extension Msr.UI {
                     backView: self.wrappers.penultimate)
                 self.setNeedsStatusBarAppearanceUpdate()
             }
+            let combinedCompletion: (Bool) -> Void = {
+                finished in
+                self.wrappers.penultimate?.removeFromSuperview()
+                completion?(finished)
+            }
             if animated && viewControllers.count > 1 {
                 UIView.animateWithDuration(maxDuration,
                     delay: 0,
@@ -47,14 +52,10 @@ extension Msr.UI {
                     initialSpringVelocity: 0.2,
                     options: .BeginFromCurrentState,
                     animations: animations,
-                    completion: {
-                        finished in
-                        self.wrappers.penultimate?.removeFromSuperview()
-                        completion?(finished)
-                    })
+                    completion: combinedCompletion)
             } else {
                 animations()
-                completion?(true)
+                combinedCompletion(true)
             }
         }
         func pushViewControllers(viewControllers: [UIViewController], animated: Bool, completion: ((Bool) -> Void)?) {
@@ -122,7 +123,7 @@ extension Msr.UI {
             let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
-                    self.removeWrapper(self.wrappers.last!, fromViewController:viewControllerToBePopped)
+                    self.removeWrapper(self.wrappers.last!, fromViewController: viewControllerToBePopped)
                     self.wrappers.last!.removeFromSuperview()
                     self.wrappers.removeLast()
                     if self.viewControllers.count > 1 {
@@ -130,6 +131,10 @@ extension Msr.UI {
                     }
                 }
                 completion?(finished)
+            }
+            let animations: () -> Void = {
+                self.transformAtPercentage(0, frontView: self.wrappers.last!, backView: self.wrappers.penultimate!)
+                self.setNeedsStatusBarAppearanceUpdate()
             }
             if animated {
                 let distance = view.bounds.width - gesture.locationInView(view).x
@@ -140,15 +145,10 @@ extension Msr.UI {
                     usingSpringWithDamping: 1.0,
                     initialSpringVelocity: min(velocity / distance, maxVelocity),
                     options: .BeginFromCurrentState,
-                    animations: {
-                        finished in
-                        self.transformAtPercentage(0, frontView: self.wrappers.last!, backView: self.wrappers.penultimate!)
-                        self.setNeedsStatusBarAppearanceUpdate()
-                        return
-                    },
+                    animations: animations,
                     completion: combinedCompletion)
             } else {
-                self.transformAtPercentage(0, frontView: self.wrappers.last!, backView: self.wrappers.penultimate!)
+                animations()
                 combinedCompletion(true)
             }
             return viewControllerToBePopped
@@ -188,10 +188,15 @@ extension Msr.UI {
             wrappers.append(createWrapperForViewController(viewController, previousViewController: viewControllers.penultimate))
             view.addSubview(wrappers.last!)
             wrappers.last!.alpha = 0
+            let animations: () -> Void = {
+                self.wrappers.last!.alpha = 1
+                wrapperToBeReplaced.alpha = 0
+                self.setNeedsStatusBarAppearanceUpdate()
+            }
             let combinedCompletion: (Bool) -> Void = {
                 finished in
                 if finished {
-                    self.removeWrapper(self.wrappers.last!, fromViewController: viewControllerToBeReplaced)
+                    self.removeWrapper(wrapperToBeReplaced, fromViewController: viewControllerToBeReplaced)
                     wrapperToBeReplaced.removeFromSuperview()
                     if self.viewControllers.count > 1 {
                         self.wrappers.last!.addGestureRecognizer(self.gesture)
@@ -205,15 +210,10 @@ extension Msr.UI {
                     usingSpringWithDamping: 1.0,
                     initialSpringVelocity: 0.2,
                     options: .BeginFromCurrentState,
-                    animations: {
-                        self.wrappers.last!.alpha = 1
-                        wrapperToBeReplaced.alpha = 0
-                        self.setNeedsStatusBarAppearanceUpdate()
-                    }, completion: combinedCompletion)
+                    animations: animations,
+                    completion: combinedCompletion)
             } else {
-                wrappers.last!.alpha = 1
-                wrapperToBeReplaced.alpha = 0
-                self.setNeedsStatusBarAppearanceUpdate()
+                animations()
                 combinedCompletion(true)
             }
             return viewControllerToBeReplaced
