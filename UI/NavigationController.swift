@@ -395,7 +395,7 @@ extension Msr.UI {
                 }
                 super.init(frame: frame)
                 backgroundColor = UIColor.whiteColor()
-                layer.shadowColor = UIColor.grayColor().CGColor
+                layer.shadowColor = UIColor.blackColor().CGColor
                 layer.shadowOpacity = 1
                 layer.shadowOffset = CGSize(width: 0, height: 0)
                 layer.masksToBounds = false
@@ -435,7 +435,17 @@ extension UIViewController {
     @objc var msrNavigationBar: UINavigationBar! {
         if msrNavigationController != nil {
             for (i, viewController) in enumerate(msrNavigationController.viewControllers) {
-                if viewController === self {
+                var isSelfViewController = (viewController === self)
+                var isParentViewController = false
+                var parent = parentViewController
+                while (parent !== msrNavigationController) {
+                    if parent === viewController {
+                        isParentViewController = true
+                        break
+                    }
+                    parent = parent.parentViewController
+                }
+                if isSelfViewController || isParentViewController {
                     return msrNavigationController.wrappers[i].navigationBar
                 }
             }
