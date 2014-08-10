@@ -27,3 +27,15 @@ extension UIColor {
         return UIColor(red: red, green: green, blue: blue, alpha: alpha)
     }
 }
+
+prefix operator %+ {}
+
+prefix operator %- {}
+
+prefix func %+(rhs: UInt32) -> UIColor {
+    return UIColor(RGB: rhs)
+}
+
+prefix func %-(rhs: UInt32) -> UIColor {
+    return UIColor(RGBA: rhs)
+}
