@@ -7,7 +7,7 @@ extension Msr.Data {
             let path = bundle.pathForResource(module, ofType: "plist")
             value = NSDictionary(contentsOfFile: path)
         }
-        init(value: NSObject) {
+        init(value: NSObject!) {
             self.value = value
         }
         func isNull() -> Bool {
@@ -51,11 +51,11 @@ extension Msr.Data {
         func asURL() -> NSURL! {
             return NSURL(string: asString())
         }
-        subscript(key: String) -> Property {
-            return Property(value: (value as NSDictionary)[key] as NSObject)
+        subscript(key: String) -> Property! {
+            return Property(value: (value as NSDictionary)[key] as? NSObject)
         }
-        subscript(key: Int) -> Property {
-            return Property(value: (value as NSArray)[key] as NSObject)
+        subscript(key: Int) -> Property! {
+            return Property(value: (value as NSArray)[key] as? NSObject)
         }
         var description: String {
             return value.description!

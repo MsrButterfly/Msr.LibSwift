@@ -239,8 +239,8 @@ extension Msr.UI {
             // 4. <-     : popCount > 0, pushCount = 0
             // 5. x ->   : popCount = 1, pushCount > 1
             // 6. <- x   : popCount > 1, pushCount = 1
-            // 7. <- ->  : popCount > 1, pushCount > 1, i > 0
-            // 8. <- x ->: popCount > 1, pushCount > 1, i == 0
+            // 7. <- ->  : popCount > 1, pushCount > 1, remaining > 0
+            // 8. <- x ->: popCount > 1, pushCount > 1, remaining = 0
             if popCount == 1 && pushCount == 1 {
                 replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated, completion: completion)
             } else if popCount == 0 && pushCount > 0 {
@@ -362,11 +362,6 @@ extension Msr.UI {
                     UIBarButtonItem(customView: segmentedViewController.segmentedControl),
                     UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
                     ], animated: true)
-            }
-        }
-        override func viewDidLayoutSubviews() {
-            if let scrollView = viewControllers.last!.view as? UIScrollView {
-                scrollView.contentOffset.y = -scrollView.contentInset.top
             }
         }
         class WrapperView: UIView {
