@@ -32,7 +32,7 @@ extension Msr.UI {
         internal override func observeValueForKeyPath(keyPath: String!, ofObject object: AnyObject!, change: [NSObject : AnyObject]!, context: UnsafeMutablePointer<()>) {
             if object === scrollView {
                 if keyPath == "contentOffset" {
-                    let offset = (change["new"] as NSValue).CGPointValue()
+                    let offset = (change[NSKeyValueChangeNewKey] as NSValue).CGPointValue()
                     transform = CGAffineTransformMakeTranslation(0, scrollView!.contentSize.height + overHeight - frame.height)
                     if !loadingMore {
                         alpha = min(max(overHeight, 0), frame.height) / frame.height
@@ -46,7 +46,7 @@ extension Msr.UI {
                         alpha = 1
                     }
                 } else if keyPath == "frame" {
-                    let frame = (change["new"] as NSValue).CGRectValue()
+                    let frame = (change[NSKeyValueChangeNewKey] as NSValue).CGRectValue()
                     self.frame.size.width = frame.width
                 }
             }
@@ -83,6 +83,14 @@ extension Msr.UI {
                 }
             }
         }
+        override func willMoveToSuperview(newSuperview: UIView?) {
+            if let scrollView = superview as? UIScrollView {
+                if scrollView !== newSuperview {
+                    scrollView.removeObserver(self, forKeyPath: "contentOffset")
+                    scrollView.removeObserver(self, forKeyPath: "frame")
+                }
+            }
+        }
         private weak var _scrollView: UIScrollView? = nil
         private weak var scrollView: UIScrollView? {
             get {
@@ -107,20 +115,20 @@ extension Msr.UI {
     }
 }
 
-var LoadMoreControlKey = CChar()
+var MSR_UI_LoadMoreControlKey = CChar()
 
 extension UITableViewController {
     var loadMoreControl: Msr.UI.LoadMoreControl! {
         set {
             if (loadMoreControl != nil) {
-                objc_setAssociatedObject(self, &LoadMoreControlKey, nil, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+                objc_setAssociatedObject(self, &MSR_UI_LoadMoreControlKey, nil, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             }
-            objc_setAssociatedObject(self, &LoadMoreControlKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, &MSR_UI_LoadMoreControlKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             tableView.insertSubview(loadMoreControl, belowSubview: tableView.subviews[0] as UIView)
             newValue.scrollView = tableView
         }
         get {
-            return objc_getAssociatedObject(self, &LoadMoreControlKey) as? Msr.UI.LoadMoreControl
+            return objc_getAssociatedObject(self, &MSR_UI_LoadMoreControlKey) as? Msr.UI.LoadMoreControl
         }
     }
 }
