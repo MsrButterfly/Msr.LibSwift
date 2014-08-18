@@ -107,10 +107,7 @@ extension Msr.UI {
             contentView.frame = contentView.bounds
             let defaultColor = self.backgroundColor.colorWithAlphaComponent(0.9)
             contentView.backgroundColor = UIColor(
-                patternImage: RoundedRectangle(
-                    color: backgroundColor,
-                    size: contentView.bounds.size,
-                    cornerRadius: (radius, radius, 0, 0)).image)
+                patternImage: UIImage.roundedRectangleWithColor(backgroundColor, size: contentView.bounds.size, cornerRadius: (radius, radius, 0, 0)))
             let backgroundColorOfStyle = {
                 (style: AlertAction.Style) -> UIColor in
                 switch style {
@@ -129,30 +126,25 @@ extension Msr.UI {
                 break
             case 1:
                 buttons[0].setBackgroundImage(
-                    RoundedRectangle(
-                        color: backgroundColorOfStyle(actions[0].style),
+                    UIImage.roundedRectangleWithColor(backgroundColorOfStyle(actions[0].style),
                         size: buttons[0].bounds.size,
-                        cornerRadius: (0, 0, radius, radius)).image,
+                        cornerRadius: (0, 0, radius, radius)),
                     forState: .Normal)
                 break
             default:
                 buttons[0].setBackgroundImage(
-                    RoundedRectangle(
-                        color: backgroundColorOfStyle(actions[0].style),
+                    UIImage.roundedRectangleWithColor(backgroundColorOfStyle(actions[0].style),
                         size: buttons[0].bounds.size,
-                        cornerRadius: (0, 0, 0, radius)).image,
+                        cornerRadius: (0, 0, 0, radius)),
                     forState: .Normal)
                 buttons[buttons.endIndex - 1].setBackgroundImage(
-                    RoundedRectangle(
-                        color: backgroundColorOfStyle(actions[buttons.endIndex - 1].style),
+                    UIImage.roundedRectangleWithColor(backgroundColorOfStyle(actions[buttons.endIndex - 1].style),
                         size: buttons[0].bounds.size,
-                        cornerRadius: (0, 0, radius, 0)).image,
+                        cornerRadius: (0, 0, radius, 0)),
                     forState: .Normal)
                 for (i, button) in enumerate(buttons[1..<buttons.count - 1]) {
                     button.setBackgroundImage(
-                        Rectangle(
-                            color: backgroundColorOfStyle(actions[i + 1].style),
-                            size: button.bounds.size).image,
+                        UIImage.rectangleWithColor(backgroundColorOfStyle(actions[i + 1].style), size: button.bounds.size),
                         forState: .Normal)
                 }
                 break
