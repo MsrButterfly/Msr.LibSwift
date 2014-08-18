@@ -26,8 +26,6 @@ extension Msr.UI {
         }
         func endLoadingMore() {
             loadingMore = false
-            
-            
         }
         internal override func observeValueForKeyPath(keyPath: String!, ofObject object: AnyObject!, change: [NSObject : AnyObject]!, context: UnsafeMutablePointer<()>) {
             if object === scrollView {
@@ -73,7 +71,7 @@ extension Msr.UI {
                     }
                 }
             } else {
-                CGContextRotateCTM(context, CGFloat(M_PI) * 2 / 12 * CGFloat(arc4random_uniform(12)))
+//                CGContextRotateCTM(context, CGFloat(M_PI) * 2 / 12 * CGFloat(arc4random_uniform(12)))
                 for i in 0..<12 {
                     CGContextSetStrokeColorWithColor(context, color.colorWithAlphaComponent(CGFloat(1) / CGFloat(i)).CGColor)
                     CGContextMoveToPoint(context, 0, space / 2)
@@ -115,20 +113,19 @@ extension Msr.UI {
     }
 }
 
-var MSR_UI_LoadMoreControlKey = CChar()
+extension Msr.UI._Constant {
+    static var UITableViewControllerLoadMoreControlAssociationKey = CChar()
+}
 
 extension UITableViewController {
-    var loadMoreControl: Msr.UI.LoadMoreControl! {
+    var msrLoadMoreControl: Msr.UI.LoadMoreControl! {
         set {
-            if (loadMoreControl != nil) {
-                objc_setAssociatedObject(self, &MSR_UI_LoadMoreControlKey, nil, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-            }
-            objc_setAssociatedObject(self, &MSR_UI_LoadMoreControlKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-            tableView.insertSubview(loadMoreControl, belowSubview: tableView.subviews[0] as UIView)
+            objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            tableView.insertSubview(msrLoadMoreControl, belowSubview: tableView.subviews[0] as UIView)
             newValue.scrollView = tableView
         }
         get {
-            return objc_getAssociatedObject(self, &MSR_UI_LoadMoreControlKey) as? Msr.UI.LoadMoreControl
+            return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
         }
     }
 }
