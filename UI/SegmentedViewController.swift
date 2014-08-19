@@ -29,7 +29,7 @@ extension Msr.UI {
             }
             switchView()
         }
-        required init(coder aDecoder: NSCoder!) {
+        required init(coder aDecoder: NSCoder) {
             viewControllers = aDecoder.decodeObjectForKey("viewControllers") as [UIViewController]
             segmentedControl = aDecoder.decodeObjectForKey("segmentedController") as UISegmentedControl
             toolBar = aDecoder.decodeObjectForKey("toolBar") as UIToolbar

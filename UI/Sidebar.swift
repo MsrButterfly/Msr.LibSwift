@@ -13,7 +13,7 @@ extension Msr.UI {
                 addGestureRecognizer(panGestureRecognizer)
                 backgroundColor = UIColor.clearColor()
             }
-            required init(coder aDecoder: NSCoder!) {
+            required init(coder aDecoder: NSCoder) {
                 super.init(coder: aDecoder)
             }
             override func drawRect(rect: CGRect) {
@@ -77,7 +77,7 @@ extension Msr.UI {
                     }
                 }
             }
-            override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView! {
+            override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView? {
                 if pointInside(point, withEvent: event) {
                     return self
                 }
@@ -150,7 +150,7 @@ extension Msr.UI {
             overlayTapGestureRecognizer = UITapGestureRecognizer(target: self, action: "tap:")
             overlay.addGestureRecognizer(overlayTapGestureRecognizer)
         }
-        required init(coder aDecoder: NSCoder!) {
+        required init(coder aDecoder: NSCoder) {
             contentView = aDecoder.decodeObjectForKey("contentView") as UIView
             backgroundEffect = aDecoder.decodeObjectForKey("backgroundEffect") as UIBlurEffect
             offset = aDecoder.decodeObjectForKey("offset") as CGFloat
@@ -158,7 +158,7 @@ extension Msr.UI {
             overlay = aDecoder.decodeObjectForKey("overlay") as UIView
             super.init(coder: aDecoder)
         }
-        override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView! {
+        override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView? {
             if let view = handle.hitTest(point, withEvent: event) {
                 return view
             }

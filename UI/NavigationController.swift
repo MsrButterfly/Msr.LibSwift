@@ -21,7 +21,7 @@ extension Msr.UI {
             pushViewController(rootViewController, animated: false, completion: nil)
             view.backgroundColor = UIColor.blackColor()
         }
-        required init(coder aDecoder: NSCoder!) {
+        required init(coder aDecoder: NSCoder) {
             super.init(coder: aDecoder)
         }
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
@@ -299,7 +299,7 @@ extension Msr.UI {
             let wrapper = WrapperView(frame: frame, statusBarStyle: viewController.preferredStatusBarStyle())
             wrapper.insertSubview(viewController.view, belowSubview: wrapper.navigationBar)
             wrapper.navigationItem = viewController.navigationItem
-            if !viewController.navigationItem.leftBarButtonItems && previousViewController != nil {
+            if viewController.navigationItem.leftBarButtonItems == nil && previousViewController != nil {
                 let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
@@ -406,7 +406,7 @@ extension Msr.UI {
                 addSubview(navigationBar)
                 addSubview(overlay)
             }
-            required init(coder aDecoder: NSCoder!) {
+            required init(coder aDecoder: NSCoder) {
                 super.init(coder: aDecoder)
             }
         }
@@ -417,19 +417,19 @@ extension Msr.UI {
 }
 
 extension UIViewController {
-    @objc var msrNavigationController: Msr.UI.NavigationController! {
+    @objc var msrNavigationController: Msr.UI.NavigationController? {
         var current = parentViewController
         while current != nil {
             if current is Msr.UI.NavigationController {
-                return current as Msr.UI.NavigationController
+                return current as? Msr.UI.NavigationController
             }
             current = current.parentViewController
         }
         return nil
     }
-    @objc var msrNavigationBar: UINavigationBar! {
+    @objc var msrNavigationBar: UINavigationBar? {
         if msrNavigationController != nil {
-            for (i, viewController) in enumerate(msrNavigationController.viewControllers) {
+            for (i, viewController) in enumerate(msrNavigationController!.viewControllers) {
                 var isSelfViewController = (viewController === self)
                 var isParentViewController = false
                 var parent = parentViewController
@@ -441,7 +441,7 @@ extension UIViewController {
                     parent = parent.parentViewController
                 }
                 if isSelfViewController || isParentViewController {
-                    return msrNavigationController.wrappers[i].navigationBar
+                    return msrNavigationController?.wrappers[i].navigationBar
                 }
             }
         }

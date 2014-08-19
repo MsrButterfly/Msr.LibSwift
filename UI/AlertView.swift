@@ -33,7 +33,7 @@ extension Msr.UI {
             _contentView.addSubview(contentView)
             alpha = 0
         }
-        required convenience init(coder aDecoder: NSCoder!) {
+        required convenience init(coder aDecoder: NSCoder) {
             self.init()
         }
         convenience init(title: String?, message: String?, cancelButtonTitle: String?, otherButtonTitles: String?, [String]?) {
