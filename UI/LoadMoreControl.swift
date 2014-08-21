@@ -117,15 +117,17 @@ extension Msr.UI._Constant {
     static var UITableViewControllerLoadMoreControlAssociationKey = CChar()
 }
 
-extension UITableViewController {
-    var msrLoadMoreControl: Msr.UI.LoadMoreControl! {
-        set {
-            objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-            tableView.insertSubview(msrLoadMoreControl, belowSubview: tableView.subviews[0] as UIView)
-            newValue.scrollView = tableView
-        }
-        get {
-            return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
-        }
-    }
-}
+/// @TODO: This version of implementation will cause compiler crash on Xcode 6 Beta 6. Temporarily removed for future use.
+
+// extension UITableViewController {
+//     var msr_loadMoreControl: Msr.UI.LoadMoreControl! {
+//         set {
+//             objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+//             tableView.insertSubview(msr_loadMoreControl, belowSubview: tableView.subviews[0] as UIView)
+//             newValue.scrollView = tableView
+//         }
+//         get {
+//             return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
+//         }
+//     }
+// }

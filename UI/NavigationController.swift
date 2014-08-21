@@ -416,9 +416,45 @@ extension Msr.UI {
     }
 }
 
-extension UIViewController {
-    @objc var msrNavigationController: Msr.UI.NavigationController? {
-        var current = parentViewController
+/// @TODO: This version of implementation will cause compiler crash on Xcode 6 Beta 6. Temporarily removed for future use.
+
+// extension UIViewController {
+//     @objc var msr_navigationController: Msr.UI.NavigationController? {
+//         var current = parentViewController
+//         while current != nil {
+//             if current is Msr.UI.NavigationController {
+//                 return current as? Msr.UI.NavigationController
+//             }
+//             current = current.parentViewController
+//         }
+//         return nil
+//     }
+//     @objc var msr_navigationBar: UINavigationBar? {
+//         let navigationController = msr_navigationController
+//         if navigationController != nil {
+//             for (i, viewController) in enumerate(navigationController!.viewControllers) {
+//                 var isSelfViewController = (viewController === self)
+//                 var isParentViewController = false
+//                 var parent = parentViewController
+//                 while (parent !== navigationController) {
+//                     if parent === viewController {
+//                         isParentViewController = true
+//                         break
+//                     }
+//                     parent = parent.parentViewController
+//                 }
+//                 if isSelfViewController || isParentViewController {
+//                     return navigationController?.wrappers[i].navigationBar
+//                 }
+//             }
+//         }
+//         return nil
+//     }
+// }
+
+extension Msr.UI {
+    static func navigationControllerOfViewController(viewController: UIViewController) -> NavigationController? {
+        var current = viewController.parentViewController
         while current != nil {
             if current is Msr.UI.NavigationController {
                 return current as? Msr.UI.NavigationController
@@ -427,21 +463,22 @@ extension UIViewController {
         }
         return nil
     }
-    @objc var msrNavigationBar: UINavigationBar? {
-        if msrNavigationController != nil {
-            for (i, viewController) in enumerate(msrNavigationController!.viewControllers) {
-                var isSelfViewController = (viewController === self)
+    static func navigationBarOfViewController(viewController: UIViewController) -> UINavigationBar? {
+        let navigationController = navigationControllerOfViewController(viewController)
+        if navigationController != nil {
+            for (i, vc) in enumerate(navigationController!.viewControllers) {
+                var isSelfViewController = (vc === viewController)
                 var isParentViewController = false
-                var parent = parentViewController
-                while (parent !== msrNavigationController) {
-                    if parent === viewController {
+                var parent = viewController.parentViewController
+                while (parent !== navigationController) {
+                    if parent === vc {
                         isParentViewController = true
                         break
                     }
                     parent = parent.parentViewController
                 }
                 if isSelfViewController || isParentViewController {
-                    return msrNavigationController?.wrappers[i].navigationBar
+                    return navigationController?.wrappers[i].navigationBar
                 }
             }
         }
