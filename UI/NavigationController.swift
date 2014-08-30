@@ -27,8 +27,7 @@ extension Msr.UI {
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
             viewControllers.append(viewController)
             addChildViewController(viewController)
-            wrappers.append(createWrapperForViewController(viewControllers.last!,
-                previousViewController: viewControllers.penultimate))
+            wrappers.append(createWrapperForViewController(viewControllers.last!, previousViewController: viewControllers.penultimate))
             self.wrappers.last!.transform = CGAffineTransformMakeTranslation(self.wrappers.last!.bounds.width, 0)
             if viewControllers.count > 1 {
                 wrappers.last!.addGestureRecognizer(gesture)
@@ -305,9 +304,7 @@ extension Msr.UI {
             }
             if let scrollView = viewController.view as? UIScrollView {
                 scrollView.contentInset.top += wrapper.navigationBar.bounds.height
-                if let tableView = scrollView as? UITableView {
-                    tableView.scrollIndicatorInsets.top += wrapper.navigationBar.bounds.height
-                }
+                scrollView.scrollIndicatorInsets.top += wrapper.navigationBar.bounds.height
             } else {
                 var frame = viewController.view.frame
                 frame.size.height -= wrapper.navigationBar.bounds.height
@@ -344,9 +341,7 @@ extension Msr.UI {
         private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
             if let scrollView = viewController.view as? UIScrollView {
                 scrollView.contentInset.top -= wrapper.navigationBar.bounds.height
-                if let tableView = scrollView as? UITableView {
-                    tableView.scrollIndicatorInsets.top -= wrapper.navigationBar.bounds.height
-                }
+                scrollView.scrollIndicatorInsets.top -= wrapper.navigationBar.bounds.height
             } else {
                 var frame = viewController.view.frame
                 frame.size.height += wrapper.navigationBar.bounds.height
