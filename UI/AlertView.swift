@@ -6,15 +6,6 @@ extension Msr.UI {
         let contentView: UIView
         let backgroundView: UIView
         var cornerRadius: CGFloat
-        private var _backgroundColor: UIColor!
-        override var backgroundColor: UIColor! {
-            get {
-                return _backgroundColor
-            }
-            set {
-                _backgroundColor = newValue
-            }
-        }
         private(set) var actions: [AlertAction]
         private(set) var buttons: [UIButton]
         override init() {
@@ -71,8 +62,8 @@ extension Msr.UI {
         func addAction(action: AlertAction) {
             actions.append(action)
             let button = UIButton(frame: CGRectZero)
-            let textColorOfStyle = {
-                (style: AlertAction.Style) -> UIColor in
+            let textColorOfStyle: (AlertAction.Style) -> UIColor = {
+                style in
                 switch style {
                 case .Cancel:
                     return UIColor.darkTextColor()
@@ -105,9 +96,9 @@ extension Msr.UI {
             _contentView.bounds = CGRect(origin: CGPointZero, size: CGSize(width: contentView.bounds.width, height: contentView.bounds.height + height))
             _contentView.center = center
             contentView.frame = contentView.bounds
-            let defaultColor = self.backgroundColor.colorWithAlphaComponent(0.9)
+            let defaultColor = backgroundColor!.colorWithAlphaComponent(0.9)
             contentView.backgroundColor = UIColor(
-                patternImage: UIImage.roundedRectangleWithColor(backgroundColor, size: contentView.bounds.size, cornerRadius: (radius, radius, 0, 0)))
+                patternImage: UIImage.roundedRectangleWithColor(backgroundColor!, size: contentView.bounds.size, cornerRadius: (radius, radius, 0, 0)))
             let backgroundColorOfStyle = {
                 (style: AlertAction.Style) -> UIColor in
                 switch style {

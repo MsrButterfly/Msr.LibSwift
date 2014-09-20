@@ -4,8 +4,8 @@ import QuartzCore
 extension Msr.UI {
     class NavigationController: UIViewController, UINavigationBarDelegate, UIToolbarDelegate, UIGestureRecognizerDelegate {
         private(set) var viewControllers = [UIViewController]()
-        var rootViewController: UIViewController {
-            return viewControllers.first!
+        var rootViewController: UIViewController? {
+            return viewControllers.first
         }
         private var gesture: UIPanGestureRecognizer!
         var interactivePopGestureRecognizer: UIPanGestureRecognizer {
@@ -22,7 +22,7 @@ extension Msr.UI {
             view.backgroundColor = UIColor.blackColor()
         }
         required init(coder aDecoder: NSCoder) {
-            super.init(coder: aDecoder)
+            fatalError("init(coder:) has not been implemented")
         }
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
             viewControllers.append(viewController)
@@ -174,7 +174,7 @@ extension Msr.UI {
             return viewControllersToBePopped
         }
         func popToRootViewControllerAnimated(animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
-            return popToViewController(rootViewController, animated: animated, completion: completion)
+            return popToViewController(rootViewController!, animated: animated, completion: completion)
         }
         func replaceCurrentViewControllerWithViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
             let viewControllerToBeReplaced = viewControllers.last!
@@ -402,75 +402,43 @@ extension Msr.UI {
                 addSubview(overlay)
             }
             required init(coder aDecoder: NSCoder) {
-                super.init(coder: aDecoder)
+                fatalError("init(coder:) has not been implemented")
             }
         }
         override func preferredStatusBarStyle() -> UIStatusBarStyle {
-            return viewControllers.last!.preferredStatusBarStyle()
+            if viewControllers.count > 0 {
+                return viewControllers.last!.preferredStatusBarStyle()
+            } else {
+                return .Default
+            }
         }
     }
 }
 
-/// @TODO: This version of implementation will cause compiler crash on Xcode 6 Beta 6. Temporarily removed for future use.
-
-// extension UIViewController {
-//     @objc var msr_navigationController: Msr.UI.NavigationController? {
-//         var current = parentViewController
-//         while current != nil {
-//             if current is Msr.UI.NavigationController {
-//                 return current as? Msr.UI.NavigationController
-//             }
-//             current = current.parentViewController
-//         }
-//         return nil
-//     }
-//     @objc var msr_navigationBar: UINavigationBar? {
-//         let navigationController = msr_navigationController
-//         if navigationController != nil {
-//             for (i, viewController) in enumerate(navigationController!.viewControllers) {
-//                 var isSelfViewController = (viewController === self)
-//                 var isParentViewController = false
-//                 var parent = parentViewController
-//                 while (parent !== navigationController) {
-//                     if parent === viewController {
-//                         isParentViewController = true
-//                         break
-//                     }
-//                     parent = parent.parentViewController
-//                 }
-//                 if isSelfViewController || isParentViewController {
-//                     return navigationController?.wrappers[i].navigationBar
-//                 }
-//             }
-//         }
-//         return nil
-//     }
-// }
-
-extension Msr.UI {
-    static func navigationControllerOfViewController(viewController: UIViewController) -> NavigationController? {
-        var current = viewController.parentViewController
+extension UIViewController {
+    @objc var msr_navigationController: Msr.UI.NavigationController? {
+        var current = parentViewController
         while current != nil {
             if current is Msr.UI.NavigationController {
                 return current as? Msr.UI.NavigationController
             }
-            current = current.parentViewController
+            current = current?.parentViewController
         }
         return nil
     }
-    static func navigationBarOfViewController(viewController: UIViewController) -> UINavigationBar? {
-        let navigationController = navigationControllerOfViewController(viewController)
+    @objc var msr_navigationBar: UINavigationBar? {
+        let navigationController = msr_navigationController
         if navigationController != nil {
-            for (i, vc) in enumerate(navigationController!.viewControllers) {
-                var isSelfViewController = (vc === viewController)
+            for (i, viewController) in enumerate(navigationController!.viewControllers) {
+                var isSelfViewController = (viewController === self)
                 var isParentViewController = false
-                var parent = viewController.parentViewController
+                var parent = parentViewController
                 while (parent !== navigationController) {
-                    if parent === vc {
+                    if parent === viewController {
                         isParentViewController = true
                         break
                     }
-                    parent = parent.parentViewController
+                    parent = parent?.parentViewController
                 }
                 if isSelfViewController || isParentViewController {
                     return navigationController?.wrappers[i].navigationBar
@@ -479,4 +447,4 @@ extension Msr.UI {
         }
         return nil
     }
-}
+ }

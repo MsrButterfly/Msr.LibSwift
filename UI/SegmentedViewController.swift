@@ -30,10 +30,7 @@ extension Msr.UI {
             switchView()
         }
         required init(coder aDecoder: NSCoder) {
-            viewControllers = aDecoder.decodeObjectForKey("viewControllers") as [UIViewController]
-            segmentedControl = aDecoder.decodeObjectForKey("segmentedController") as UISegmentedControl
-            toolBar = aDecoder.decodeObjectForKey("toolBar") as UIToolbar
-            super.init(coder: aDecoder)
+            fatalError("init(coder:) has not been implemented")
         }
         func switchView() {
             for viewController in viewControllers {

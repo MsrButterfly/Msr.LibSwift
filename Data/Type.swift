@@ -1,11 +1,3 @@
-//
-//  Type.swift
-//  WeCenterMobile
-//
-//  Created by Darren Liu on 14/8/26.
-//  Copyright (c) 2014年 ifLab. All rights reserved.
-//
-
 import Foundation
 
 extension Msr.Data {

@@ -5,8 +5,8 @@ import QuartzCore
 extension Msr.UI {
     class LoadMoreControl: UIControl {
         private(set) var loadingMore: Bool = false
-        override init() {
-            super.init(frame: CGRect(x: 0, y: 0, width: 0, height: 40))
+        convenience override init() {
+            self.init(frame: CGRect(x: 0, y: 0, width: 0, height: 40))
             backgroundColor = UIColor.clearColor()
         }
         override init(frame: CGRect) {
@@ -117,17 +117,15 @@ extension Msr.UI._Constant {
     static var UITableViewControllerLoadMoreControlAssociationKey = CChar()
 }
 
-/// @TODO: This version of implementation will cause compiler crash on Xcode 6 Beta 6. Temporarily removed for future use.
-
-// extension UITableViewController {
-//     var msr_loadMoreControl: Msr.UI.LoadMoreControl! {
-//         set {
-//             objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-//             tableView.insertSubview(msr_loadMoreControl, belowSubview: tableView.subviews[0] as UIView)
-//             newValue.scrollView = tableView
-//         }
-//         get {
-//             return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
-//         }
-//     }
-// }
+ extension UITableViewController {
+     var msr_loadMoreControl: Msr.UI.LoadMoreControl! {
+         set {
+             objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+             tableView.insertSubview(msr_loadMoreControl, belowSubview: tableView.subviews[0] as UIView)
+             newValue.scrollView = tableView
+         }
+         get {
+             return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
+         }
+     }
+ }

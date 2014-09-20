@@ -5,16 +5,13 @@ extension Msr.UI {
         class Handle: UIView {
             weak var sidebar: Sidebar!
             var panGestureRecognizer: UIPanGestureRecognizer!
-            init(sidebar: Sidebar, width: CGFloat) {
+            convenience init(sidebar: Sidebar, width: CGFloat) {
+                self.init(frame: CGRect(x: UIScreen.mainScreen().bounds.width, y: 0, width: width, height: UIScreen.mainScreen().bounds.height))
                 self.sidebar = sidebar
-                super.init(frame: CGRect(x: UIScreen.mainScreen().bounds.width, y: 0, width: width, height: UIScreen.mainScreen().bounds.height))
                 panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "pan:")
                 panGestureRecognizer.maximumNumberOfTouches = 1
                 addGestureRecognizer(panGestureRecognizer)
                 backgroundColor = UIColor.clearColor()
-            }
-            required init(coder aDecoder: NSCoder) {
-                super.init(coder: aDecoder)
             }
             override func drawRect(rect: CGRect) {
                 let context = UIGraphicsGetCurrentContext()
@@ -151,12 +148,7 @@ extension Msr.UI {
             overlay.addGestureRecognizer(overlayTapGestureRecognizer)
         }
         required init(coder aDecoder: NSCoder) {
-            contentView = aDecoder.decodeObjectForKey("contentView") as UIView
-            backgroundEffect = aDecoder.decodeObjectForKey("backgroundEffect") as UIBlurEffect
-            offset = aDecoder.decodeObjectForKey("offset") as CGFloat
-            width = aDecoder.decodeObjectForKey("width") as CGFloat
-            overlay = aDecoder.decodeObjectForKey("overlay") as UIView
-            super.init(coder: aDecoder)
+            fatalError("init(coder:) has not been implemented")
         }
         override func hitTest(point: CGPoint, withEvent event: UIEvent!) -> UIView? {
             if let view = handle.hitTest(point, withEvent: event) {
