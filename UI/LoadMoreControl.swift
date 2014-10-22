@@ -27,7 +27,7 @@ extension Msr.UI {
         func endLoadingMore() {
             loadingMore = false
         }
-        internal override func observeValueForKeyPath(keyPath: String!, ofObject object: AnyObject!, change: [NSObject : AnyObject]!, context: UnsafeMutablePointer<()>) {
+        internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
             if object === scrollView {
                 if keyPath == "contentOffset" {
                     let offset = (change[NSKeyValueChangeNewKey] as NSValue).CGPointValue()

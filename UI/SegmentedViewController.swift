@@ -6,6 +6,7 @@ extension Msr.UI {
         let segmentedControl: UISegmentedControl
         let toolBar: UIToolbar
         init(frame: CGRect, toolBarStyle: UIBarStyle, viewControllers: [UIViewController]) {
+            assert(viewControllers.count > 0, "The count of view controllers should be greater than 0.")
             self.viewControllers = viewControllers
             segmentedControl = UISegmentedControl(items: viewControllers.map({ $0.title ?? "" }))
             toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: frame.width, height: 44))

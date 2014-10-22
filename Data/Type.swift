@@ -6,7 +6,6 @@ extension Msr.Data {
         for _ in 0...layer {
             indentationString += "   "
         }
-        println("[" + String.fromCString(object_getClassName(object))! + "]")
         if let data = object as? NSDictionary {
             for (key, value) in data {
                 print(indentationString + "\(key) ")

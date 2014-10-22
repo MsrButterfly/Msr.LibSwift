@@ -2,7 +2,7 @@ import UIKit
 
 extension Msr.UI {
     static func DefaultRGBBitmapContextWithSize(size: CGSize) -> CGContext {
-        return CGBitmapContextCreate(nil, UInt(size.width), UInt(size.height), 8, 0, CGColorSpaceCreateDeviceRGB(), CGBitmapInfo.fromRaw(CGImageAlphaInfo.PremultipliedLast.toRaw())!)
+        return CGBitmapContextCreate(nil, UInt(size.width), UInt(size.height), UInt(8), UInt(0), CGColorSpaceCreateDeviceRGB(), CGBitmapInfo(CGImageAlphaInfo.PremultipliedLast.rawValue))
     }
 }
 
@@ -14,13 +14,13 @@ extension UIImage {
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextClosePath(context)
         CGContextFillPath(context)
-        return self(CGImage: CGBitmapContextCreateImage(context))
+        return self(CGImage: CGBitmapContextCreateImage(context))!
     }
     class func rectangleWithColor(color: UIColor, size: CGSize) -> Self {
         let context = Msr.UI.DefaultRGBBitmapContextWithSize(size)
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextFillRect(context, CGRect(x: 0, y: 0, width: size.width, height: size.height))
-        return self(CGImage: CGBitmapContextCreateImage(context))
+        return self(CGImage: CGBitmapContextCreateImage(context))!
     }
     class func roundedRectangleWithColor(color: UIColor, size: CGSize, cornerRadius: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat)) -> Self {
         let context = Msr.UI.DefaultRGBBitmapContextWithSize(size)
@@ -43,6 +43,6 @@ extension UIImage {
         CGContextClosePath(context)
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextFillPath(context)
-        return self(CGImage: CGBitmapContextCreateImage(context))
+        return self(CGImage: CGBitmapContextCreateImage(context))!
     }
 }
