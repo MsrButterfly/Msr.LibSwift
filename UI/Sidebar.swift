@@ -2,7 +2,7 @@ import UIKit
 
 extension Msr.UI {
     class Sidebar: UIView {
-        class Handle: UIView {
+        class _Handle: UIView {
             weak var sidebar: Sidebar!
             var panGestureRecognizer: UIPanGestureRecognizer!
             convenience init(sidebar: Sidebar, width: CGFloat) {
@@ -88,7 +88,7 @@ extension Msr.UI {
         }
         let contentView: UIView
         let backgroundEffect: UIBlurEffect
-        let handle: Handle!
+        let handle: _Handle!
         let offset: CGFloat
         let width: CGFloat
         let overlay: UIView
@@ -124,7 +124,7 @@ extension Msr.UI {
             frame.size.width += handleWidth
             backgroundView.frame = frame
             addSubview(backgroundView)
-            handle = Handle(sidebar: self, width: handleWidth)
+            handle = _Handle(sidebar: self, width: handleWidth)
             let vibrancyEffectView = UIVisualEffectView(effect: UIVibrancyEffect(forBlurEffect: backgroundView.effect as UIBlurEffect))
             vibrancyEffectView.frame = bounds
             backgroundView.contentView.addSubview(vibrancyEffectView)

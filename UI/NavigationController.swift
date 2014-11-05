@@ -302,15 +302,10 @@ extension Msr.UI {
                 let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
-            if let scrollView = viewController.view as? UIScrollView {
-                scrollView.contentInset.top += wrapper.navigationBar.bounds.height
-                scrollView.scrollIndicatorInsets.top += wrapper.navigationBar.bounds.height
-            } else {
-                var frame = viewController.view.frame
-                frame.size.height -= wrapper.navigationBar.bounds.height
-                frame.origin.y += wrapper.navigationBar.bounds.height
-                viewController.view.frame = frame
-            }
+            var newFrame = viewController.view.frame
+            newFrame.size.height -= wrapper.navigationBar.bounds.height
+            newFrame.origin.y += wrapper.navigationBar.bounds.height
+            viewController.view.frame = newFrame
             if let segmentedViewController = viewController as? SegmentedViewController {
                 segmentedViewController.toolBar.removeFromSuperview()
                 segmentedViewController.segmentedControl.removeFromSuperview()
@@ -339,15 +334,10 @@ extension Msr.UI {
             popViewController(true, completion: nil)
         }
         private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
-            if let scrollView = viewController.view as? UIScrollView {
-                scrollView.contentInset.top -= wrapper.navigationBar.bounds.height
-                scrollView.scrollIndicatorInsets.top -= wrapper.navigationBar.bounds.height
-            } else {
-                var frame = viewController.view.frame
-                frame.size.height += wrapper.navigationBar.bounds.height
-                frame.origin.y -= wrapper.navigationBar.bounds.height
-                viewController.view.frame = frame
-            }
+            var frame = viewController.view.frame
+            frame.size.height += wrapper.navigationBar.bounds.height
+            frame.origin.y -= wrapper.navigationBar.bounds.height
+            viewController.view.frame = frame
             if let segmentedViewController = viewController as? SegmentedViewController {
                 (segmentedViewController.view as UIScrollView).contentInset.top += segmentedViewController.toolBar.bounds.height
                 segmentedViewController.segmentedControl.removeFromSuperview()
@@ -410,6 +400,14 @@ extension Msr.UI {
                 return viewControllers.last!.preferredStatusBarStyle()
             } else {
                 return .Default
+            }
+        }
+        override func viewDidLayoutSubviews() {
+            super.viewDidLayoutSubviews()
+            for wrapper in wrappers {
+                wrapper.navigationBar.frame.origin = CGPointZero
+                wrapper.navigationBar.frame.size.width = view.bounds.width
+                wrapper.navigationBar.layoutIfNeeded()
             }
         }
     }
