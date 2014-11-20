@@ -15,14 +15,19 @@ extension Msr.UI {
         required init(coder aDecoder: NSCoder) {
             super.init(coder: aDecoder)
         }
-//        var tintColor: UIColor!
-//        var attributedTitle: NSAttributedString!
         func beginLoadingMore() {
-            loadingMore = true
-            sendActionsForControlEvents(.ValueChanged)
-            UIView.animateWithDuration(0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState, animations: {
-                self.scrollView!.contentSize.height += 80
-            }, completion: nil)
+            if !loadingMore {
+                loadingMore = true
+                UIView.animateWithDuration(0.5,
+                    delay: 0,
+                    usingSpringWithDamping: 1,
+                    initialSpringVelocity: 0,
+                    options: UIViewAnimationOptions.BeginFromCurrentState,
+                    animations: {
+                        self.scrollView!.contentSize.height += 80
+                    },
+                    completion: nil)
+            }
         }
         func endLoadingMore() {
             loadingMore = false
@@ -38,6 +43,7 @@ extension Msr.UI {
                             setNeedsDisplay()
                             if overHeight > triggerHeight && !loadingMore {
                                 beginLoadingMore()
+                                sendActionsForControlEvents(.ValueChanged)
                             }
                         }
                     } else {
@@ -98,8 +104,8 @@ extension Msr.UI {
                 _scrollView?.removeObserver(self, forKeyPath: "contentOffset")
                 _scrollView?.removeObserver(self, forKeyPath: "frame")
                 _scrollView = newValue
-                newValue?.addObserver(self, forKeyPath: "contentOffset", options: .New, context: nil)
-                newValue?.addObserver(self, forKeyPath: "frame", options: .New, context: nil)
+                _scrollView?.addObserver(self, forKeyPath: "contentOffset", options: .New, context: nil)
+                _scrollView?.addObserver(self, forKeyPath: "frame", options: .New, context: nil)
             }
         }
         private let triggerHeight = CGFloat(100)
@@ -117,15 +123,19 @@ extension Msr.UI._Constant {
     static var UITableViewControllerLoadMoreControlAssociationKey = CChar()
 }
 
- extension UITableViewController {
-     var msr_loadMoreControl: Msr.UI.LoadMoreControl! {
-         set {
-             objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-             tableView.insertSubview(msr_loadMoreControl, belowSubview: tableView.subviews[0] as UIView)
-             newValue.scrollView = tableView
-         }
-         get {
-             return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
-         }
-     }
- }
+extension UITableViewController {
+    var msr_loadMoreControl: Msr.UI.LoadMoreControl? {
+        set {
+            self.msr_loadMoreControl?.removeFromSuperview()
+            self.msr_loadMoreControl?.scrollView = nil
+            objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            if newValue != nil {
+                tableView.insertSubview(newValue!, belowSubview: tableView.subviews[0] as UIView)
+                newValue!.scrollView = tableView
+            }
+        }
+        get {
+            return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
+        }
+    }
+}

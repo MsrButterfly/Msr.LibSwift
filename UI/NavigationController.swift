@@ -402,14 +402,6 @@ extension Msr.UI {
                 return .Default
             }
         }
-        override func viewDidLayoutSubviews() {
-            super.viewDidLayoutSubviews()
-            for wrapper in wrappers {
-                wrapper.navigationBar.frame.origin = CGPointZero
-                wrapper.navigationBar.frame.size.width = view.bounds.width
-                wrapper.navigationBar.layoutIfNeeded()
-            }
-        }
     }
 }
 

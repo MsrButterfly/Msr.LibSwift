@@ -18,11 +18,13 @@ extension Msr.UI {
             segmentedControl.selectedSegmentIndex = 0
             toolBar.delegate = self
             toolBar.tintColor = (toolBarStyle == .Default) ? UIColor.blackColor() : UIColor.whiteColor()
-            toolBar.setItems([
-                UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
-                UIBarButtonItem(customView: segmentedControl),
-                UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-                ], animated: false)
+            toolBar.setItems(
+                [
+                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
+                    UIBarButtonItem(customView: segmentedControl),
+                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
+                ],
+                animated: false)
             view.addSubview(toolBar)
             for viewController in viewControllers {
                 addChildViewController(viewController)

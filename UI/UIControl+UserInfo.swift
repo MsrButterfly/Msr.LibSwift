@@ -5,7 +5,7 @@ extension Msr.UI._Constant {
 }
 
 extension UIControl {
-    var msr_userInfo: AnyObject? {
+    @objc var msr_userInfo: AnyObject? {
         get {
             return objc_getAssociatedObject(self, &Msr.UI._Constant.UIControlUserInfoAssociationKey)
         }
