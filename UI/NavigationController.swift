@@ -13,8 +13,6 @@ extension Msr.UI {
         }
         private(set) var wrappers = [WrapperView]()
         let maxDuration = NSTimeInterval(0.5)
-        let minDuration = NSTimeInterval(0.3)
-        let maxVelocity = CGFloat(10)
         init(rootViewController: UIViewController) {
             super.init(nibName: nil, bundle: nil)
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
@@ -85,16 +83,17 @@ extension Msr.UI {
                 transformAtPercentage(percentage, frontView: wrappers.last!, backView: wrappers.penultimate!)
                 break
             case .Ended, .Cancelled:
-                if gesture.velocityInView(view).x >= 0 {
+                if gesture.velocityInView(view).x > 0 {
                     popViewController(true, completion: nil)
                 } else {
-                    let distance = view.bounds.width - gesture.locationInView(view).x
-                    let velocity = -gesture.velocityInView(view).x
+                    let distance = gesture.translationInView(view).x
+                    let velocity = abs(-gesture.velocityInView(view).x)
                     let duration = NSTimeInterval(distance / velocity)
-                    UIView.animateWithDuration(max(min(duration, maxDuration), minDuration),
+                    println("DISTANCE: \(distance), VELOCITY: \(velocity), DURATION: \(duration), ANIMATION_DURATION: \(min(duration, maxDuration)), ANIMATION_INIT_VELOCITY: 0")
+                    UIView.animateWithDuration(min(duration, maxDuration),
                         delay: 0,
                         usingSpringWithDamping: 1.0,
-                        initialSpringVelocity: min(velocity / distance, maxVelocity),
+                        initialSpringVelocity: 0,
                         options: .BeginFromCurrentState,
                         animations: {
                             self.transformAtPercentage(1, frontView: self.wrappers.last!, backView: self.wrappers.penultimate)
@@ -136,13 +135,13 @@ extension Msr.UI {
                 self.setNeedsStatusBarAppearanceUpdate()
             }
             if animated {
-                let distance = view.bounds.width - gesture.locationInView(view).x
+                let distance = view.bounds.width - gesture.translationInView(view).x
                 let velocity = gesture.velocityInView(view).x
                 let duration = NSTimeInterval(distance / velocity)
-                UIView.animateWithDuration(max(min(duration, maxDuration), minDuration),
+                UIView.animateWithDuration(min(duration, maxDuration),
                     delay: 0,
                     usingSpringWithDamping: 1.0,
-                    initialSpringVelocity: min(velocity / distance, maxVelocity),
+                    initialSpringVelocity: 0,
                     options: .BeginFromCurrentState,
                     animations: animations,
                     completion: combinedCompletion)
