@@ -89,7 +89,6 @@ extension Msr.UI {
                     let distance = gesture.translationInView(view).x
                     let velocity = abs(-gesture.velocityInView(view).x)
                     let duration = NSTimeInterval(distance / velocity)
-                    println("DISTANCE: \(distance), VELOCITY: \(velocity), DURATION: \(duration), ANIMATION_DURATION: \(min(duration, maxDuration)), ANIMATION_INIT_VELOCITY: 0")
                     UIView.animateWithDuration(min(duration, maxDuration),
                         delay: 0,
                         usingSpringWithDamping: 1.0,
