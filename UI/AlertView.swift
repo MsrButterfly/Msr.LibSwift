@@ -42,7 +42,8 @@ extension Msr.UI {
                     [weak self] in
                     self!.alpha = 1
                     self!._contentView.transform = CGAffineTransformMakeScale(1, 1)
-                }, completion: nil)
+                },
+                completion: nil)
         }
         func hide() {
             resignFirstResponderOfAllSubviews()
@@ -57,7 +58,8 @@ extension Msr.UI {
                     [weak self] in
                     self!.alpha = 0
                     self!._contentView.transform = CGAffineTransformMakeScale(0.5, 0.5)
-                }, completion: nil)
+                },
+                completion: nil)
         }
         func addAction(action: AlertAction) {
             actions.append(action)
@@ -81,7 +83,8 @@ extension Msr.UI {
                 attributes: [
                     NSFontAttributeName: UIFont.systemFontOfSize(16),
                     NSForegroundColorAttributeName: textColorOfStyle(action.style)
-                ]), forState: .Normal)
+                ]),
+                forState: .Normal)
             button.addTarget(self, action: "handleButtonActions:", forControlEvents: .TouchUpInside)
             buttons.append(button)
             _contentView.addSubview(buttons[buttons.endIndex - 1])
@@ -98,7 +101,7 @@ extension Msr.UI {
             contentView.frame = contentView.bounds
             let defaultColor = backgroundColor!.colorWithAlphaComponent(0.9)
             contentView.backgroundColor = UIColor(
-                patternImage: UIImage.roundedRectangleWithColor(backgroundColor!, size: contentView.bounds.size, cornerRadius: (radius, radius, 0, 0)))
+                patternImage: UIImage.msr_roundedRectangleWithColor(backgroundColor!, size: contentView.bounds.size, cornerRadius: (radius, radius, 0, 0)))
             let backgroundColorOfStyle = {
                 (style: AlertAction.Style) -> UIColor in
                 switch style {
@@ -117,25 +120,25 @@ extension Msr.UI {
                 break
             case 1:
                 buttons[0].setBackgroundImage(
-                    UIImage.roundedRectangleWithColor(backgroundColorOfStyle(actions[0].style),
+                    UIImage.msr_roundedRectangleWithColor(backgroundColorOfStyle(actions[0].style),
                         size: buttons[0].bounds.size,
                         cornerRadius: (0, 0, radius, radius)),
                     forState: .Normal)
                 break
             default:
                 buttons[0].setBackgroundImage(
-                    UIImage.roundedRectangleWithColor(backgroundColorOfStyle(actions[0].style),
+                    UIImage.msr_roundedRectangleWithColor(backgroundColorOfStyle(actions[0].style),
                         size: buttons[0].bounds.size,
                         cornerRadius: (0, 0, 0, radius)),
                     forState: .Normal)
                 buttons[buttons.endIndex - 1].setBackgroundImage(
-                    UIImage.roundedRectangleWithColor(backgroundColorOfStyle(actions[buttons.endIndex - 1].style),
+                    UIImage.msr_roundedRectangleWithColor(backgroundColorOfStyle(actions[buttons.endIndex - 1].style),
                         size: buttons[0].bounds.size,
                         cornerRadius: (0, 0, radius, 0)),
                     forState: .Normal)
                 for (i, button) in enumerate(buttons[1..<buttons.count - 1]) {
                     button.setBackgroundImage(
-                        UIImage.rectangleWithColor(backgroundColorOfStyle(actions[i + 1].style), size: button.bounds.size),
+                        UIImage.msr_rectangleWithColor(backgroundColorOfStyle(actions[i + 1].style), size: button.bounds.size),
                         forState: .Normal)
                 }
                 break

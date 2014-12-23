@@ -7,7 +7,7 @@ extension Msr.UI {
 }
 
 extension UIImage {
-    class func circleWithColor(color: UIColor, radius: CGFloat) -> Self {
+    class func msr_circleWithColor(color: UIColor, radius: CGFloat) -> Self {
         let context = Msr.UI.DefaultRGBBitmapContextWithSize(CGSize(width: radius * 2, height: radius * 2))
         CGContextBeginPath(context)
         CGContextAddArc(context, radius, radius, radius, 0, 360, 0)
@@ -16,13 +16,13 @@ extension UIImage {
         CGContextFillPath(context)
         return self(CGImage: CGBitmapContextCreateImage(context))!
     }
-    class func rectangleWithColor(color: UIColor, size: CGSize) -> Self {
+    class func msr_rectangleWithColor(color: UIColor, size: CGSize) -> Self {
         let context = Msr.UI.DefaultRGBBitmapContextWithSize(size)
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextFillRect(context, CGRect(x: 0, y: 0, width: size.width, height: size.height))
         return self(CGImage: CGBitmapContextCreateImage(context))!
     }
-    class func roundedRectangleWithColor(color: UIColor, size: CGSize, cornerRadius: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat)) -> Self {
+    class func msr_roundedRectangleWithColor(color: UIColor, size: CGSize, cornerRadius: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat)) -> Self {
         let context = Msr.UI.DefaultRGBBitmapContextWithSize(size)
         let w = size.width
         let h = size.height

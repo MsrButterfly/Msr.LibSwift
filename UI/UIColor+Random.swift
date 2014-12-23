@@ -1,7 +1,7 @@
 import UIKit
 
 extension UIColor {
-    class func randomColor(opaque: Bool) -> UIColor {
+    class func msr_randomColor(opaque: Bool) -> UIColor {
         let max = 255 as UInt32
         let red = CGFloat(Int(arc4random_uniform(max))) / CGFloat(255)
         let green = CGFloat(Int(arc4random_uniform(max))) / CGFloat(255)

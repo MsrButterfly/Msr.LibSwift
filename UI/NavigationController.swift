@@ -58,7 +58,7 @@ extension Msr.UI {
         func pushViewControllers(viewControllers: [UIViewController], animated: Bool, completion: ((Bool) -> Void)?) {
             for viewController in viewControllers[viewControllers.startIndex..<viewControllers.endIndex - 1] {
                 self.viewControllers.append(viewController)
-                self.addChildViewController(viewController)
+                addChildViewController(viewController)
             }
             pushViewController(viewControllers.last!, animated: animated) {
                 finished in
@@ -73,13 +73,13 @@ extension Msr.UI {
             }
         }
         func didPerformPanGesture(gesture: UIPanGestureRecognizer) {
-            var percentage = 1 - gesture.translationInView(self.wrappers.last!).x / view.bounds.width
+            var percentage = 1 - gesture.translationInView(wrappers.last!).x / view.bounds.width
             if percentage > 1 {
                 percentage = 1
             }
             switch gesture.state {
             case .Began, .Changed:
-                view.insertSubview(self.wrappers.penultimate!, belowSubview: self.wrappers.last!)
+                view.insertSubview(wrappers.penultimate!, belowSubview: wrappers.last!)
                 transformAtPercentage(percentage, frontView: wrappers.last!, backView: wrappers.penultimate!)
                 break
             case .Ended, .Cancelled:
