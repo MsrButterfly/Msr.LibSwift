@@ -4,7 +4,7 @@ extension Msr.UI._Constant {
     static var UIControlUserInfoAssociationKey = CChar()
 }
 
-extension UIControl {
+extension UIView {
     @objc var msr_userInfo: AnyObject? {
         get {
             return objc_getAssociatedObject(self, &Msr.UI._Constant.UIControlUserInfoAssociationKey)
