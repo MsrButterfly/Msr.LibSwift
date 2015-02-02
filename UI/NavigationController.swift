@@ -282,11 +282,11 @@ extension Msr.UI {
         private func transformAtPercentage(percentage: CGFloat, frontView: WrapperView!, backView: WrapperView!) {
             if frontView != nil {
                 frontView.transform = CGAffineTransformMakeTranslation(frontView.bounds.width * (1 - percentage), 0)
-                frontView.layer.shadowOpacity = Float(percentage)
+                frontView.layer.shadowRadius = percentage * 5
             }
             if backView != nil {
                 backView.transform = CGAffineTransformMakeTranslation(-view.bounds.width / 4 * percentage, 0)
-                backView.overlay.alpha = percentage * 0.3
+                backView.overlay.alpha = percentage * 0.1
             }
         }
         private func createWrapperForViewController(viewController: UIViewController, previousViewController: UIViewController?) -> WrapperView {
@@ -374,7 +374,7 @@ extension Msr.UI {
                 super.init(frame: frame)
                 backgroundColor = UIColor.whiteColor()
                 layer.shadowColor = UIColor.blackColor().CGColor
-                layer.shadowOpacity = 1
+                layer.shadowOpacity = 0.5
                 layer.shadowOffset = CGSize(width: 0, height: 0)
                 layer.masksToBounds = false
                 layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
