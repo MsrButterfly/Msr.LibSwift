@@ -16,11 +16,14 @@ extension Msr.UI {
         init(rootViewController: UIViewController) {
             super.init(nibName: nil, bundle: nil)
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
-            pushViewController(rootViewController, animated: false, completion: nil)
+            pushViewController(rootViewController, animated: false)
             view.backgroundColor = UIColor.blackColor()
         }
         required init(coder aDecoder: NSCoder) {
             fatalError("init(coder:) has not been implemented")
+        }
+        func pushViewController(viewController: UIViewController, animated: Bool) {
+            pushViewController(viewController, animated: animated, completion: nil)
         }
         func pushViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) {
             viewControllers.append(viewController)
@@ -55,6 +58,9 @@ extension Msr.UI {
                 combinedCompletion(true)
             }
         }
+        func pushViewControllers(viewControllers: [UIViewController], animated: Bool) {
+            pushViewControllers(viewControllers, animated: animated, completion: nil)
+        }
         func pushViewControllers(viewControllers: [UIViewController], animated: Bool, completion: ((Bool) -> Void)?) {
             for viewController in viewControllers[viewControllers.startIndex..<viewControllers.endIndex - 1] {
                 self.viewControllers.append(viewController)
@@ -84,7 +90,7 @@ extension Msr.UI {
                 break
             case .Ended, .Cancelled:
                 if gesture.velocityInView(view).x > 0 {
-                    popViewController(true, completion: nil)
+                    popViewController(animated: true, completion: nil)
                 } else {
                     let distance = gesture.translationInView(view).x
                     let velocity = abs(-gesture.velocityInView(view).x)
@@ -109,7 +115,10 @@ extension Msr.UI {
                 break
             }
         }
-        func popViewController(animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
+        func popViewController(#animated: Bool) -> UIViewController {
+            return popViewController(animated: animated, completion: nil)
+        }
+        func popViewController(#animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
             assert(viewControllers.count > 1, "Already at root view controller. Nothing to be popped.")
             if wrappers.penultimate?.superview == nil {
                 view.insertSubview(wrappers.penultimate!, belowSubview: wrappers.last!)
@@ -150,6 +159,9 @@ extension Msr.UI {
             }
             return viewControllerToBePopped
         }
+        func popToViewController(viewController: UIViewController, animated: Bool) -> [UIViewController] {
+            return popToViewController(viewController, animated: animated, completion: nil)
+        }
         func popToViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
             assert(contains(viewControllers, viewController), "The specific view controller is not in the view controller hierarchy.")
             let p = find(viewControllers, viewController)
@@ -165,14 +177,20 @@ extension Msr.UI {
                     viewControllers.removeAtIndex(penultimate)
                     wrappers.removeAtIndex(penultimate)
                 }
-                popViewController(animated, completion: completion)
+                popViewController(animated: animated, completion: completion)
             } else {
                 completion?(true)
             }
             return viewControllersToBePopped
         }
-        func popToRootViewControllerAnimated(animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
+        func popToRootViewController(#animated: Bool) -> [UIViewController] {
+            return popToRootViewController(animated: animated, completion: nil)
+        }
+        func popToRootViewController(#animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
             return popToViewController(rootViewController!, animated: animated, completion: completion)
+        }
+        func replaceCurrentViewControllerWithViewController(viewController: UIViewController, animated: Bool) -> UIViewController {
+            return replaceCurrentViewControllerWithViewController(viewController, animated: animated, completion: nil)
         }
         func replaceCurrentViewControllerWithViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
             let viewControllerToBeReplaced = viewControllers.last!
@@ -214,6 +232,9 @@ extension Msr.UI {
                 combinedCompletion(true)
             }
             return viewControllerToBeReplaced
+        }
+        func setViewControllers(viewControllers: [UIViewController], animated: Bool) {
+            setViewControllers(viewControllers, animated: animated, completion: nil)
         }
         func setViewControllers(viewControllers: [UIViewController], animated: Bool, completion: ((Bool) -> Void)?) {
             assert(viewControllers.count > 0, "No view controllers in the stack.")
@@ -267,7 +288,7 @@ extension Msr.UI {
                     }
                 }
             } else if popCount > 1 && pushCount > 1 && i == 0 {
-                popToRootViewControllerAnimated(animated) {
+                popToRootViewController(animated: animated) {
                     finished in
                     if finished {
                         self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated) {
@@ -329,7 +350,7 @@ extension Msr.UI {
             return wrapper
         }
         func didPressBackButton() {
-            popViewController(true, completion: nil)
+            popViewController(animated: true)
         }
         private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
             var frame = viewController.view.frame

@@ -156,7 +156,10 @@ extension Msr.UI {
             }
             return super.hitTest(point, withEvent: event)
         }
-        func show(#animated: Bool, completion: ((Bool) -> Void)!) {
+        func show(#animated: Bool) {
+            show(animated: animated)
+        }
+        func show(#animated: Bool, completion: ((Bool) -> Void)?) {
             let animations: () -> Void = {
                 [weak self] in
                 var frame = self!.frame
@@ -176,7 +179,10 @@ extension Msr.UI {
                 animations()
             }
         }
-        func hide(#animated: Bool, completion: ((Bool) -> Void)!) {
+        func hide(#animated: Bool) {
+            hide(animated: animated, completion: nil)
+        }
+        func hide(#animated: Bool, completion: ((Bool) -> Void)?) {
             let animations: () -> Void = {
                 [weak self] in
                 var frame = self!.frame
@@ -196,7 +202,7 @@ extension Msr.UI {
                 animations()
             }
         }
-        func pan(gestureRecognizer: UIGestureRecognizer?) {
+        internal func pan(gestureRecognizer: UIGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
                 let offset = recognizer.locationInView(handle).x
                 switch recognizer.state {
@@ -213,18 +219,18 @@ extension Msr.UI {
                 }
             }
         }
-        func tap(gestureRecognizer: UIGestureRecognizer?) {
+        internal func tap(gestureRecognizer: UIGestureRecognizer?) {
             if let recognizer = gestureRecognizer as? UITapGestureRecognizer {
                 hide(animated: true, completion: nil)
             }
         }
-        func offsetForTouchPoint(point: CGPoint) -> CGFloat {
+        internal func offsetForTouchPoint(point: CGPoint) -> CGFloat {
             if point.x < width {
                 return point.x - (UIScreen.mainScreen().bounds.width + handle.bounds.width)
             }
             return 0.5 * (point.x + width) - (UIScreen.mainScreen().bounds.width + handle.bounds.width)
         }
-        func alphaForTouchPoint(point: CGPoint) -> CGFloat {
+        internal func alphaForTouchPoint(point: CGPoint) -> CGFloat {
             if point.x < width {
                 return point.x / width * overlayMaxAlpha
             }
@@ -234,7 +240,10 @@ extension Msr.UI {
 }
 
 extension Msr.UI.Sidebar {
-    func toggleShow(#animated: Bool, completion: ((Bool) -> Void)!) {
+    func toggleShow(#animated: Bool) {
+        toggleShow(animated: animated, completion: nil)
+    }
+    func toggleShow(#animated: Bool, completion: ((Bool) -> Void)?) {
         if hidden {
             show(animated: animated, completion: completion)
         } else {
