@@ -157,7 +157,7 @@ extension Msr.UI {
             return super.hitTest(point, withEvent: event)
         }
         func show(#animated: Bool) {
-            show(animated: animated)
+            show(animated: animated, completion: nil)
         }
         func show(#animated: Bool, completion: ((Bool) -> Void)?) {
             let animations: () -> Void = {
