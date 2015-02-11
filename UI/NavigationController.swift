@@ -7,7 +7,7 @@ extension Msr.UI {
         var rootViewController: UIViewController? {
             return viewControllers.first
         }
-        private var gesture: UIPanGestureRecognizer!
+        private(set) var gesture: UIPanGestureRecognizer!
         var interactivePopGestureRecognizer: UIPanGestureRecognizer {
             return gesture
         }
@@ -431,7 +431,7 @@ extension UIViewController {
             if current is Msr.UI.NavigationController {
                 return current as? Msr.UI.NavigationController
             }
-            current = current?.parentViewController
+            current = current!.parentViewController
         }
         return nil
     }
@@ -442,7 +442,7 @@ extension UIViewController {
                 var isSelfViewController = (viewController === self)
                 var isParentViewController = false
                 var parent = parentViewController
-                while (parent !== navigationController) {
+                while parent !== navigationController {
                     if parent === viewController {
                         isParentViewController = true
                         break
@@ -453,6 +453,17 @@ extension UIViewController {
                     return navigationController?.wrappers[i].navigationBar
                 }
             }
+        }
+        return nil
+    }
+    @objc var msr_navigationWrapperView: Msr.UI.NavigationController.WrapperView? {
+        var current = view
+        while current != nil {
+            typealias Wrapper = Msr.UI.NavigationController.WrapperView
+            if current is Wrapper {
+                return (current as Wrapper)
+            }
+            current = current!.superview
         }
         return nil
     }
