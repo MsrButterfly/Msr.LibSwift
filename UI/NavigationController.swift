@@ -29,20 +29,21 @@ extension Msr.UI {
             viewControllers.append(viewController)
             addChildViewController(viewController)
             wrappers.append(createWrapperForViewController(viewControllers.last!, previousViewController: viewControllers.penultimate))
-            self.wrappers.last!.transform = CGAffineTransformMakeTranslation(self.wrappers.last!.bounds.width, 0)
+            wrappers.last!.transform = CGAffineTransformMakeTranslation(wrappers.last!.bounds.width, 0)
             if viewControllers.count > 1 {
                 wrappers.last!.addGestureRecognizer(gesture)
             }
             view.addSubview(wrappers.last!)
             let animations: () -> Void = {
-                self.transformAtPercentage(1,
-                    frontView: self.wrappers.last!,
-                    backView: self.wrappers.penultimate)
-                self.setNeedsStatusBarAppearanceUpdate()
+                [weak self] in
+                self?.transformAtPercentage(1,
+                    frontView: self!.wrappers.last!,
+                    backView: self!.wrappers.penultimate)
+                self?.setNeedsStatusBarAppearanceUpdate()
             }
             let combinedCompletion: (Bool) -> Void = {
-                finished in
-                self.wrappers.penultimate?.removeFromSuperview()
+                [weak self] finished in
+                self?.wrappers.penultimate?.removeFromSuperview()
                 completion?(finished)
             }
             if animated && viewControllers.count > 1 {
@@ -67,12 +68,12 @@ extension Msr.UI {
                 addChildViewController(viewController)
             }
             pushViewController(viewControllers.last!, animated: animated) {
-                finished in
-                if finished {
+                [weak self] finished in
+                if finished && self != nil {
                     for (i, viewController) in enumerate(viewControllers[0..<viewControllers.count - 1]) {
-                        let wrapper = self.createWrapperForViewController(viewController, previousViewController: self.viewControllers[self.viewControllers.endIndex - viewControllers.count + i - 1])
-                        self.transformAtPercentage(1, frontView: nil, backView: wrapper)
-                        self.wrappers.insert(wrapper, atIndex: self.wrappers.endIndex - 1)
+                        let wrapper = self!.createWrapperForViewController(viewController, previousViewController: self!.viewControllers[self!.viewControllers.endIndex - viewControllers.count + i - 1])
+                        self!.transformAtPercentage(1, frontView: nil, backView: wrapper)
+                        self!.wrappers.insert(wrapper, atIndex: self!.wrappers.endIndex - 1)
                     }
                 }
                 completion?(finished)
@@ -101,12 +102,13 @@ extension Msr.UI {
                         initialSpringVelocity: 0,
                         options: .BeginFromCurrentState,
                         animations: {
-                            self.transformAtPercentage(1, frontView: self.wrappers.last!, backView: self.wrappers.penultimate)
+                            [weak self] in
+                            self?.transformAtPercentage(1, frontView: self!.wrappers.last!, backView: self!.wrappers.penultimate)
                             return
                         },
                         completion: {
-                            finished in
-                            self.wrappers.penultimate?.removeFromSuperview()
+                            [weak self] finished in
+                            self?.wrappers.penultimate?.removeFromSuperview()
                             return
                         })
                 }
@@ -125,22 +127,23 @@ extension Msr.UI {
             }
             let viewControllerToBePopped = viewControllers.last!
             viewControllers.last!.removeFromParentViewController()
-            self.viewControllers.removeLast()
+            viewControllers.removeLast()
             let combinedCompletion: (Bool) -> Void = {
-                finished in
+                [weak self] finished in
                 if finished {
-                    self.removeWrapper(self.wrappers.last!, fromViewController: viewControllerToBePopped)
-                    self.wrappers.last!.removeFromSuperview()
-                    self.wrappers.removeLast()
-                    if self.viewControllers.count > 1 {
-                        self.wrappers.last!.addGestureRecognizer(self.gesture)
+                    self?.removeWrapper(self!.wrappers.last!, fromViewController: viewControllerToBePopped)
+                    self?.wrappers.last!.removeFromSuperview()
+                    self?.wrappers.removeLast()
+                    if self?.viewControllers.count > 1 {
+                        self?.wrappers.last!.addGestureRecognizer(self!.gesture)
                     }
                 }
                 completion?(finished)
             }
             let animations: () -> Void = {
-                self.transformAtPercentage(0, frontView: self.wrappers.last!, backView: self.wrappers.penultimate!)
-                self.setNeedsStatusBarAppearanceUpdate()
+                [weak self] in
+                self?.transformAtPercentage(0, frontView: self!.wrappers.last!, backView: self!.wrappers.penultimate!)
+                self?.setNeedsStatusBarAppearanceUpdate()
             }
             if animated {
                 let distance = view.bounds.width - gesture.translationInView(view).x
@@ -204,17 +207,18 @@ extension Msr.UI {
             view.addSubview(wrappers.last!)
             wrappers.last!.alpha = 0
             let animations: () -> Void = {
-                self.wrappers.last!.alpha = 1
+                [weak self] in
+                self?.wrappers.last!.alpha = 1
                 wrapperToBeReplaced.alpha = 0
-                self.setNeedsStatusBarAppearanceUpdate()
+                self?.setNeedsStatusBarAppearanceUpdate()
             }
             let combinedCompletion: (Bool) -> Void = {
-                finished in
+                [weak self] finished in
                 if finished {
-                    self.removeWrapper(wrapperToBeReplaced, fromViewController: viewControllerToBeReplaced)
+                    self?.removeWrapper(wrapperToBeReplaced, fromViewController: viewControllerToBeReplaced)
                     wrapperToBeReplaced.removeFromSuperview()
-                    if self.viewControllers.count > 1 {
-                        self.wrappers.last!.addGestureRecognizer(self.gesture)
+                    if self?.viewControllers.count > 1 {
+                        self?.wrappers.last!.addGestureRecognizer(self!.gesture)
                     }
                 }
                 completion?(finished)
@@ -244,10 +248,8 @@ extension Msr.UI {
                     break
                 }
             }
-            var viewControllersToBePopped = [UIViewController]()
-            viewControllersToBePopped.extend(self.viewControllers[i..<self.viewControllers.count])
-            var viewControllersToBePushed = [UIViewController]()
-            viewControllersToBePushed.extend(viewControllers[i..<viewControllers.count])
+            var viewControllersToBePopped = [UIViewController](self.viewControllers[i..<self.viewControllers.count])
+            var viewControllersToBePushed = [UIViewController](viewControllers[i..<viewControllers.count])
             let popCount = viewControllersToBePopped.count
             let pushCount = viewControllersToBePushed.count
             // <-: pop, ->: push, x: change
@@ -267,34 +269,34 @@ extension Msr.UI {
                 popToViewController(self.viewControllers[i - 1], animated: animated, completion: completion)
             } else if popCount == 1 && pushCount > 1 {
                 replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated) {
-                    finished in
+                    [weak self] finished in
                     if finished {
                         viewControllersToBePushed.removeFirst()
-                        self.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
+                        self?.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
                     }
                 }
             } else if popCount > 1 && pushCount == 1 {
                 popToViewController(viewControllersToBePopped.first!, animated: animated) {
-                    finished in
+                    [weak self] finished in
                     if finished {
-                        self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated, completion: completion)
+                        self?.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated, completion: completion)
                     }
                 }
             } else if popCount > 1 && pushCount > 1 && i > 0 {
                 popToViewController(self.viewControllers[i - 1], animated: animated) {
-                    finished in
+                    [weak self] finished in
                     if finished {
-                        self.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
+                        self?.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
                     }
                 }
             } else if popCount > 1 && pushCount > 1 && i == 0 {
                 popToRootViewController(animated: animated) {
-                    finished in
+                    [weak self] finished in
                     if finished {
-                        self.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated) {
+                        self?.replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated) {
                             finished in
                             viewControllersToBePushed.removeFirst()
-                            self.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
+                            self?.pushViewControllers(viewControllersToBePushed, animated: animated, completion: completion)
                         }
                     }
                 }
@@ -364,8 +366,8 @@ extension Msr.UI {
                 segmentedViewController.toolBar.setItems([
                     UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
                     UIBarButtonItem(customView: segmentedViewController.segmentedControl),
-                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-                    ], animated: true)
+                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)],
+                    animated: true)
             }
         }
         class WrapperView: UIView {
