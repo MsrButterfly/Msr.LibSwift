@@ -382,12 +382,12 @@ extension Msr.UI {
                     navigationBar.setItems([newValue], animated: false)
                 }
             }
-            let mainView = UIView()
+            let contentView = UIView()
             let overlay = UIView()
             var bodyView: UIView? {
                 willSet {
                     if newValue != nil {
-                        mainView.addSubview(newValue!)
+                        contentView.addSubview(newValue!)
                     }
                 }
                 didSet {
@@ -403,22 +403,14 @@ extension Msr.UI {
                 layer.masksToBounds = false
                 overlay.backgroundColor = UIColor.blackColor()
                 overlay.alpha = 0
-                mainView.layer.masksToBounds = false
-                addSubview(mainView)
+                contentView.layer.masksToBounds = false
+                addSubview(contentView)
                 addSubview(navigationBar)
                 addSubview(overlay)
-                mainView.setTranslatesAutoresizingMaskIntoConstraints(false)
-                navigationBar.setTranslatesAutoresizingMaskIntoConstraints(false)
-                let views = ["bar": navigationBar, "main": mainView]
-                navigationBarConstaint = NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[bar]", options: nil, metrics: nil, views: views).first as NSLayoutConstraint
-                addConstraints(
-                    [navigationBarConstaint] +
-                    NSLayoutConstraint.constraintsWithVisualFormat("|[bar]|", options: nil, metrics: nil, views: views) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("|[main]|", options: nil, metrics: nil, views: views) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("V:|[main]|", options: nil, metrics: nil, views: views))
+                contentView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+                navigationBar.autoresizingMask = .FlexibleWidth
                 layer.addObserver(self, forKeyPath: "bounds", options: NSKeyValueObservingOptions.New, context: nil)
             }
-            var navigationBarConstaint: NSLayoutConstraint! = nil
             internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
                 if object === layer && keyPath == "bounds" {
                     layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
@@ -427,8 +419,8 @@ extension Msr.UI {
             override func layoutSubviews() {
                 let statusBarFrame = UIApplication.sharedApplication().statusBarFrame
                 let orientation = UIApplication.sharedApplication().statusBarOrientation
-                navigationBarConstaint.constant = statusBarFrame.height
                 super.layoutSubviews()
+                navigationBar.frame.origin.y = statusBarFrame.height
                 navigationBar.frame.size.height = orientation.isPortrait ? 44 : 32
                 navigationBar.msr_backgroundView!.frame.size.height = navigationBar.frame.height + statusBarFrame.height
                 navigationBar.msr_backgroundView!.frame.origin.y = -statusBarFrame.height
