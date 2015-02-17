@@ -1,9 +1,20 @@
 import UIKit
 
+//protocol MsrKeyboardBarDelegate: NSObjectProtocol {
+//    func msr_keyboardBarWillRaiseUp(keyboardBar: Msr.UI.KeyboardBar, animationInfo: Msr.UI.AnimationInfo)
+//    func msr_keyboardBarDidRaiseUp(keyboardBar: Msr.UI.KeyboardBar, animationInfo: Msr.UI.AnimationInfo)
+//    func msr_keyboardBarWillFallDown(keyboardBar: Msr.UI.KeyboardBar, animationInfo: Msr.UI.AnimationInfo)
+//    func msr_keyboardBarDidFallDown(keyboardBar: Msr.UI.KeyboardBar, animationInfo: Msr.UI.AnimationInfo)
+//    func msr_keyboardBarWillChangeFrame(keyboardBar: Msr.UI.KeyboardBar, animationInfo: Msr.UI.AnimationInfo)
+//    func msr_keyboardBarDidChangeFrame(keyboardBar: Msr.UI.KeyboardBar, animationInfo: Msr.UI.AnimationInfo)
+//}
+
 extension Msr.UI {
     class KeyboardBar: UIToolbar, UIToolbarDelegate {
         private(set) var horizontalConstraints: [NSLayoutConstraint] = [NSLayoutConstraint]()
         private(set) var bottomConstraint: NSLayoutConstraint?
+//        typealias Delegate = MsrKeyboardBarDelegate
+//        weak var keyboardBarDelegate: Delegate?
         override init() {
             super.init()
             initialize()
@@ -41,25 +52,37 @@ extension Msr.UI {
                 superview!.addConstraints(horizontalConstraints + [bottomConstraint!])
             }
         }
-        internal func keyboardWillShow(notification: NSNotification) {}
-        internal func keyboardWillHide(notification: NSNotification) {}
+        internal func keyboardWillShow(notification: NSNotification) {
+            println(__FUNCTION__)
+            println(notification.userInfo![UIKeyboardAnimationCurveUserInfoKey]!)
+        }
+        internal func keyboardWillHide(notification: NSNotification) {
+            println(__FUNCTION__)
+            println(notification.userInfo![UIKeyboardAnimationCurveUserInfoKey]!)
+        }
         internal func keyboardWillChangeFrame(notification: NSNotification) {
+            println(__FUNCTION__)
+            println(notification.userInfo![UIKeyboardAnimationCurveUserInfoKey]!)
+            updateFrame(notification) {
+                [weak self] finished in
+                return
+            }
+        }
+        private func updateFrame(notification: NSNotification, completion: ((Bool) -> Void)?) {
             let info = notification.userInfo!
             let frameEnd = info[UIKeyboardFrameEndUserInfoKey]!.CGRectValue()
             let duration = info[UIKeyboardAnimationDurationUserInfoKey]!.doubleValue!
-            let curve = UIViewAnimationOptions(rawValue: UInt(info[UIKeyboardAnimationCurveUserInfoKey]!.integerValue!))
+            let curve = UIViewAnimationCurve(rawValue: info[UIKeyboardAnimationCurveUserInfoKey]!.integerValue)
+            bottomConstraint?.constant = min((window?.frame.height ?? 0) - frameEnd.origin.y, frameEnd.height)
             UIView.animateWithDuration(duration,
                 delay: 0,
-                options: curve,
+                options: UIViewAnimationOptions(rawValue: UInt((curve ?? .EaseOut).rawValue)),
                 animations: {
                     [weak self] in
-                    self?.bottomConstraint?.constant = min((self?.window?.frame.height ?? 0) - frameEnd.origin.y, frameEnd.height)
+                    self?.layoutIfNeeded()
                     return
                 },
                 completion: nil)
-        }
-        override func intrinsicContentSize() -> CGSize {
-            return CGSize(width: 0, height: 44)
         }
         func positionForBar(bar: UIBarPositioning) -> UIBarPosition {
             if bar === self {
@@ -68,6 +91,7 @@ extension Msr.UI {
             return .Any
         }
         deinit {
+            println(__FUNCTION__)
             NSNotificationCenter.defaultCenter().removeObserver(self)
         }
     }
