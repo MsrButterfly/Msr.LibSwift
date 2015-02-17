@@ -81,7 +81,7 @@ extension Msr.UI {
             }
         }
         func didPerformPanGesture(gesture: UIPanGestureRecognizer) {
-            var percentage = 1 - gesture.translationInView(wrappers.last!).x / view.bounds.width // ?
+            var percentage = 1 - gesture.translationInView(wrappers.last!).x / view.bounds.width
             if percentage > 1 {
                 percentage = 1
             }
@@ -410,25 +410,28 @@ extension Msr.UI {
                 mainView.setTranslatesAutoresizingMaskIntoConstraints(false)
                 navigationBar.setTranslatesAutoresizingMaskIntoConstraints(false)
                 let views = ["bar": navigationBar, "main": mainView]
+                navigationBarConstaint = NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[bar]", options: nil, metrics: nil, views: views).first as NSLayoutConstraint
                 addConstraints(
+                    [navigationBarConstaint] +
                     NSLayoutConstraint.constraintsWithVisualFormat("|[bar]|", options: nil, metrics: nil, views: views) +
                     NSLayoutConstraint.constraintsWithVisualFormat("|[main]|", options: nil, metrics: nil, views: views) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("V:|[bar]", options: nil, metrics: nil, views: views) +
                     NSLayoutConstraint.constraintsWithVisualFormat("V:|[main]|", options: nil, metrics: nil, views: views))
                 layer.addObserver(self, forKeyPath: "bounds", options: NSKeyValueObservingOptions.New, context: nil)
             }
+            var navigationBarConstaint: NSLayoutConstraint! = nil
             internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
                 if object === layer && keyPath == "bounds" {
                     layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
                 }
             }
             override func layoutSubviews() {
-                super.layoutSubviews()
                 let statusBarFrame = UIApplication.sharedApplication().statusBarFrame
                 let orientation = UIApplication.sharedApplication().statusBarOrientation
-                println(UIApplication.sharedApplication().statusBarHidden)
-                println(statusBarFrame)
-                navigationBar.frame.size.height = (orientation.isPortrait ? 44 : 32) + statusBarFrame.height
+                navigationBarConstaint.constant = statusBarFrame.height
+                super.layoutSubviews()
+                navigationBar.frame.size.height = orientation.isPortrait ? 44 : 32
+                navigationBar.msr_backgroundView!.frame.size.height = navigationBar.frame.height + statusBarFrame.height
+                navigationBar.msr_backgroundView!.frame.origin.y = -statusBarFrame.height
             }
             deinit {
                 layer.removeObserver(self, forKeyPath: "bounds")
