@@ -18,6 +18,7 @@ extension Msr.UI {
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
             pushViewController(rootViewController, animated: false)
             view.backgroundColor = UIColor.blackColor()
+            modalPresentationCapturesStatusBarAppearance = true
         }
         required init(coder aDecoder: NSCoder) {
             fatalError("init(coder:) has not been implemented")
@@ -29,7 +30,7 @@ extension Msr.UI {
             viewControllers.append(viewController)
             addChildViewController(viewController)
             wrappers.append(createWrapperForViewController(viewControllers.last!, previousViewController: viewControllers.penultimate))
-            wrappers.last!.transform = CGAffineTransformMakeTranslation(wrappers.last!.bounds.width, 0)
+            wrappers.last!.transform = CGAffineTransformMakeTranslation(view.bounds.width, 0)
             if viewControllers.count > 1 {
                 wrappers.last!.addGestureRecognizer(gesture)
             }
@@ -80,7 +81,7 @@ extension Msr.UI {
             }
         }
         func didPerformPanGesture(gesture: UIPanGestureRecognizer) {
-            var percentage = 1 - gesture.translationInView(wrappers.last!).x / view.bounds.width
+            var percentage = 1 - gesture.translationInView(wrappers.last!).x / view.bounds.width // ?
             if percentage > 1 {
                 percentage = 1
             }
@@ -313,20 +314,25 @@ extension Msr.UI {
             }
         }
         private func createWrapperForViewController(viewController: UIViewController, previousViewController: UIViewController?) -> WrapperView {
-            var frame = view.bounds
-            viewController.view.frame = frame
-            viewController.view.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-            let wrapper = WrapperView(frame: frame, statusBarStyle: viewController.preferredStatusBarStyle())
-            wrapper.insertSubview(viewController.view, belowSubview: wrapper.navigationBar)
+            let wrapper = WrapperView()
+            switch viewController.preferredStatusBarStyle() {
+            case .Default:
+                wrapper.navigationBar.barStyle = UIBarStyle.Default
+                wrapper.navigationBar.tintColor = UIColor.blackColor()
+                break
+            case .LightContent:
+                wrapper.navigationBar.barStyle = UIBarStyle.Black
+                wrapper.navigationBar.tintColor = UIColor.whiteColor()
+                break
+            default:
+                break
+            }
+            wrapper.bodyView = viewController.view
             wrapper.navigationItem = viewController.navigationItem
             if viewController.navigationItem.leftBarButtonItems == nil && previousViewController != nil {
                 let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
-            var newFrame = viewController.view.frame
-            newFrame.size.height -= wrapper.navigationBar.bounds.height
-            newFrame.origin.y += wrapper.navigationBar.bounds.height
-            viewController.view.frame = newFrame
             if let segmentedViewController = viewController as? SegmentedViewController {
                 segmentedViewController.toolBar.removeFromSuperview()
                 segmentedViewController.segmentedControl.removeFromSuperview()
@@ -355,10 +361,6 @@ extension Msr.UI {
             popViewController(animated: true)
         }
         private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
-            var frame = viewController.view.frame
-            frame.size.height += wrapper.navigationBar.bounds.height
-            frame.origin.y -= wrapper.navigationBar.bounds.height
-            viewController.view.frame = frame
             if let segmentedViewController = viewController as? SegmentedViewController {
                 (segmentedViewController.view as UIScrollView).contentInset.top += segmentedViewController.toolBar.bounds.height
                 segmentedViewController.segmentedControl.removeFromSuperview()
@@ -370,8 +372,8 @@ extension Msr.UI {
                     animated: true)
             }
         }
-        class WrapperView: UIView {
-            let navigationBar = UINavigationController().navigationBar
+        class WrapperView: AutoExpandingView {
+            let navigationBar = UINavigationBar()
             var navigationItem: UINavigationItem {
                 get {
                     return navigationBar.items[0] as UINavigationItem
@@ -380,48 +382,66 @@ extension Msr.UI {
                     navigationBar.setItems([newValue], animated: false)
                 }
             }
+            let mainView = UIView()
             let overlay = UIView()
-            init(frame: CGRect, statusBarStyle: UIStatusBarStyle) {
-                switch statusBarStyle {
-                case .Default:
-                    navigationBar.barStyle = UIBarStyle.Default
-                    navigationBar.tintColor = UIColor.blackColor()
-                    break
-                case .LightContent:
-                    navigationBar.barStyle = UIBarStyle.Black
-                    navigationBar.tintColor = UIColor.whiteColor()
-                    break
-                default:
-                    break
+            var bodyView: UIView? {
+                willSet {
+                    if newValue != nil {
+                        mainView.addSubview(newValue!)
+                    }
                 }
-                super.init(frame: frame)
+                didSet {
+                    oldValue?.removeFromSuperview()
+                }
+            }
+            override func msr_initialize() {
+                super.msr_initialize()
                 backgroundColor = UIColor.whiteColor()
                 layer.shadowColor = UIColor.blackColor().CGColor
                 layer.shadowOpacity = 0.5
                 layer.shadowOffset = CGSize(width: 0, height: 0)
                 layer.masksToBounds = false
-                layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
-                overlay.frame = bounds
                 overlay.backgroundColor = UIColor.blackColor()
                 overlay.alpha = 0
-                navigationBar.center.x = center.x
-                var navigationBarFrame = navigationBar.frame
-                navigationBarFrame.size.height += UIApplication.sharedApplication().statusBarFrame.height
-                navigationBarFrame.origin.y = 0
-                navigationBar.frame = navigationBarFrame
+                mainView.layer.masksToBounds = false
+                addSubview(mainView)
                 addSubview(navigationBar)
                 addSubview(overlay)
+                mainView.setTranslatesAutoresizingMaskIntoConstraints(false)
+                navigationBar.setTranslatesAutoresizingMaskIntoConstraints(false)
+                let views = ["bar": navigationBar, "main": mainView]
+                addConstraints(
+                    NSLayoutConstraint.constraintsWithVisualFormat("|[bar]|", options: nil, metrics: nil, views: views) +
+                    NSLayoutConstraint.constraintsWithVisualFormat("|[main]|", options: nil, metrics: nil, views: views) +
+                    NSLayoutConstraint.constraintsWithVisualFormat("V:|[bar]", options: nil, metrics: nil, views: views) +
+                    NSLayoutConstraint.constraintsWithVisualFormat("V:|[main]|", options: nil, metrics: nil, views: views))
+                layer.addObserver(self, forKeyPath: "bounds", options: NSKeyValueObservingOptions.New, context: nil)
             }
-            required init(coder aDecoder: NSCoder) {
-                fatalError("init(coder:) has not been implemented")
+            internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
+                if object === layer && keyPath == "bounds" {
+                    layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
+                }
+            }
+            override func layoutSubviews() {
+                super.layoutSubviews()
+                let statusBarFrame = UIApplication.sharedApplication().statusBarFrame
+                let orientation = UIApplication.sharedApplication().statusBarOrientation
+                println(UIApplication.sharedApplication().statusBarHidden)
+                println(statusBarFrame)
+                navigationBar.frame.size.height = (orientation.isPortrait ? 44 : 32) + statusBarFrame.height
+            }
+            deinit {
+                layer.removeObserver(self, forKeyPath: "bounds")
             }
         }
-        override func preferredStatusBarStyle() -> UIStatusBarStyle {
-            if viewControllers.count > 0 {
-                return viewControllers.last!.preferredStatusBarStyle()
-            } else {
-                return .Default
-            }
+        override func preferredStatusBarUpdateAnimation() -> UIStatusBarAnimation {
+            return viewControllers.last?.preferredStatusBarUpdateAnimation() ?? .Fade
+        }
+        override func childViewControllerForStatusBarHidden() -> UIViewController? {
+            return viewControllers.last
+        }
+        override func childViewControllerForStatusBarStyle() -> UIViewController? {
+            return viewControllers.last
         }
     }
 }
