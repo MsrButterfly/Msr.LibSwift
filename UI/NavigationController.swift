@@ -387,6 +387,8 @@ extension Msr.UI {
             var bodyView: UIView? {
                 willSet {
                     if newValue != nil {
+                        newValue!.autoresizingMask = .FlexibleHeight | .FlexibleWidth
+                        newValue!.frame = contentView.bounds
                         contentView.addSubview(newValue!)
                     }
                 }
@@ -424,6 +426,7 @@ extension Msr.UI {
                 navigationBar.frame.size.height = orientation.isPortrait ? 44 : 32
                 navigationBar.msr_backgroundView!.frame.size.height = navigationBar.frame.height + statusBarFrame.height
                 navigationBar.msr_backgroundView!.frame.origin.y = -statusBarFrame.height
+                contentView.frame.msr_top = navigationBar.frame.msr_bottom
             }
             deinit {
                 layer.removeObserver(self, forKeyPath: "bounds")
