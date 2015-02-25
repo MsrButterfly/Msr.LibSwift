@@ -310,7 +310,7 @@ extension Msr.UI {
             }
             if backView != nil {
                 backView.transform = CGAffineTransformMakeTranslation(-view.bounds.width / 4 * percentage, 0)
-                backView.overlay.alpha = percentage * 0.1
+                backView.overlay.alpha = percentage * 0.2
             }
         }
         private func createWrapperForViewController(viewController: UIViewController, previousViewController: UIViewController?) -> WrapperView {
@@ -383,7 +383,7 @@ extension Msr.UI {
                 }
             }
             let contentView = UIView()
-            let overlay = UIView()
+            let overlay = AutoExpandingView()
             var bodyView: UIView? {
                 willSet {
                     if newValue != nil {
@@ -423,7 +423,7 @@ extension Msr.UI {
                 let orientation = UIApplication.sharedApplication().statusBarOrientation
                 super.layoutSubviews()
                 navigationBar.frame.origin.y = statusBarFrame.height
-                navigationBar.frame.size.height = orientation.isPortrait ? 44 : 32
+                navigationBar.frame.size.height = orientation.isPortrait ? _Constant.UIToolBarHeightWhenPortrait : _Constant.UIToolBarHeightWhenLandscape
                 navigationBar.msr_backgroundView!.frame.size.height = navigationBar.frame.height + statusBarFrame.height
                 navigationBar.msr_backgroundView!.frame.origin.y = -statusBarFrame.height
                 contentView.frame.msr_top = navigationBar.frame.msr_bottom
