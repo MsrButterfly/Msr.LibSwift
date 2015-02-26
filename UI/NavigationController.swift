@@ -152,7 +152,6 @@ extension Msr.UI {
             let combinedCompletion: (Bool) -> Void = {
                 [weak self] finished in
                 if finished {
-                    self?.removeWrapper(self!.wrappers.last!, fromViewController: viewControllerToBePopped)
                     self?.wrappers.last!.removeFromSuperview()
                     self?.wrappers.removeLast()
                     if self?.viewControllers.count > 1 {
@@ -195,7 +194,6 @@ extension Msr.UI {
             if count > 0 {
                 for i in 1..<count {
                     let penultimate = viewControllers.endIndex - 2
-                    removeWrapper(wrappers[penultimate], fromViewController: viewControllers[penultimate])
                     viewControllers[penultimate].removeFromParentViewController()
                     wrappers[penultimate].removeFromSuperview()
                     viewControllers.removeAtIndex(penultimate)
@@ -236,7 +234,6 @@ extension Msr.UI {
             let combinedCompletion: (Bool) -> Void = {
                 [weak self] finished in
                 if finished {
-                    self?.removeWrapper(wrapperToBeReplaced, fromViewController: viewControllerToBeReplaced)
                     wrapperToBeReplaced.removeFromSuperview()
                     if self?.viewControllers.count > 1 {
                         self?.wrappers.last!.addGestureRecognizer(self!.gesture)
@@ -353,44 +350,10 @@ extension Msr.UI {
                 let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: .Bordered, target: self, action: "didPressBackButton")
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
-            if let segmentedViewController = viewController as? SegmentedViewController {
-                segmentedViewController.toolBar.removeFromSuperview()
-                segmentedViewController.segmentedControl.removeFromSuperview()
-                wrapper.navigationBar.bounds.size.height += segmentedViewController.toolBar.bounds.height
-                wrapper.navigationBar.frame.origin.y = 0
-                wrapper.navigationBar.setTitleVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
-                for navigationItem in wrapper.navigationBar.items as [UINavigationItem] {
-                    if navigationItem.leftBarButtonItems != nil {
-                        for item in navigationItem.leftBarButtonItems as [UIBarButtonItem] {
-                            item.setBackgroundVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
-                        }
-                    }
-                    if navigationItem.rightBarButtonItems != nil {
-                        for item in navigationItem.rightBarButtonItems as [UIBarButtonItem] {
-                            item.setBackgroundVerticalPositionAdjustment(-segmentedViewController.toolBar.bounds.height, forBarMetrics: .Default)
-                        }
-                    }
-                }
-                segmentedViewController.segmentedControl.center.x = wrapper.center.x
-                segmentedViewController.segmentedControl.center.y = wrapper.navigationBar.bounds.height - segmentedViewController.toolBar.bounds.height / 2
-                wrapper.navigationBar.addSubview(segmentedViewController.segmentedControl)
-            }
             return wrapper
         }
         func didPressBackButton() {
             popViewController(animated: true)
-        }
-        private func removeWrapper(wrapper: WrapperView, fromViewController viewController: UIViewController) {
-            if let segmentedViewController = viewController as? SegmentedViewController {
-                (segmentedViewController.view as UIScrollView).contentInset.top += segmentedViewController.toolBar.bounds.height
-                segmentedViewController.segmentedControl.removeFromSuperview()
-                segmentedViewController.view.addSubview(segmentedViewController.toolBar)
-                segmentedViewController.toolBar.setItems([
-                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
-                    UIBarButtonItem(customView: segmentedViewController.segmentedControl),
-                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)],
-                    animated: true)
-            }
         }
         class WrapperView: AutoExpandingView {
             let navigationBar = UINavigationBar()
@@ -451,6 +414,9 @@ extension Msr.UI {
             deinit {
                 layer.removeObserver(self, forKeyPath: "bounds")
             }
+        }
+        override func preferredStatusBarStyle() -> UIStatusBarStyle {
+            return viewControllers.last?.preferredStatusBarStyle() ?? .Default
         }
         override func preferredStatusBarUpdateAnimation() -> UIStatusBarAnimation {
             return viewControllers.last?.preferredStatusBarUpdateAnimation() ?? .Fade
