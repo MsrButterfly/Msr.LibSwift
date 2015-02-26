@@ -46,7 +46,7 @@ extension Msr.UI {
                 completion: nil)
         }
         func hide() {
-            resignFirstResponderOfAllSubviews()
+            msr_resignFirstResponderOfAllSubviews()
             alpha = 1
             _contentView.transform = CGAffineTransformMakeScale(1, 1)
             UIView.animateWithDuration(0.5,
