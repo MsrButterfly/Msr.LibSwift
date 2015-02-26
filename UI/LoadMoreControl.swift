@@ -120,7 +120,12 @@ extension Msr.UI {
 }
 
 extension Msr.UI._Constant {
-    static var UITableViewControllerLoadMoreControlAssociationKey = CChar()
+    static var UITableViewControllerLoadMoreControlAssociationKey: UnsafePointer<Void> {
+        struct _Static {
+            static var key = CChar()
+        }
+        return UnsafePointer<Void>(UnsafePointer.msr_of(&_Static.key))
+    }
 }
 
 extension UITableViewController {
@@ -128,14 +133,14 @@ extension UITableViewController {
         set {
             self.msr_loadMoreControl?.removeFromSuperview()
             self.msr_loadMoreControl?.scrollView = nil
-            objc_setAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             if newValue != nil {
                 tableView.insertSubview(newValue!, belowSubview: tableView.subviews[0] as UIView)
                 newValue!.scrollView = tableView
             }
         }
         get {
-            return objc_getAssociatedObject(self, &Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
+            return objc_getAssociatedObject(self, Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey) as? Msr.UI.LoadMoreControl
         }
     }
 }
