@@ -1,7 +1,7 @@
 import Foundation
 
 extension UnsafePointer {
-    static func msr_of(inout value: T) -> UnsafePointer<T> {
-        return withUnsafePointer(&value, { $0 })
+    static func msr_to<U>(inout value: U) -> UnsafePointer<T> {
+        return UnsafePointer<T>(withUnsafePointer(&value, { $0 }))
     }
 }

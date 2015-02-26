@@ -5,7 +5,7 @@ extension Msr.UI._Constant {
         struct _Static {
             static var _keys: Int32 = 0
             static var keys: UnsafePointer<Void> {
-                return UnsafePointer<Void>(UnsafePointer<Int32>.msr_of(&_keys))
+                return UnsafePointer<Void>.msr_to(&_keys)
             }
         }
         return [
@@ -18,7 +18,6 @@ extension Msr.UI._Constant {
 
 extension UIView {
     func msr_edgeAttachedConstraintAtEdge(edge: Msr.UI.Edge) -> NSLayoutConstraint? {
-        println(("GET: ", Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!))
         return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!) as? NSLayoutConstraint
     }
     private func msr_setEdgeAttachedConstraintAtEdge(edge: Msr.UI.Edge, toNil: Bool) {
@@ -28,8 +27,6 @@ extension UIView {
             .Bottom: "V:[self]|",
             .Left: "|[self]",
             .Right: "[self]|"]
-        println(("SET: ", Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!))
-        println(NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first)
         objc_setAssociatedObject(self, Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!, toNil ? nil : NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
     }
     var msr_shouldTranslateAutoresizingMaskIntoConstraints: Bool {

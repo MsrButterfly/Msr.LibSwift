@@ -5,7 +5,7 @@ extension Msr.UI._Constant {
         struct _Static {
             static var key = CChar()
         }
-        return UnsafePointer<Void>(UnsafePointer.msr_of(&_Static.key))
+        return UnsafePointer<Void>.msr_to(&_Static.key)
     }
 }
 
