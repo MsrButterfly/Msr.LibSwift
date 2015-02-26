@@ -15,14 +15,23 @@ extension Msr.UI {
         let maxDuration = NSTimeInterval(0.5)
         init(rootViewController: UIViewController) {
             super.init(nibName: nil, bundle: nil)
-            gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
-            gesture.delegate = self
+            msr_initialize()
             pushViewController(rootViewController, animated: false)
-            view.backgroundColor = UIColor.blackColor()
-            modalPresentationCapturesStatusBarAppearance = true
         }
         required init(coder aDecoder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
+            super.init(coder: aDecoder)
+            msr_initialize()
+        }
+        override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+            super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+            msr_initialize()
+        }
+        func msr_initialize() {
+            println(__FUNCTION__)
+            gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
+            gesture.delegate = self
+            view.backgroundColor = UIColor.blackColor()
+            modalPresentationCapturesStatusBarAppearance = true
         }
         func pushViewController(viewController: UIViewController, animated: Bool) {
             pushViewController(viewController, animated: animated, completion: nil)
