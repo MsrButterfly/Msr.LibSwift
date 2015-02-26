@@ -16,6 +16,7 @@ extension Msr.UI {
         init(rootViewController: UIViewController) {
             super.init(nibName: nil, bundle: nil)
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
+            gesture.delegate = self
             pushViewController(rootViewController, animated: false)
             view.backgroundColor = UIColor.blackColor()
             modalPresentationCapturesStatusBarAppearance = true
@@ -86,8 +87,10 @@ extension Msr.UI {
                 percentage = 1
             }
             switch gesture.state {
-            case .Began, .Changed:
+            case .Began:
                 view.insertSubview(wrappers.penultimate!, belowSubview: wrappers.last!)
+                break
+            case .Changed:
                 transformAtPercentage(percentage, frontView: wrappers.last!, backView: wrappers.penultimate!)
                 break
             case .Ended, .Cancelled:
@@ -114,9 +117,26 @@ extension Msr.UI {
                         })
                 }
                 break
+            case .Failed:
+                break
             default:
                 break
             }
+        }
+        func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
+            if gestureRecognizer === gesture {
+                let velocity = gesture.velocityInView(view)
+                if velocity.x < velocity.y {
+                    return false
+                }
+            }
+            return true
+        }
+        func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailByGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            if gestureRecognizer === otherGestureRecognizer {
+                return true
+            }
+            return false
         }
         func popViewController(#animated: Bool) -> UIViewController {
             return popViewController(animated: animated, completion: nil)
@@ -330,7 +350,7 @@ extension Msr.UI {
             wrapper.bodyView = viewController.view
             wrapper.navigationItem = viewController.navigationItem
             if viewController.navigationItem.leftBarButtonItems == nil && previousViewController != nil {
-                let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: UIBarButtonItemStyle.Bordered, target: self, action: "didPressBackButton")
+                let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: .Bordered, target: self, action: "didPressBackButton")
                 wrapper.navigationItem.leftBarButtonItem = backButton
             }
             if let segmentedViewController = viewController as? SegmentedViewController {
@@ -456,25 +476,7 @@ extension UIViewController {
         return nil
     }
     @objc var msr_navigationBar: UINavigationBar? {
-        let navigationController = msr_navigationController
-        if navigationController != nil {
-            for (i, viewController) in enumerate(navigationController!.viewControllers) {
-                var isSelfViewController = (viewController === self)
-                var isParentViewController = false
-                var parent = parentViewController
-                while parent !== navigationController {
-                    if parent === viewController {
-                        isParentViewController = true
-                        break
-                    }
-                    parent = parent?.parentViewController
-                }
-                if isSelfViewController || isParentViewController {
-                    return navigationController?.wrappers[i].navigationBar
-                }
-            }
-        }
-        return nil
+        return msr_navigationWrapperView?.navigationBar
     }
     @objc var msr_navigationWrapperView: Msr.UI.NavigationController.WrapperView? {
         var current = view

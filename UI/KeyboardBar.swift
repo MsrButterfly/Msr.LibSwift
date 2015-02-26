@@ -49,7 +49,7 @@ extension Msr.UI {
             let duration = info[UIKeyboardAnimationDurationUserInfoKey]!.doubleValue!
             let curve = UIViewAnimationCurve(rawValue: info[UIKeyboardAnimationCurveUserInfoKey]!.integerValue)
             keyboardBarDelegate?.msr_keyboardBarWillChangeFrame(self, animationInfo: AnimationInfo(keyboardNotification: notification))
-            msr_edgeAttachedConstraintAtEdge(.Bottom)?.constant = min((window?.frame.height ?? 0) - frameEnd.origin.y, frameEnd.height)
+            msr_edgeAttachedConstraintAtEdge(.Bottom)?.constant = min((window?.frame.height ?? 0) - frameEnd.msr_top, frameEnd.height)
             UIView.animateWithDuration(duration,
                 delay: 0,
                 options: UIViewAnimationOptions(rawValue: UInt((curve ?? .EaseOut).rawValue)),
