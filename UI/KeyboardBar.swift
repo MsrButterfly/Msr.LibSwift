@@ -7,8 +7,6 @@ protocol MsrKeyboardBarDelegate: NSObjectProtocol {
 
 extension Msr.UI {
     class KeyboardBar: UIView {
-        private(set) var horizontalConstraints: [NSLayoutConstraint] = [NSLayoutConstraint]()
-        private(set) var bottomConstraint: NSLayoutConstraint?
         var backgroundView: UIView!
         typealias Delegate = MsrKeyboardBarDelegate
         weak var keyboardBarDelegate: Delegate?
@@ -26,31 +24,24 @@ extension Msr.UI {
         }
         private func msr_initialize() {
             let views = ["self": self]
-            setTranslatesAutoresizingMaskIntoConstraints(false)
+            msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillChangeFrame:", name: UIKeyboardWillChangeFrameNotification, object: nil)
         }
         override func willMoveToSuperview(newSuperview: UIView?) {
             super.willMoveToSuperview(newSuperview)
-            if superview != nil && bottomConstraint != nil {
-                superview!.removeConstraints(horizontalConstraints + [bottomConstraint!])
-                horizontalConstraints = []
-                bottomConstraint = nil
+            if superview != nil {
+                msr_removeAutoExpandingConstraintsFromSuperview()
             }
         }
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
             if superview != nil {
-                let views = ["self": self]
-                bottomConstraint = (NSLayoutConstraint.constraintsWithVisualFormat("V:[self]|", options: nil, metrics: nil, views: views).first as NSLayoutConstraint)
-                horizontalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("|[self]|", options: nil, metrics: nil, views: views) as [NSLayoutConstraint]
-                superview!.addConstraints(horizontalConstraints + [bottomConstraint!])
+                msr_addHorizontalExpandingConstraintsToSuperView()
+                msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Bottom)
             }
         }
         internal func keyboardWillChangeFrame(notification: NSNotification) {
-            updateFrame(notification) {
-                [weak self] finished in
-                return
-            }
+            updateFrame(notification, completion: nil)
         }
         private func updateFrame(notification: NSNotification, completion: ((Bool) -> Void)?) {
             let info = notification.userInfo!
@@ -58,7 +49,7 @@ extension Msr.UI {
             let duration = info[UIKeyboardAnimationDurationUserInfoKey]!.doubleValue!
             let curve = UIViewAnimationCurve(rawValue: info[UIKeyboardAnimationCurveUserInfoKey]!.integerValue)
             keyboardBarDelegate?.msr_keyboardBarWillChangeFrame(self, animationInfo: AnimationInfo(keyboardNotification: notification))
-            bottomConstraint?.constant = min((window?.frame.height ?? 0) - frameEnd.origin.y, frameEnd.height)
+            msr_edgeAttachedConstraintAtEdge(.Bottom)?.constant = min((window?.frame.height ?? 0) - frameEnd.origin.y, frameEnd.height)
             UIView.animateWithDuration(duration,
                 delay: 0,
                 options: UIViewAnimationOptions(rawValue: UInt((curve ?? .EaseOut).rawValue)),

@@ -2,7 +2,6 @@ import UIKit
 
 extension Msr.UI {
     class AutoExpandingView: UIView {
-        var layoutConstrains = [NSLayoutConstraint]()
         override init() {
             super.init()
             // msr_initialize() will be invoked by init(frame:).
@@ -16,19 +15,16 @@ extension Msr.UI {
             msr_initialize()
         }
         func msr_initialize() {
-            setTranslatesAutoresizingMaskIntoConstraints(false)
+            msr_shouldTranslateAutoresizingMaskIntoConstraints = false
         }
         override func willMoveToSuperview(newSuperview: UIView?) {
-            superview?.removeConstraints(layoutConstrains)
-            layoutConstrains = []
+            if superview != nil {
+                msr_removeAutoExpandingConstraintsFromSuperview()
+            }
         }
         override func didMoveToSuperview() {
             if superview != nil {
-                let views = ["self": self]
-                layoutConstrains = (
-                    NSLayoutConstraint.constraintsWithVisualFormat("|[self]|", options: nil, metrics: nil, views: views) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("V:|[self]|", options: nil, metrics: nil, views: views)) as [NSLayoutConstraint]
-                superview!.addConstraints(layoutConstrains)
+                msr_addAutoExpandingConstraintsToSuperview()
             }
         }
     }
