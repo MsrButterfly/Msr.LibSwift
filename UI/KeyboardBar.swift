@@ -36,8 +36,8 @@ extension Msr.UI {
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
             if superview != nil {
-                msr_addHorizontalExpandingConstraintsToSuperView()
-                msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Bottom)
+                msr_addHorizontalExpandingConstraintsToSuperview()
+                msr_addBottomAttachedConstraintToSuperview()
             }
         }
         internal func keyboardWillChangeFrame(notification: NSNotification) {
@@ -49,7 +49,7 @@ extension Msr.UI {
             let duration = info[UIKeyboardAnimationDurationUserInfoKey]!.doubleValue!
             let curve = UIViewAnimationCurve(rawValue: info[UIKeyboardAnimationCurveUserInfoKey]!.integerValue)
             keyboardBarDelegate?.msr_keyboardBarWillChangeFrame(self, animationInfo: AnimationInfo(keyboardNotification: notification))
-            msr_edgeAttachedConstraintAtEdge(.Bottom)?.constant = min((window?.frame.height ?? 0) - frameEnd.msr_top, frameEnd.height)
+            msr_bottomAttachedConstraint?.constant = min((window?.frame.height ?? 0) - frameEnd.msr_top, frameEnd.height)
             UIView.animateWithDuration(duration,
                 delay: 0,
                 options: UIViewAnimationOptions(rawValue: UInt((curve ?? .EaseOut).rawValue)),

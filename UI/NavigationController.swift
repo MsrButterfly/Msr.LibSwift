@@ -27,7 +27,6 @@ extension Msr.UI {
             msr_initialize()
         }
         func msr_initialize() {
-            println(__FUNCTION__)
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
             gesture.delegate = self
             view.backgroundColor = UIColor.blackColor()
@@ -279,15 +278,17 @@ extension Msr.UI {
             var viewControllersToBePushed = [UIViewController](viewControllers[i..<viewControllers.count])
             let popCount = viewControllersToBePopped.count
             let pushCount = viewControllersToBePushed.count
-            // <-: pop, ->: push, x: change
-            // 1.        : popCount = pushCount = 0
-            // 2. x      : popCount = pushCount = 1
-            // 3. ->     : popCount = 0, pushCount > 0
-            // 4. <-     : popCount > 0, pushCount = 0
-            // 5. x ->   : popCount = 1, pushCount > 1
-            // 6. <- x   : popCount > 1, pushCount = 1
-            // 7. <- ->  : popCount > 1, pushCount > 1, remaining > 0
-            // 8. <- x ->: popCount > 1, pushCount > 1, remaining = 0
+            /********************************************************
+             * <-: pop, ->: push, x: change
+             * 1.        : popCount = pushCount = 0
+             * 2. x      : popCount = pushCount = 1
+             * 3. ->     : popCount = 0, pushCount > 0
+             * 4. <-     : popCount > 0, pushCount = 0
+             * 5. x ->   : popCount = 1, pushCount > 1
+             * 6. <- x   : popCount > 1, pushCount = 1
+             * 7. <- ->  : popCount > 1, pushCount > 1, remaining > 0
+             * 8. <- x ->: popCount > 1, pushCount > 1, remaining = 0
+             ********************************************************/
             if popCount == 1 && pushCount == 1 {
                 replaceCurrentViewControllerWithViewController(viewControllersToBePushed.first!, animated: animated, completion: completion)
             } else if popCount == 0 && pushCount > 0 {

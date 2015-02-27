@@ -1,7 +1,7 @@
 import UIKit
 
 extension Msr.UI._Constant {
-    static var UIViewEdgeAttachedConstraintAssociationKeys: [Msr.UI.Edge: UnsafePointer<Void>] {
+    static var UIViewEdgeAttachedConstraintAssociationKeys: [Msr.UI.FrameEdge: UnsafePointer<Void>] {
         struct _Static {
             static var _keys: Int32 = 0
             static var keys: UnsafePointer<Void> {
@@ -17,12 +17,12 @@ extension Msr.UI._Constant {
 }
 
 extension UIView {
-    func msr_edgeAttachedConstraintAtEdge(edge: Msr.UI.Edge) -> NSLayoutConstraint? {
+    func msr_edgeAttachedConstraintAtEdge(edge: Msr.UI.FrameEdge) -> NSLayoutConstraint? {
         return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!) as? NSLayoutConstraint
     }
-    private func msr_setEdgeAttachedConstraintAtEdge(edge: Msr.UI.Edge, toNil: Bool) {
+    private func msr_setEdgeAttachedConstraintAtEdge(edge: Msr.UI.FrameEdge, toNil: Bool) {
         let views = ["self": self]
-        let formats: [Msr.UI.Edge: String] = [
+        let formats: [Msr.UI.FrameEdge: String] = [
             .Top: "V:|[self]",
             .Bottom: "V:[self]|",
             .Left: "|[self]",
@@ -37,41 +37,139 @@ extension UIView {
             setTranslatesAutoresizingMaskIntoConstraints(newValue)
         }
     }
-    func msr_addEdgeAttachedConstraintToSuperviewAtEdge(edge: Msr.UI.Edge) {
+    func msr_addEdgeAttachedConstraintToSuperviewAtEdge(edge: Msr.UI.FrameEdge) {
         if msr_edgeAttachedConstraintAtEdge(edge) == nil {
             msr_setEdgeAttachedConstraintAtEdge(edge, toNil: false)
             superview!.addConstraint(msr_edgeAttachedConstraintAtEdge(edge)!)
         }
     }
-    func msr_addHorizontalExpandingConstraintsToSuperView() {
-        msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Left)
-        msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Right)
+    var msr_topAttachedConstraint: NSLayoutConstraint? {
+        return msr_edgeAttachedConstraintAtEdge(.Top)
     }
-    func msr_addVerticalExpandingConstraintsToSuperView() {
+    var msr_bottomAttachedConstraint: NSLayoutConstraint? {
+        return msr_edgeAttachedConstraintAtEdge(.Bottom)
+    }
+    var msr_leftAttachedConstraint: NSLayoutConstraint? {
+        return msr_edgeAttachedConstraintAtEdge(.Left)
+    }
+    var msr_rightAttachedConstraint: NSLayoutConstraint? {
+        return msr_edgeAttachedConstraintAtEdge(.Right)
+    }
+    func msr_addTopAttachedConstraintToSuperview() {
         msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Top)
+    }
+    func msr_addBottomAttachedConstraintToSuperview() {
         msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Bottom)
     }
-    func msr_addAutoExpandingConstraintsToSuperview() {
-        msr_addHorizontalExpandingConstraintsToSuperView()
-        msr_addVerticalExpandingConstraintsToSuperView()
+    func msr_addLeftAttachedConstraintToSuperview() {
+        msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Left)
     }
-    func msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(edge: Msr.UI.Edge) {
+    func msr_addRightAttachedConstraintToSuperview() {
+        msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Right)
+    }
+    func msr_addHorizontalExpandingConstraintsToSuperview() {
+        msr_addLeftAttachedConstraintToSuperview()
+        msr_addRightAttachedConstraintToSuperview()
+    }
+    func msr_addVerticalExpandingConstraintsToSuperview() {
+        msr_addTopAttachedConstraintToSuperview()
+        msr_addBottomAttachedConstraintToSuperview()
+    }
+    func msr_addAutoExpandingConstraintsToSuperview() {
+        msr_addHorizontalExpandingConstraintsToSuperview()
+        msr_addVerticalExpandingConstraintsToSuperview()
+    }
+    func msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(edge: Msr.UI.FrameEdge) {
         let constraint = msr_edgeAttachedConstraintAtEdge(edge)
         if constraint != nil {
             superview!.removeConstraint(constraint!)
             msr_setEdgeAttachedConstraintAtEdge(edge, toNil: true)
         }
     }
-    func msr_removeHorizontalExpandingConstraintsFromSuperview() {
+    func msr_removeTopAttachedConstraintFromSuperview() {
+        msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Top)
+    }
+    func msr_removeBottomAttachedConstraintFromSuperview() {
+        msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Bottom)
+    }
+    func msr_removeLeftAttachedConstraintFromSuperview() {
         msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Left)
+    }
+    func msr_removeRightAttachedConstraintFromSuperview() {
         msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Right)
     }
+    func msr_removeHorizontalExpandingConstraintsFromSuperview() {
+        msr_removeLeftAttachedConstraintFromSuperview()
+        msr_removeRightAttachedConstraintFromSuperview()
+    }
     func msr_removeVerticalExpandingConstraintsFromSuperview() {
-        msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Top)
-        msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Bottom)
+        msr_removeTopAttachedConstraintFromSuperview()
+        msr_removeBottomAttachedConstraintFromSuperview()
     }
     func msr_removeAutoExpandingConstraintsFromSuperview() {
         msr_removeHorizontalExpandingConstraintsFromSuperview()
         msr_removeVerticalExpandingConstraintsFromSuperview()
+    }
+}
+
+extension Msr.UI._Constant {
+    static var UIViewSizeConstraintAssociationKeys: [Msr.UI.FrameSizingDirection: UnsafePointer<Void>] {
+        struct _Static {
+            static var _keys: Int16 = 0
+            static var keys: UnsafePointer<Void> {
+                return UnsafePointer<Void>.msr_to(&_keys)
+            }
+        }
+        return [
+            .Horizontal: _Static.keys.advancedBy(0),
+            .Vertical: _Static.keys.advancedBy(1)]
+    }
+}
+
+extension UIView {
+    func msr_sizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) -> NSLayoutConstraint? {
+        return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewSizeConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
+    }
+    func msr_addSizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection, value: CGFloat) {
+        if msr_sizeConstraintOfDirection(direction) == nil {
+            let views = ["self": self]
+            let formats: [Msr.UI.FrameSizingDirection: String] = [
+                .Horizontal: "[self(==0]",
+                .Vertical: "V:[self(==0)]|"]
+            objc_setAssociatedObject(self, Msr.UI._Constant.UIViewSizeConstraintAssociationKeys[direction]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[direction]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            addConstraint(msr_sizeConstraintOfDirection(direction)!)
+        }
+        msr_sizeConstraintOfDirection(direction)!.constant = value
+    }
+    func msr_removeSizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) {
+        if msr_sizeConstraintOfDirection(direction) != nil {
+            removeConstraint(msr_sizeConstraintOfDirection(direction)!)
+        }
+    }
+    var msr_widthConstraint: NSLayoutConstraint? {
+        return msr_sizeConstraintOfDirection(.Horizontal)
+    }
+    var msr_heightConstraint: NSLayoutConstraint? {
+        return msr_sizeConstraintOfDirection(.Vertical)
+    }
+    func msr_addWidthConstraintWithValue(value: CGFloat) {
+        msr_addSizeConstraintOfDirection(.Horizontal, value: value)
+    }
+    func msr_addHeightConstraintWithValue(value: CGFloat) {
+        msr_addSizeConstraintOfDirection(.Vertical, value: value)
+    }
+    func msr_removeWidthConstraint() {
+        msr_removeSizeConstraintOfDirection(.Horizontal)
+    }
+    func msr_removeHeightConstraint() {
+        msr_removeSizeConstraintOfDirection(.Vertical)
+    }
+    func msr_addSizeConstraintsWithSize(size: CGSize) {
+        msr_addWidthConstraintWithValue(size.width)
+        msr_addHeightConstraintWithValue(size.height)
+    }
+    func msr_removeSizeConstraints() {
+        msr_removeWidthConstraint()
+        msr_removeHeightConstraint()
     }
 }
