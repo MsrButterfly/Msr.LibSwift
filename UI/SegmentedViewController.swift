@@ -42,17 +42,17 @@ extension Msr.UI {
             let selectedViewController = viewControllers[segmentedControl.selectedSegmentIndex]
             selectedViewController.view.hidden = false
         }
-        func positionForBar(bar: UIBarPositioning!) -> UIBarPosition {
+        func positionForBar(bar: UIBarPositioning) -> UIBarPosition {
             return .TopAttached
         }
         override func viewDidLayoutSubviews() {
             for viewController in viewControllers {
                 viewController.view.frame = view.bounds
                 if let scrollView = viewController.view as? UIScrollView {
-                    scrollView.contentInset.top = toolBar.bounds.height + (view as UIScrollView).contentInset.top
+                    scrollView.contentInset.top = toolBar.bounds.height + (view as! UIScrollView).contentInset.top
                     scrollView.contentOffset.y = -scrollView.contentInset.top
                     if let tableView = scrollView as? UITableView {
-                        tableView.scrollIndicatorInsets.top = toolBar.bounds.height + (view as UIScrollView).contentInset.top
+                        tableView.scrollIndicatorInsets.top = toolBar.bounds.height + (view as! UIScrollView).contentInset.top
                     }
                 } else {
                     viewController.view.frame.origin.y += toolBar.bounds.height

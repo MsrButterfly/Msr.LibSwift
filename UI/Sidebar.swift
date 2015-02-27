@@ -88,7 +88,7 @@ extension Msr.UI {
         }
         let contentView: UIView
         let backgroundEffect: UIBlurEffect
-        let handle: _Handle!
+        var handle: _Handle!
         let offset: CGFloat
         let width: CGFloat
         let overlay: UIView
@@ -125,7 +125,7 @@ extension Msr.UI {
             backgroundView.frame = frame
             addSubview(backgroundView)
             handle = _Handle(sidebar: self, width: handleWidth)
-            let vibrancyEffectView = UIVisualEffectView(effect: UIVibrancyEffect(forBlurEffect: backgroundView.effect as UIBlurEffect))
+            let vibrancyEffectView = UIVisualEffectView(effect: UIVibrancyEffect(forBlurEffect: backgroundView.effect as! UIBlurEffect))
             vibrancyEffectView.frame = bounds
             backgroundView.contentView.addSubview(vibrancyEffectView)
             vibrancyEffectView.contentView.addSubview(handle)

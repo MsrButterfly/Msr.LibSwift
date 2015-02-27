@@ -9,7 +9,7 @@ extension Msr.Data {
             self.bundle = bundle
         }
         subscript(key: String) -> String {
-            return NSLocalizedString(key, tableName: module, bundle: bundle, comment: "")
+            return NSLocalizedString(key, tableName: module as String, bundle: bundle, comment: "")
         }
     }
 }

@@ -2,7 +2,7 @@ import UIKit
 
 extension Msr.UI {
     static func DefaultRGBBitmapContextWithSize(size: CGSize) -> CGContext {
-        return CGBitmapContextCreate(nil, UInt(size.width), UInt(size.height), UInt(8), UInt(0), CGColorSpaceCreateDeviceRGB(), CGBitmapInfo(CGImageAlphaInfo.PremultipliedLast.rawValue))
+        return CGBitmapContextCreate(nil, Int(size.width), Int(size.height), 8, 0, CGColorSpaceCreateDeviceRGB(), CGBitmapInfo(CGImageAlphaInfo.PremultipliedLast.rawValue))
     }
 }
 

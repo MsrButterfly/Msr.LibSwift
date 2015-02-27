@@ -369,7 +369,7 @@ extension Msr.UI {
             let navigationBar = UINavigationBar()
             var navigationItem: UINavigationItem {
                 get {
-                    return navigationBar.items[0] as UINavigationItem
+                    return navigationBar.items[0] as! UINavigationItem
                 }
                 set {
                     navigationBar.setItems([newValue], animated: false)
@@ -459,7 +459,7 @@ extension UIViewController {
         while current != nil {
             typealias Wrapper = Msr.UI.NavigationController.WrapperView
             if current is Wrapper {
-                return (current as Wrapper)
+                return (current as! Wrapper)
             }
             current = current!.superview
         }

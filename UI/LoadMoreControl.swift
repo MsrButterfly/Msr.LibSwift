@@ -35,7 +35,7 @@ extension Msr.UI {
         internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
             if object === scrollView {
                 if keyPath == "contentOffset" {
-                    let offset = (change[NSKeyValueChangeNewKey] as NSValue).CGPointValue()
+                    let offset = (change[NSKeyValueChangeNewKey] as! NSValue).CGPointValue()
                     transform = CGAffineTransformMakeTranslation(0, scrollView!.contentSize.height + overHeight - frame.height)
                     if !loadingMore {
                         alpha = min(max(overHeight, 0), frame.height) / frame.height
@@ -50,7 +50,7 @@ extension Msr.UI {
                         alpha = 1
                     }
                 } else if keyPath == "frame" {
-                    let frame = (change[NSKeyValueChangeNewKey] as NSValue).CGRectValue()
+                    let frame = (change[NSKeyValueChangeNewKey] as! NSValue).CGRectValue()
                     self.frame.size.width = frame.width
                 }
             }
@@ -135,7 +135,7 @@ extension UITableViewController {
             self.msr_loadMoreControl?.scrollView = nil
             objc_setAssociatedObject(self, Msr.UI._Constant.UITableViewControllerLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             if newValue != nil {
-                tableView.insertSubview(newValue!, belowSubview: tableView.subviews[0] as UIView)
+                tableView.insertSubview(newValue!, belowSubview: tableView.subviews[0] as! UIView)
                 newValue!.scrollView = tableView
             }
         }

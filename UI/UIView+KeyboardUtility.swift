@@ -8,7 +8,7 @@ extension UIView {
             } else if let textField = subview as? UITextField {
                 textField.resignFirstResponder()
             }
-            (subview as UIView).msr_resignFirstResponderOfAllSubviews()
+            (subview as! UIView).msr_resignFirstResponderOfAllSubviews()
         }
     }
 }

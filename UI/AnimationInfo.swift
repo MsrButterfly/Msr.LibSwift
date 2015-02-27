@@ -3,7 +3,7 @@ import UIKit
 extension Msr.UI {
     struct AnimationInfo {
         init(keyboardNotification: NSNotification) {
-            let info = keyboardNotification.userInfo! as [NSString: AnyObject]
+            let info = keyboardNotification.userInfo! as! [NSString: AnyObject]
             frameBegin = info[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue()
             frameEnd = info[UIKeyboardFrameEndUserInfoKey]!.CGRectValue()
             animationDuration = info[UIKeyboardAnimationDurationUserInfoKey]!.doubleValue!

@@ -134,7 +134,7 @@ extension UIView {
         if msr_sizeConstraintOfDirection(direction) == nil {
             let views = ["self": self]
             let formats: [Msr.UI.FrameSizingDirection: String] = [
-                .Horizontal: "[self(==0]",
+                .Horizontal: "[self(==0)]",
                 .Vertical: "V:[self(==0)]|"]
             objc_setAssociatedObject(self, Msr.UI._Constant.UIViewSizeConstraintAssociationKeys[direction]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[direction]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             addConstraint(msr_sizeConstraintOfDirection(direction)!)
@@ -171,5 +171,65 @@ extension UIView {
     func msr_removeSizeConstraints() {
         msr_removeWidthConstraint()
         msr_removeHeightConstraint()
+    }
+}
+
+extension Msr.UI._Constant {
+    static var UIViewCenterConstraintAssociationKeys: [Msr.UI.FrameSizingDirection: UnsafePointer<Void>] {
+        struct _Static {
+            static var _keys: Int16 = 0
+            static var keys: UnsafePointer<Void> {
+                return UnsafePointer<Void>.msr_to(&_keys)
+            }
+        }
+        return [
+            .Horizontal: _Static.keys.advancedBy(0),
+            .Vertical: _Static.keys.advancedBy(1)]
+    }
+}
+
+extension UIView {
+    func msr_centerConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) -> NSLayoutConstraint? {
+        return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewCenterConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
+    }
+    func msr_addCenterConstraintToSuperviewWithDirection(direction: Msr.UI.FrameSizingDirection) {
+        if msr_sizeConstraintOfDirection(direction) == nil {
+            let constraints: [Msr.UI.FrameSizingDirection: NSLayoutConstraint] = [
+                .Horizontal: NSLayoutConstraint(item: self, attribute: .CenterX, relatedBy: .Equal, toItem: superview!, attribute: .CenterX, multiplier: 1, constant: 0),
+                .Vertical: NSLayoutConstraint(item: self, attribute: .CenterY, relatedBy: .Equal, toItem: superview!, attribute: .CenterY, multiplier: 1, constant: 0)]
+            objc_setAssociatedObject(self, Msr.UI._Constant.UIViewCenterConstraintAssociationKeys[direction]!, constraints[direction]!, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            addConstraint(msr_sizeConstraintOfDirection(direction)!)
+        }
+    }
+    func msr_removeCenterConstraintFromSuperviewWithDirection(direction: Msr.UI.FrameSizingDirection) {
+        if msr_centerConstraintOfDirection(direction) != nil {
+            removeConstraint(msr_centerConstraintOfDirection(direction)!)
+        }
+    }
+    var msr_centerXConstraint: NSLayoutConstraint? {
+        return msr_centerConstraintOfDirection(.Horizontal)
+    }
+    var msr_centerYConstraint: NSLayoutConstraint? {
+        return msr_centerConstraintOfDirection(.Vertical)
+    }
+    func msr_addCenterXConstraintToSuperview() {
+        msr_addCenterConstraintToSuperviewWithDirection(.Horizontal)
+    }
+    func msr_addCenterYConstraintToSuperview() {
+        msr_addCenterConstraintToSuperviewWithDirection(.Vertical)
+    }
+    func msr_removeCenterXConstraintFromSuperview() {
+        msr_removeCenterConstraintFromSuperviewWithDirection(.Horizontal)
+    }
+    func msr_removeCenterYConstraintFromSuperview() {
+        msr_removeCenterConstraintFromSuperviewWithDirection(.Vertical)
+    }
+    func msr_addCenterConstraintsToSuperview() {
+        msr_addCenterXConstraintToSuperview()
+        msr_addCenterYConstraintToSuperview()
+    }
+    func msr_removeCenterConstraintsFromSuperview() {
+        msr_removeCenterXConstraintFromSuperview()
+        msr_removeCenterYConstraintFromSuperview()
     }
 }
