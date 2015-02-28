@@ -1,86 +1,41 @@
 import UIKit
 
+/*
+
+Functional Synopsis
+
+extension Msr.UI {
+
+    class SegmentedControl: UIControl {
+
+        init(views: [UIView])
+        override init(frame: CGRect)
+        required init(coder: NSCoder)
+
+        var animationDuration: NSTimeInterval // default 0.5
+        var backgroundView: UIView?
+        var indicatorPosition: CGFloat?
+        var indicatorView: UIView // default Msr.UI.SegmentedControl.DefaultIndicatorView
+        var numberOfSegments: Int
+        var selectedSegmentIndex: Int?
+
+        func appendSegmentWithView(view: UIView, animated: Bool)
+        func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool)
+        func removeSegmentAtIndex(index: Int, animated: Bool)
+        func selectSegmentAtIndex(index: Int?, animated: Bool)
+        func setIndicatorPosition(position: CGFloat?, animated: Bool)
+
+        class DefaultIndicatorView: AutoExpandingView
+        class WrapperView: UIView
+
+    }
+
+}
+
+*/
+
 extension Msr.UI {
     class SegmentedControl: UIControl {
-        private var wrappers = [WrapperView]()
-        private var segmentConstraints = [NSLayoutConstraint]() // initially [left][right]
-        let leftView = WrapperView(frame: CGRectZero)
-        let rightView = WrapperView(frame: CGRectZero)
-        let scrollView = UIScrollView()
-        private var minWidthConstraint: NSLayoutConstraint!
-        var backgroundView: UIView? {
-            willSet {
-                if newValue != nil {
-                    insertSubview(newValue!, belowSubview: scrollView)
-                    newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                    newValue!.msr_addAutoExpandingConstraintsToSuperview()
-                }
-            }
-            didSet {
-                oldValue?.removeFromSuperview()
-            }
-        }
-        var numberOfSegments: Int {
-            get {
-                return wrappers.count - 2
-            }
-        }
-        class DefaultIndicatorView: AutoExpandingView {
-            override func msr_initialize() {
-                super.msr_initialize()
-                opaque = false
-            }
-            override func drawRect(rect: CGRect) {
-                let context = UIGraphicsGetCurrentContext()
-                CGContextSaveGState(context)
-                CGContextSetStrokeColorWithColor(context, UIColor.purpleColor().CGColor)
-                CGContextSetLineCap(context, kCGLineCapSquare)
-                CGContextSetLineWidth(context, 10)
-                CGContextMoveToPoint(context, 0, rect.msr_bottom)
-                CGContextAddLineToPoint(context, rect.msr_right, rect.msr_bottom)
-                CGContextStrokePath(context)
-                CGContextRestoreGState(context)
-            }
-            override func layoutSubviews() {
-                super.layoutSubviews()
-                setNeedsDisplay()
-            }
-        }
-        private var indicatorViewWrapperLeftConstraint: NSLayoutConstraint!
-        private var indicatorViewWrapperRightConstraint: NSLayoutConstraint!
-        private var indicatorViewWrapper = UIView()
-        private var _indicatorView: UIView!
-        var indicatorView: UIView {
-            set {
-                _indicatorView?.removeFromSuperview()
-                _indicatorView = newValue
-                indicatorViewWrapper.addSubview(_indicatorView)
-                newValue.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                newValue.msr_addAutoExpandingConstraintsToSuperview()
-            }
-            get {
-                return _indicatorView
-            }
-        }
-        private var _selectedSegmentIndex: Int? {
-            didSet {
-                if _selectedSegmentIndex != oldValue {
-                    sendActionsForControlEvents(.ValueChanged)
-                }
-            }
-        }
-        var selectedSegmentIndex: Int? {
-            set {
-                selectSegmentAtIndex(newValue, animated: false)
-            }
-            get {
-                return _selectedSegmentIndex
-            }
-        }
-        func selectSegmentAtIndex(index: Int?, animated: Bool) {
-            setIndicatorPosition(index == nil ? nil : CGFloat(index!), animated: animated)
-        }
-        let defaultDuration = NSTimeInterval(0.5)
         init(views: [UIView]) {
             super.init()
             // msr_initialize() will be called by super.init() -> self.init(frame:)
@@ -93,38 +48,54 @@ extension Msr.UI {
             msr_initialize()
         }
         required init(coder aDecoder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
+            super.init(coder: aDecoder)
+            msr_initialize()
         }
-        func msr_initialize() {
-            addSubview(scrollView)
-            scrollView.addSubview(leftView)
-            scrollView.addSubview(rightView)
-            scrollView.addSubview(indicatorViewWrapper)
-            scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            scrollView.msr_addAutoExpandingConstraintsToSuperview()
-            leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            leftView.msr_addVerticalExpandingConstraintsToSuperview()
-            leftView.msr_addLeftAttachedConstraintToSuperview()
-            rightView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            rightView.msr_addVerticalExpandingConstraintsToSuperview()
-            rightView.msr_addRightAttachedConstraintToSuperview()
-            rightView.msr_addWidthConstraintWithValue(0)
-            wrappers = [leftView, rightView]
-            let vs = ["l": leftView, "r": rightView]
-            segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
-            minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            scrollView.addConstraints(segmentConstraints)
-            scrollView.addConstraint(minWidthConstraint)
-            scrollView.showsHorizontalScrollIndicator = false
-            scrollView.delaysContentTouches = true
-            indicatorViewWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            indicatorViewWrapper.msr_addVerticalExpandingConstraintsToSuperview()
-            indicatorViewWrapper.userInteractionEnabled = false
-            indicatorView = DefaultIndicatorView()
-            indicatorViewWrapperLeftConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            indicatorViewWrapperRightConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            scrollView.addConstraint(indicatorViewWrapperLeftConstraint)
-            scrollView.addConstraint(indicatorViewWrapperRightConstraint)
+        var animationDuration = NSTimeInterval(0.5)
+        var backgroundView: UIView? {
+            willSet {
+                if newValue != nil {
+                    insertSubview(newValue!, belowSubview: scrollView)
+                    newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                    newValue!.msr_addAutoExpandingConstraintsToSuperview()
+                }
+            }
+            didSet {
+                oldValue?.removeFromSuperview()
+            }
+        }
+        var indicatorPosition: CGFloat? {
+            set {
+                setIndicatorPosition(newValue, animated: false)
+            }
+            get {
+                return _indicatorPosition
+            }
+        }
+        var indicatorView: UIView {
+            set {
+                _indicatorView?.removeFromSuperview()
+                _indicatorView = newValue
+                indicatorViewWrapper.addSubview(_indicatorView)
+                newValue.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                newValue.msr_addAutoExpandingConstraintsToSuperview()
+            }
+            get {
+                return _indicatorView
+            }
+        }
+        var numberOfSegments: Int {
+            get {
+                return wrappers.count - 2
+            }
+        }
+        var selectedSegmentIndex: Int? {
+            set {
+                selectSegmentAtIndex(newValue, animated: false)
+            }
+            get {
+                return _selectedSegmentIndex
+            }
         }
         func appendSegmentWithView(view: UIView, animated: Bool) {
             insertSegmentWithView(view, atIndex: numberOfSegments, animated: animated)
@@ -150,7 +121,7 @@ extension Msr.UI {
             wrapper.alpha = 0
             setNeedsLayout()
             if animated {
-                UIView.animateWithDuration(defaultDuration,
+                UIView.animateWithDuration(animationDuration,
                     delay: 0,
                     usingSpringWithDamping: 1,
                     initialSpringVelocity: 0,
@@ -178,7 +149,7 @@ extension Msr.UI {
             scrollView.addConstraint(segmentConstraints[index])
             setNeedsLayout()
             if animated {
-                UIView.animateWithDuration(defaultDuration,
+                UIView.animateWithDuration(animationDuration,
                     delay: 0,
                     usingSpringWithDamping: 1,
                     initialSpringVelocity: 0,
@@ -193,29 +164,15 @@ extension Msr.UI {
                         finished in
                         wrapper.removeFromSuperview()
                         return
-                    })
+                })
             } else {
                 wrapper.alpha = 0
                 layoutIfNeeded()
                 wrapper.removeFromSuperview()
             }
         }
-        internal func didPressButton(button: UIButton) {
-            for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
-                if button === w.button {
-                    selectSegmentAtIndex(i, animated: true)
-                    break
-                }
-            }
-        }
-        private var _indicatorPosition: CGFloat?
-        var indicatorPosition: CGFloat? {
-            set {
-                setIndicatorPosition(newValue, animated: false)
-            }
-            get {
-                return _indicatorPosition
-            }
+        func selectSegmentAtIndex(index: Int?, animated: Bool) {
+            setIndicatorPosition(index == nil ? nil : CGFloat(index!), animated: animated)
         }
         func setIndicatorPosition(position: CGFloat?, animated: Bool) {
             _indicatorPosition = position
@@ -230,7 +187,7 @@ extension Msr.UI {
             }
             setNeedsLayout()
             if animated {
-                UIView.animateWithDuration(defaultDuration,
+                UIView.animateWithDuration(animationDuration,
                     delay: 0,
                     usingSpringWithDamping: 1,
                     initialSpringVelocity: 0,
@@ -289,6 +246,27 @@ extension Msr.UI {
                 indicatorViewWrapperRightConstraint.constant = 0
             }
             super.layoutSubviews()
+        }
+        class DefaultIndicatorView: AutoExpandingView {
+            override func msr_initialize() {
+                super.msr_initialize()
+                opaque = false
+            }
+            override func drawRect(rect: CGRect) {
+                let context = UIGraphicsGetCurrentContext()
+                CGContextSaveGState(context)
+                CGContextSetStrokeColorWithColor(context, UIColor.purpleColor().CGColor)
+                CGContextSetLineCap(context, kCGLineCapSquare)
+                CGContextSetLineWidth(context, 10)
+                CGContextMoveToPoint(context, 0, rect.msr_bottom)
+                CGContextAddLineToPoint(context, rect.msr_right, rect.msr_bottom)
+                CGContextStrokePath(context)
+                CGContextRestoreGState(context)
+            }
+            override func layoutSubviews() {
+                super.layoutSubviews()
+                setNeedsDisplay()
+            }
         }
         class WrapperView: UIView {
             var contentView: UIView? {
@@ -351,6 +329,63 @@ extension Msr.UI {
             }
             var defaultValueOfWidthConstraint: CGFloat {
                 return contentView?.intrinsicContentSize().width ?? 0
+            }
+        }
+        internal func msr_initialize() {
+            addSubview(scrollView)
+            scrollView.addSubview(leftView)
+            scrollView.addSubview(rightView)
+            scrollView.addSubview(indicatorViewWrapper)
+            scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            scrollView.msr_addAutoExpandingConstraintsToSuperview()
+            leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            leftView.msr_addVerticalExpandingConstraintsToSuperview()
+            leftView.msr_addLeftAttachedConstraintToSuperview()
+            rightView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            rightView.msr_addVerticalExpandingConstraintsToSuperview()
+            rightView.msr_addRightAttachedConstraintToSuperview()
+            rightView.msr_addWidthConstraintWithValue(0)
+            wrappers = [leftView, rightView]
+            let vs = ["l": leftView, "r": rightView]
+            segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
+            minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            scrollView.addConstraints(segmentConstraints)
+            scrollView.addConstraint(minWidthConstraint)
+            scrollView.showsHorizontalScrollIndicator = false
+            scrollView.delaysContentTouches = true
+            indicatorViewWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            indicatorViewWrapper.msr_addVerticalExpandingConstraintsToSuperview()
+            indicatorViewWrapper.userInteractionEnabled = false
+            indicatorView = DefaultIndicatorView()
+            indicatorViewWrapperLeftConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            indicatorViewWrapperRightConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            scrollView.addConstraint(indicatorViewWrapperLeftConstraint)
+            scrollView.addConstraint(indicatorViewWrapperRightConstraint)
+        }
+        internal func didPressButton(button: UIButton) {
+            for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
+                if button === w.button {
+                    selectSegmentAtIndex(i, animated: true)
+                    break
+                }
+            }
+        }
+        private var wrappers = [WrapperView]()
+        private var segmentConstraints = [NSLayoutConstraint]() // initially [left][right]
+        private let leftView = WrapperView(frame: CGRectZero)
+        private let rightView = WrapperView(frame: CGRectZero)
+        private let scrollView = UIScrollView()
+        private var minWidthConstraint: NSLayoutConstraint!
+        private var indicatorViewWrapperLeftConstraint: NSLayoutConstraint!
+        private var indicatorViewWrapperRightConstraint: NSLayoutConstraint!
+        private var indicatorViewWrapper = UIView()
+        private var _indicatorPosition: CGFloat?
+        private var _indicatorView: UIView!
+        private var _selectedSegmentIndex: Int? {
+            didSet {
+                if _selectedSegmentIndex != oldValue {
+                    sendActionsForControlEvents(.ValueChanged)
+                }
             }
         }
     }
