@@ -62,7 +62,13 @@ extension Msr.UI {
                 return _indicatorView
             }
         }
-        private var _selectedSegmentIndex: Int?
+        private var _selectedSegmentIndex: Int? {
+            didSet {
+                if _selectedSegmentIndex != oldValue {
+                    sendActionsForControlEvents(.ValueChanged)
+                }
+            }
+        }
         var selectedSegmentIndex: Int? {
             set {
                 selectSegmentAtIndex(newValue, animated: false)
@@ -72,23 +78,7 @@ extension Msr.UI {
             }
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
-            indicatorPosition = index == nil ? nil : CGFloat(index!)
-            setNeedsLayout()
-            if animated {
-                UIView.animateWithDuration(defaultDuration,
-                    delay: 0,
-                    usingSpringWithDamping: 1,
-                    initialSpringVelocity: 0,
-                    options: .BeginFromCurrentState,
-                    animations: {
-                        [weak self] in
-                        self?.layoutIfNeeded()
-                        return
-                    },
-                    completion: nil)
-            } else {
-                layoutIfNeeded()
-            }
+            setIndicatorPosition(index == nil ? nil : CGFloat(index!), animated: animated)
         }
         let defaultDuration = NSTimeInterval(0.5)
         init(views: [UIView]) {
@@ -218,17 +208,41 @@ extension Msr.UI {
                 }
             }
         }
+        private var _indicatorPosition: CGFloat?
         var indicatorPosition: CGFloat? {
-            willSet {
-                if newValue != nil {
-                    let value = newValue!
-                    let l = Int(ceil(value))
-                    let r = Int(floor(value))
-                    let p = value - CGFloat(l)
-                    _selectedSegmentIndex = p < 0.5 ? l : r
-                } else {
-                    _selectedSegmentIndex = nil
-                }
+            set {
+                setIndicatorPosition(newValue, animated: false)
+            }
+            get {
+                return _indicatorPosition
+            }
+        }
+        func setIndicatorPosition(position: CGFloat?, animated: Bool) {
+            _indicatorPosition = position
+            if position != nil {
+                let value = position!
+                let l = Int(floor(value))
+                let r = Int(ceil(value))
+                let p = value - CGFloat(l)
+                _selectedSegmentIndex = p < 0.5 ? l : r
+            } else {
+                _selectedSegmentIndex = nil
+            }
+            setNeedsLayout()
+            if animated {
+                UIView.animateWithDuration(defaultDuration,
+                    delay: 0,
+                    usingSpringWithDamping: 1,
+                    initialSpringVelocity: 0,
+                    options: .BeginFromCurrentState,
+                    animations: {
+                        [weak self] in
+                        self?.layoutIfNeeded()
+                        return
+                    },
+                    completion: nil)
+            } else {
+                layoutIfNeeded()
             }
         }
         override func layoutSubviews() {
