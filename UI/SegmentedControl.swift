@@ -72,7 +72,7 @@ extension Msr.UI {
             }
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
-            indicatorViewPosition = index == nil ? nil : CGFloat(index!)
+            indicatorPosition = index == nil ? nil : CGFloat(index!)
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(defaultDuration,
@@ -90,7 +90,6 @@ extension Msr.UI {
                 layoutIfNeeded()
             }
         }
-        var indicatorPosition: CGFloat? // [0, numberOfSegments]
         let defaultDuration = NSTimeInterval(0.5)
         init(views: [UIView]) {
             super.init()
@@ -219,7 +218,7 @@ extension Msr.UI {
                 }
             }
         }
-        var indicatorViewPosition: CGFloat? {
+        var indicatorPosition: CGFloat? {
             willSet {
                 if newValue != nil {
                     let value = newValue!
@@ -234,9 +233,9 @@ extension Msr.UI {
         }
         override func layoutSubviews() {
             minWidthConstraint.constant = bounds.width
-            let value = indicatorViewPosition ?? 0
-            let l = Int(ceil(value))
-            let r = Int(floor(value))
+            let value = indicatorPosition ?? 0
+            let l = Int(floor(value))
+            let r = Int(ceil(value))
             var lp: CGFloat = 0
             var mp: CGFloat = 0
             var rp: CGFloat = 0
@@ -271,7 +270,7 @@ extension Msr.UI {
             indicatorViewWrapperLeftConstraint.constant = 0
             indicatorViewWrapperRightConstraint.constant = mp + (rp - mp) * p
             indicatorViewWrapperLeftConstraint.constant = lp + (mp - lp) * p
-            if indicatorViewPosition == nil {
+            if indicatorPosition == nil {
                 indicatorViewWrapperLeftConstraint.constant = 0
                 indicatorViewWrapperRightConstraint.constant = 0
             }
