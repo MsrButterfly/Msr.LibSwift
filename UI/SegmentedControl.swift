@@ -25,7 +25,7 @@ extension Msr.UI {
                 return wrappers.count - 2
             }
         }
-        class DefaultHighlightView: AutoExpandingView {
+        class DefaultIndicatorView: AutoExpandingView {
             override func msr_initialize() {
                 super.msr_initialize()
                 opaque = false
@@ -46,20 +46,20 @@ extension Msr.UI {
                 setNeedsDisplay()
             }
         }
-        private var highlightViewWrapperLeftConstraint: NSLayoutConstraint!
-        private var highlightViewWrapperRightConstraint: NSLayoutConstraint!
-        private var highlightViewWrapper = UIView()
-        private var _highlightView: UIView!
-        var highlightView: UIView {
+        private var indicatorViewWrapperLeftConstraint: NSLayoutConstraint!
+        private var indicatorViewWrapperRightConstraint: NSLayoutConstraint!
+        private var indicatorViewWrapper = UIView()
+        private var _indicatorView: UIView!
+        var indicatorView: UIView {
             set {
-                _highlightView?.removeFromSuperview()
-                _highlightView = newValue
-                highlightViewWrapper.addSubview(_highlightView)
+                _indicatorView?.removeFromSuperview()
+                _indicatorView = newValue
+                indicatorViewWrapper.addSubview(_indicatorView)
                 newValue.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                 newValue.msr_addAutoExpandingConstraintsToSuperview()
             }
             get {
-                return _highlightView
+                return _indicatorView
             }
         }
         private var _selectedSegmentIndex: Int?
@@ -72,7 +72,7 @@ extension Msr.UI {
             }
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
-            _selectedSegmentIndex = index
+            indicatorViewPosition = index == nil ? nil : CGFloat(index!)
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(defaultDuration,
@@ -110,7 +110,7 @@ extension Msr.UI {
             addSubview(scrollView)
             scrollView.addSubview(leftView)
             scrollView.addSubview(rightView)
-            scrollView.addSubview(highlightViewWrapper)
+            scrollView.addSubview(indicatorViewWrapper)
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             scrollView.msr_addAutoExpandingConstraintsToSuperview()
             leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
@@ -128,14 +128,14 @@ extension Msr.UI {
             scrollView.addConstraint(minWidthConstraint)
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.delaysContentTouches = true
-            highlightViewWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            highlightViewWrapper.msr_addVerticalExpandingConstraintsToSuperview()
-            highlightViewWrapper.userInteractionEnabled = false
-            highlightView = DefaultHighlightView()
-            highlightViewWrapperLeftConstraint = NSLayoutConstraint(item: highlightViewWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            highlightViewWrapperRightConstraint = NSLayoutConstraint(item: highlightViewWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            scrollView.addConstraint(highlightViewWrapperLeftConstraint)
-            scrollView.addConstraint(highlightViewWrapperRightConstraint)
+            indicatorViewWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            indicatorViewWrapper.msr_addVerticalExpandingConstraintsToSuperview()
+            indicatorViewWrapper.userInteractionEnabled = false
+            indicatorView = DefaultIndicatorView()
+            indicatorViewWrapperLeftConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            indicatorViewWrapperRightConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            scrollView.addConstraint(indicatorViewWrapperLeftConstraint)
+            scrollView.addConstraint(indicatorViewWrapperRightConstraint)
         }
         func appendSegmentWithView(view: UIView, animated: Bool) {
             insertSegmentWithView(view, atIndex: numberOfSegments, animated: animated)
@@ -148,7 +148,7 @@ extension Msr.UI {
             wrapper.contentView = view
             wrapper.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
             wrappers.insert(wrapper, atIndex: index + 1)
-            scrollView.insertSubview(wrapper, belowSubview: highlightViewWrapper)
+            scrollView.insertSubview(wrapper, belowSubview: indicatorViewWrapper)
             let vs = ["l": wrappers[index], "r": wrappers[index + 2], "w": wrapper]
             scrollView.removeConstraint(segmentConstraints[index])
             wrapper.msr_addTopAttachedConstraintToSuperview()
@@ -219,40 +219,62 @@ extension Msr.UI {
                 }
             }
         }
-        override func layoutSubviews() {
-            minWidthConstraint.constant = bounds.width
-            var s: CGFloat = 0
-            for w in wrappers {
-                s += w.defaultValueOfWidthConstraint
-            }
-            var highlightLeft: CGFloat = 0
-            var highlightRight: CGFloat = 0
-            if numberOfSegments > 0 {
-                var currentLeft: CGFloat = 0
-                if s < bounds.width {
-                    let increment = (bounds.width - s) / CGFloat(numberOfSegments)
-                    for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
-                        w.setAdditionWidthToWidthConstraintWithValue(increment)
-                        if selectedSegmentIndex == i {
-                            highlightLeft = currentLeft
-                            highlightRight = currentLeft + w.widthConstraint.constant
-                        }
-                        currentLeft += w.widthConstraint.constant
-                    }
+        var indicatorViewPosition: CGFloat? {
+            willSet {
+                if newValue != nil {
+                    let value = newValue!
+                    let l = Int(ceil(value))
+                    let r = Int(floor(value))
+                    let p = value - CGFloat(l)
+                    _selectedSegmentIndex = p < 0.5 ? l : r
                 } else {
-                    for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
-                        w.resetWidthConstraint()
-                        if selectedSegmentIndex == i {
-                            highlightLeft = currentLeft
-                            highlightRight = currentLeft + w.widthConstraint.constant
-                        }
-                        currentLeft += w.widthConstraint.constant
-                    }
+                    _selectedSegmentIndex = nil
                 }
             }
-            highlightViewWrapperLeftConstraint.constant = 0
-            highlightViewWrapperRightConstraint.constant = highlightRight
-            highlightViewWrapperLeftConstraint.constant = highlightLeft
+        }
+        override func layoutSubviews() {
+            minWidthConstraint.constant = bounds.width
+            let value = indicatorViewPosition ?? 0
+            let l = Int(ceil(value))
+            let r = Int(floor(value))
+            var lp: CGFloat = 0
+            var mp: CGFloat = 0
+            var rp: CGFloat = 0
+            var s: CGFloat = 0
+            for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
+                let c = w.defaultValueOfWidthConstraint
+                s += c
+                if i < l {
+                    lp += c
+                }
+                if i <= l {
+                    mp += c
+                }
+                if i <= r {
+                    rp += c
+                }
+            }
+            if s < bounds.width {
+                let increment = (bounds.width - s) / CGFloat(numberOfSegments)
+                lp += CGFloat(l) * increment
+                mp += CGFloat(l + 1) * increment
+                rp += CGFloat(r + 1) * increment
+                for w in wrappers[1...wrappers.endIndex - 2] {
+                    w.setAdditionWidthToWidthConstraintWithValue(increment)
+                }
+            } else {
+                for w in wrappers[1...wrappers.endIndex - 2] {
+                    w.resetWidthConstraint()
+                }
+            }
+            let p = value - CGFloat(l)
+            indicatorViewWrapperLeftConstraint.constant = 0
+            indicatorViewWrapperRightConstraint.constant = mp + (rp - mp) * p
+            indicatorViewWrapperLeftConstraint.constant = lp + (mp - lp) * p
+            if indicatorViewPosition == nil {
+                indicatorViewWrapperLeftConstraint.constant = 0
+                indicatorViewWrapperRightConstraint.constant = 0
+            }
             super.layoutSubviews()
         }
         class WrapperView: UIView {
