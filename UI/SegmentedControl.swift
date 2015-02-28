@@ -86,7 +86,6 @@ extension Msr.UI {
             setNeedsLayout()
             layoutIfNeeded()
             // scrollView.contentSize = CGSize(width: wrappers.last!.frame.msr_right, height: frame.height)
-            println(segmentConstraints)
             println(wrappers.last!.frame.msr_right)
         }
         func removeSegmentAtIndex(index: Int, animated: Bool) {
@@ -103,15 +102,16 @@ extension Msr.UI {
         }
         override func layoutSubviews() {
             minWidthConstraint.constant = bounds.width
-            super.layoutSubviews()
-            if wrappers.second?.frame.msr_left > 0 {
-                let sum = wrappers.second!.frame.msr_left
-                let addition = sum / CGFloat(numberOfSegments)
-                for w in wrappers[1..<wrappers.endIndex - 2] {
-                    w.setAdditionWidthToWidthConstraintWithValue(addition)
-                }
-                super.layoutSubviews()
+            var s: CGFloat = 0
+            for w in wrappers {
+                s += w.defaultValueOfWidthConstraint
             }
+            if s < bounds.width {
+                for w in wrappers[1..<wrappers.endIndex - 1] {
+                    w.setAdditionWidthToWidthConstraintWithValue((bounds.width - s) * (w.defaultValueOfWidthConstraint / s))
+                }
+            }
+            super.layoutSubviews()
         }
         class WrapperView: UIView {
             var contentView: UIView? {
@@ -128,6 +128,7 @@ extension Msr.UI {
                     resetWidthConstraint()
                 }
             }
+            var widthConstraint: NSLayoutConstraint!
             var overlayButton: UIButton!
             override init() {
                 super.init()
@@ -146,13 +147,14 @@ extension Msr.UI {
                 overlayButton.autoresizingMask = .FlexibleWidth | .FlexibleHeight
                 addSubview(overlayButton)
                 msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                msr_addWidthConstraintWithValue(0)
+                widthConstraint = NSLayoutConstraint(item: self, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: defaultValueOfWidthConstraint)
+                addConstraint(widthConstraint)
             }
             func resetWidthConstraint() {
-                msr_widthConstraint!.constant = defaultValueOfWidthConstraint
+                widthConstraint.constant = defaultValueOfWidthConstraint
             }
             func setAdditionWidthToWidthConstraintWithValue(value: CGFloat) {
-                msr_widthConstraint!.constant = defaultValueOfWidthConstraint + value
+                widthConstraint.constant = defaultValueOfWidthConstraint + value
             }
             var defaultValueOfWidthConstraint: CGFloat {
                 return contentView?.intrinsicContentSize().width ?? 0
