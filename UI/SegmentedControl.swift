@@ -13,17 +13,17 @@ extension Msr.UI {
         required init(coder: NSCoder)
 
         var animationDuration: NSTimeInterval // default 0.5
-        var backgroundView: UIView?
-        var indicatorPosition: CGFloat?
+        var backgroundView: UIView? // default nil
+        var indicatorPosition: Float? // 0...numberOfSegments - 1
         var indicatorView: UIView // default Msr.UI.SegmentedControl.DefaultIndicatorView
         var numberOfSegments: Int
-        var selectedSegmentIndex: Int?
+        var selectedSegmentIndex: Int? // 0...numberOfSegments - 1
 
         func appendSegmentWithView(view: UIView, animated: Bool)
         func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool)
         func removeSegmentAtIndex(index: Int, animated: Bool)
         func selectSegmentAtIndex(index: Int?, animated: Bool)
-        func setIndicatorPosition(position: CGFloat?, animated: Bool)
+        func setIndicatorPosition(position: Float?, animated: Bool)
 
         class DefaultIndicatorView: AutoExpandingView
         class WrapperView: UIView
@@ -64,7 +64,7 @@ extension Msr.UI {
                 oldValue?.removeFromSuperview()
             }
         }
-        var indicatorPosition: CGFloat? {
+        var indicatorPosition: Float? {
             set {
                 setIndicatorPosition(newValue, animated: false)
             }
@@ -94,21 +94,29 @@ extension Msr.UI {
                 selectSegmentAtIndex(newValue, animated: false)
             }
             get {
-                return _selectedSegmentIndex
+                if _indicatorPosition != nil {
+                    let value = _indicatorPosition!
+                    let l = Int(floor(value))
+                    let r = Int(ceil(value))
+                    let p = value - Float(l)
+                    return p < 0.5 ? l : r
+                } else {
+                    return nil
+                }
             }
         }
         func appendSegmentWithView(view: UIView, animated: Bool) {
             insertSegmentWithView(view, atIndex: numberOfSegments, animated: animated)
         }
         func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool) {
-            if index <= selectedSegmentIndex {
-                _selectedSegmentIndex! += 1
-            }
             let wrapper = WrapperView()
             wrapper.contentView = view
             wrapper.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
             wrappers.insert(wrapper, atIndex: index + 1)
             scrollView.insertSubview(wrapper, belowSubview: indicatorViewWrapper)
+            if index <= selectedSegmentIndex {
+                _indicatorPosition = ceil(_indicatorPosition! + 1)
+            }
             let vs = ["l": wrappers[index], "r": wrappers[index + 2], "w": wrapper]
             scrollView.removeConstraint(segmentConstraints[index])
             wrapper.msr_addTopAttachedConstraintToSuperview()
@@ -140,7 +148,7 @@ extension Msr.UI {
         }
         func removeSegmentAtIndex(index: Int, animated: Bool) {
             if index <= selectedSegmentIndex {
-                _selectedSegmentIndex! -= 1
+                _indicatorPosition = numberOfSegments == 1 ? nil : _indicatorPosition <= 1 ? 0 : floor(_indicatorPosition! - 1)
             }
             let wrapper = wrappers.removeAtIndex(index + 1)
             scrollView.removeConstraints(Array(segmentConstraints[index...index + 1]))
@@ -172,19 +180,11 @@ extension Msr.UI {
             }
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
-            setIndicatorPosition(index == nil ? nil : CGFloat(index!), animated: animated)
+            setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
         }
-        func setIndicatorPosition(position: CGFloat?, animated: Bool) {
+        func setIndicatorPosition(position: Float?, animated: Bool) {
+            let oldSegmentIndex = selectedSegmentIndex
             _indicatorPosition = position
-            if position != nil {
-                let value = position!
-                let l = Int(floor(value))
-                let r = Int(ceil(value))
-                let p = value - CGFloat(l)
-                _selectedSegmentIndex = p < 0.5 ? l : r
-            } else {
-                _selectedSegmentIndex = nil
-            }
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(animationDuration,
@@ -201,6 +201,9 @@ extension Msr.UI {
             } else {
                 layoutIfNeeded()
             }
+            if selectedSegmentIndex != oldSegmentIndex {
+                sendActionsForControlEvents(.ValueChanged)
+            }
         }
         override func layoutSubviews() {
             minWidthConstraint.constant = bounds.width
@@ -211,33 +214,35 @@ extension Msr.UI {
             var mp: CGFloat = 0
             var rp: CGFloat = 0
             var s: CGFloat = 0
-            for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
-                let c = w.defaultValueOfWidthConstraint
-                s += c
-                if i < l {
-                    lp += c
+            if wrappers.count > 2 {
+                for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
+                    let c = w.defaultValueOfWidthConstraint
+                    s += c
+                    if i < l {
+                        lp += c
+                    }
+                    if i <= l {
+                        mp += c
+                    }
+                    if i <= r {
+                        rp += c
+                    }
                 }
-                if i <= l {
-                    mp += c
-                }
-                if i <= r {
-                    rp += c
+                if s < bounds.width {
+                    let increment = (bounds.width - s) / CGFloat(numberOfSegments)
+                    lp += CGFloat(l) * increment
+                    mp += CGFloat(l + 1) * increment
+                    rp += CGFloat(r + 1) * increment
+                    for w in wrappers[1...wrappers.endIndex - 2] {
+                        w.setAdditionWidthToWidthConstraintWithValue(increment)
+                    }
+                } else {
+                    for w in wrappers[1...wrappers.endIndex - 2] {
+                        w.resetWidthConstraint()
+                    }
                 }
             }
-            if s < bounds.width {
-                let increment = (bounds.width - s) / CGFloat(numberOfSegments)
-                lp += CGFloat(l) * increment
-                mp += CGFloat(l + 1) * increment
-                rp += CGFloat(r + 1) * increment
-                for w in wrappers[1...wrappers.endIndex - 2] {
-                    w.setAdditionWidthToWidthConstraintWithValue(increment)
-                }
-            } else {
-                for w in wrappers[1...wrappers.endIndex - 2] {
-                    w.resetWidthConstraint()
-                }
-            }
-            let p = value - CGFloat(l)
+            let p = CGFloat(value) - CGFloat(l)
             indicatorViewWrapperLeftConstraint.constant = 0
             indicatorViewWrapperRightConstraint.constant = mp + (rp - mp) * p
             indicatorViewWrapperLeftConstraint.constant = lp + (mp - lp) * p
@@ -379,14 +384,11 @@ extension Msr.UI {
         private var indicatorViewWrapperLeftConstraint: NSLayoutConstraint!
         private var indicatorViewWrapperRightConstraint: NSLayoutConstraint!
         private var indicatorViewWrapper = UIView()
-        private var _indicatorPosition: CGFloat?
-        private var _indicatorView: UIView!
-        private var _selectedSegmentIndex: Int? {
-            didSet {
-                if _selectedSegmentIndex != oldValue {
-                    sendActionsForControlEvents(.ValueChanged)
-                }
+        private var _indicatorPosition: Float? {
+            willSet {
+                assert(newValue == nil || newValue >= 0 && newValue <= Float(numberOfSegments - 1), "selectedSegmentIndex & indicatorPosition out of range: 0...numberOfSegments - 1")
             }
         }
+        private var _indicatorView: UIView!
     }
 }
