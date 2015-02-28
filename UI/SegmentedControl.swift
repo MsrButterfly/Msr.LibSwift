@@ -51,6 +51,7 @@ extension Msr.UI {
             leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             leftView.msr_addVerticalExpandingConstraintsToSuperview()
             leftView.msr_addLeftAttachedConstraintToSuperview()
+            leftView.msr_addWidthConstraintWithValue(0)
             rightView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             rightView.msr_addVerticalExpandingConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
@@ -60,9 +61,9 @@ extension Msr.UI {
             segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
             minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
             scrollView.addConstraints(segmentConstraints)
-            addConstraint(minWidthConstraint)
+            scrollView.addConstraint(minWidthConstraint)
             scrollView.showsHorizontalScrollIndicator = false
-            scrollView.alwaysBounceHorizontal = true
+            scrollView.delaysContentTouches = true
         }
         func appendSegmentWithView(view: UIView, animated: Bool) {
             insertSegmentWithView(view, atIndex: numberOfSegments, animated: animated)
@@ -70,6 +71,7 @@ extension Msr.UI {
         func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool) {
             let wrapper = WrapperView()
             wrapper.contentView = view
+            wrapper.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
             wrappers.insert(wrapper, atIndex: index + 1)
             scrollView.addSubview(wrapper)
             /*********************************************************************
@@ -83,10 +85,27 @@ extension Msr.UI {
             addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[w]|", options: nil, metrics: nil, views: vs))
             segmentConstraints.replaceRange(index...index, with: NSLayoutConstraint.constraintsWithVisualFormat("[l][w][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint])
             scrollView.addConstraints(Array(segmentConstraints[index...index + 1]))
+            wrapper.bounds.size = CGSize(width: wrapper.defaultValueOfWidthConstraint, height: bounds.height)
+            wrapper.center = CGPoint(x: wrappers[index].frame.msr_right, y: center.y)
+            wrapper.alpha = 0
             setNeedsLayout()
-            layoutIfNeeded()
-            // scrollView.contentSize = CGSize(width: wrappers.last!.frame.msr_right, height: frame.height)
-            println(wrappers.last!.frame.msr_right)
+            if animated {
+                UIView.animateWithDuration(maxDuration,
+                    delay: 0,
+                    usingSpringWithDamping: 1.0,
+                    initialSpringVelocity: 0,
+                    options: .BeginFromCurrentState,
+                    animations: {
+                        [weak self] in
+                        wrapper.alpha = 1
+                        self?.layoutIfNeeded()
+                        return
+                    },
+                    completion: nil)
+            } else {
+                wrapper.alpha = 1
+                layoutIfNeeded()
+            }
         }
         func removeSegmentAtIndex(index: Int, animated: Bool) {
             
@@ -100,6 +119,14 @@ extension Msr.UI {
         func replaceSegmentView(view: UIView, withView newView: UIView, animated: Bool) {
             
         }
+        internal func didPressButton(button: UIButton) {
+            for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
+                if button === w.button {
+                    // ?
+                    break
+                }
+            }
+        }
         override func layoutSubviews() {
             minWidthConstraint.constant = bounds.width
             var s: CGFloat = 0
@@ -107,8 +134,12 @@ extension Msr.UI {
                 s += w.defaultValueOfWidthConstraint
             }
             if s < bounds.width {
-                for w in wrappers[1..<wrappers.endIndex - 1] {
-                    w.setAdditionWidthToWidthConstraintWithValue((bounds.width - s) * (w.defaultValueOfWidthConstraint / s))
+                for w in wrappers[1...wrappers.endIndex - 2] {
+                    w.setAdditionWidthToWidthConstraintWithValue((bounds.width - s) / CGFloat(numberOfSegments))
+                }
+            } else {
+                for w in wrappers[1...wrappers.endIndex - 2] {
+                    w.resetWidthConstraint()
                 }
             }
             super.layoutSubviews()
@@ -117,8 +148,8 @@ extension Msr.UI {
             var contentView: UIView? {
                 willSet {
                     if newValue != nil {
-                        addSubview(newValue!)
-                        newValue!.userInteractionEnabled = false
+                        insertSubview(newValue!, aboveSubview: button)
+                        newValue!.frame = bounds
                         newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                         newValue!.msr_addAutoExpandingConstraintsToSuperview()
                     }
@@ -128,8 +159,23 @@ extension Msr.UI {
                     resetWidthConstraint()
                 }
             }
+            override var frame: CGRect {
+                didSet {
+                    contentView?.frame = bounds
+                }
+            }
+            override var bounds: CGRect {
+                didSet {
+                    contentView?.frame = bounds
+                }
+            }
+            override var center: CGPoint {
+                didSet {
+                    contentView?.center = center
+                }
+            }
             var widthConstraint: NSLayoutConstraint!
-            var overlayButton: UIButton!
+            var button: UIButton!
             override init() {
                 super.init()
                 // msr_initialize() will be invoked by init(frame:).
@@ -143,9 +189,10 @@ extension Msr.UI {
                 msr_initialize()
             }
             func msr_initialize() {
-                overlayButton = UIButton(frame: bounds)
-                overlayButton.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-                addSubview(overlayButton)
+                button = UIButton(frame: bounds)
+                button.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+                button.setBackgroundImage(UIImage.msr_rectangleWithColor(UIColor.blackColor().colorWithAlphaComponent(0.2), size: CGSize(width: 1, height: 1)), forState: .Highlighted)
+                addSubview(button)
                 msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                 widthConstraint = NSLayoutConstraint(item: self, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: defaultValueOfWidthConstraint)
                 addConstraint(widthConstraint)
