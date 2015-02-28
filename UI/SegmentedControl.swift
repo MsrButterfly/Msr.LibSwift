@@ -51,11 +51,9 @@ extension Msr.UI {
             leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             leftView.msr_addVerticalExpandingConstraintsToSuperview()
             leftView.msr_addLeftAttachedConstraintToSuperview()
-            leftView.msr_addWidthConstraintWithValue(0)
             rightView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             rightView.msr_addVerticalExpandingConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
-            rightView.msr_addWidthConstraintWithValue(0)
             wrappers = [leftView, rightView]
             let vs = ["l": leftView, "r": rightView]
             segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
@@ -108,12 +106,43 @@ extension Msr.UI {
             }
         }
         func removeSegmentAtIndex(index: Int, animated: Bool) {
+            /*********************************************************************
+            * now             deletion  addition                after
+            * |...[a][b]...|  [a][b](i) [a][w](i), [w][b](i+1)  |...[a][w][b]...|
+            *********************************************************************/
+            let wrapper = wrappers.removeAtIndex(index + 1)
+            scrollView.removeConstraints(Array(segmentConstraints[index...index + 1]))
+            let vs = ["l": wrappers[index], "r": wrappers[index + 1]]
+            segmentConstraints.replaceRange(index...index + 1, with: NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint])
+            scrollView.addConstraint(segmentConstraints[index])
+            setNeedsLayout()
+            if animated {
+                UIView.animateWithDuration(maxDuration,
+                    delay: 0,
+                    usingSpringWithDamping: 1.0,
+                    initialSpringVelocity: 0,
+                    options: .BeginFromCurrentState,
+                    animations: {
+                        [weak self] in
+                        wrapper.alpha = 0
+                        self?.layoutIfNeeded()
+                        return
+                    },
+                    completion: {
+                        finished in
+                        wrapper.removeFromSuperview()
+                        return
+                    })
+            } else {
+                wrapper.alpha = 0
+                layoutIfNeeded()
+                wrapper.removeFromSuperview()
+            }
+        }
+        func removeAllSegments(animated: Bool) {
             
         }
-        func removeAllSegments() {
-            
-        }
-        func replaceSegmentView(view: UIView, atIndex index: Int, animated: Bool) {
+        func replaceSegmentViewAtIndex(index: Int, withView newView: UIView, animated: Bool) {
             
         }
         func replaceSegmentView(view: UIView, withView newView: UIView, animated: Bool) {
@@ -133,13 +162,15 @@ extension Msr.UI {
             for w in wrappers {
                 s += w.defaultValueOfWidthConstraint
             }
-            if s < bounds.width {
-                for w in wrappers[1...wrappers.endIndex - 2] {
-                    w.setAdditionWidthToWidthConstraintWithValue((bounds.width - s) / CGFloat(numberOfSegments))
-                }
-            } else {
-                for w in wrappers[1...wrappers.endIndex - 2] {
-                    w.resetWidthConstraint()
+            if numberOfSegments > 0 {
+                if s < bounds.width {
+                    for w in wrappers[1...wrappers.endIndex - 2] {
+                        w.setAdditionWidthToWidthConstraintWithValue((bounds.width - s) / CGFloat(numberOfSegments))
+                    }
+                } else {
+                    for w in wrappers[1...wrappers.endIndex - 2] {
+                        w.resetWidthConstraint()
+                    }
                 }
             }
             super.layoutSubviews()
