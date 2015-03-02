@@ -53,9 +53,7 @@ extension Msr.UI {
         init(segments: [Segment]) {
             super.init()
             // msr_initialize() will be called by super.init() -> self.init(frame:)
-            for s in segments {
-                appendSegment(s, animated: false)
-            }
+            setSegments(segments, animated: false)
         }
         override init(frame: CGRect) {
             super.init(frame: frame)
@@ -109,6 +107,9 @@ extension Msr.UI {
                 return selectedSegmentIndexFromIndicatorPosition(indicatorPosition)
             }
         }
+        var selectedSegment: Segment? {
+            return selectedSegmentIndex == nil ? nil : segmentAtIndex(selectedSegmentIndex!)
+        }
         func appendSegment(segment: Segment, animated: Bool) {
             insertSegment(segment, atIndex: numberOfSegments, animated: animated)
         }
@@ -125,7 +126,6 @@ extension Msr.UI {
             replaceSegmentsInRange(index...index, withSegments: [], animated: animated)
         }
         func replaceSegmentsInRange(range: Range<Int>, withSegments segments: [Segment], animated: Bool) {
-            println("ATTEMPING TO REPLACE SEGMENTS ON RANGE \(range) WITH \(segments.count) NEW SEGMENTS.")
             assert(range.isEmpty || (0 <= range.startIndex && range.endIndex <= numberOfSegments), "out of range: [0, numberOfSegments - 1]")
             // selected segment index calculation
             let numberOfSegmentsToBeRemoved = range.endIndex - range.startIndex
@@ -135,12 +135,6 @@ extension Msr.UI {
             let indexOfFirstSegmentToBeInserted = indexOfFirstSegmentToBeRemoved
             let indexOfLastSegmentToBeInserted = indexOfFirstSegmentToBeInserted + numberOfSegmentsToBeInserted - 1
             var selectedSegmentIndexAfterReplacing = selectedSegmentIndex
-            println("number of segments to be removed: \(numberOfSegmentsToBeRemoved)")
-            println("number of segments to be inserted: \(numberOfSegmentsToBeInserted)")
-            println("index of first segment to be removed: \(indexOfFirstSegmentToBeRemoved)")
-            println("index of last segment to be removed: \(indexOfLastSegmentToBeRemoved)")
-            println("index of first segment to be inserted: \(indexOfFirstSegmentToBeInserted)")
-            println("index of last segment to be inserted: \(indexOfLastSegmentToBeInserted)")
             if selectedSegmentIndex != nil {
                 if numberOfSegments == numberOfSegmentsToBeRemoved {
                     selectedSegmentIndexAfterReplacing = nil
@@ -156,7 +150,6 @@ extension Msr.UI {
             }
             // wrapper replacing
             let rangeOfWrappersToBeRemoved = indexOfFirstSegmentToBeRemoved + 1..<indexOfLastSegmentToBeRemoved + 2
-            println("range of wrappers to be removed: \(rangeOfWrappersToBeRemoved)")
             var wrappersToBeInserted = [SegmentWrapper]()
             let wrappersToBeRemoved = wrappers[rangeOfWrappersToBeRemoved]
             for s in segments {
@@ -165,7 +158,6 @@ extension Msr.UI {
                 w.segment = s
                 w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
                 scrollView.insertSubview(w, belowSubview: indicatorWrapper)
-                println(CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height))
                 w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height)
                 w.msr_addVerticalExpandingConstraintsToSuperview()
                 scrollView.addConstraint(NSLayoutConstraint(item: w, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
@@ -177,8 +169,6 @@ extension Msr.UI {
             wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
             // constraint replacing
             let rangeOfConstraintsToBeRemoved = indexOfFirstSegmentToBeRemoved..<indexOfLastSegmentToBeRemoved + 2
-            println("range of constraints to be removed: \(rangeOfConstraintsToBeRemoved)")
-            println(segmentConstraints)
             var constraintsToBeInserted = [NSLayoutConstraint]()
             let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
             scrollView.removeConstraints(constraintsToBeRemoved)
@@ -189,12 +179,10 @@ extension Msr.UI {
                     lw.alpha = 0
                 }
                 constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
-                println("ADDING: [\(unsafeAddressOf(lw))][\(unsafeAddressOf(rw))]")
             }
             segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
             scrollView.addConstraints(constraintsToBeInserted)
             // indicator moving if needed
-            println(selectedSegmentIndexAfterReplacing)
             _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
             // layout
             let animations: () -> Void = {
@@ -215,7 +203,6 @@ extension Msr.UI {
                 }
             }
             setNeedsUpdateConstraints()
-            updateConstraintsIfNeeded()
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(animationDuration,
@@ -229,6 +216,9 @@ extension Msr.UI {
                 animations()
                 completion(true)
             }
+        }
+        func setSegments(segments: [Segment], animated: Bool) {
+            replaceSegmentsInRange(0..<numberOfSegments, withSegments: segments, animated: animated)
         }
         func scrollIndicatorToVisibleAnimated(animated: Bool) {
             let x = indicatorWrapperLeftConstraint.constant
@@ -244,7 +234,7 @@ extension Msr.UI {
             let offsetX = min(max(centerX - bounds.width / 2, 0), max(s - bounds.width, 0))
             scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: animated)
         }
-        func segmentAtIndex(index: Int) -> UIView? {
+        func segmentAtIndex(index: Int) -> Segment? {
             return wrappers[index + 1].segment
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
@@ -253,7 +243,6 @@ extension Msr.UI {
         func setIndicatorPosition(position: Float?, animated: Bool) {
             _indicatorPosition = position
             setNeedsUpdateConstraints()
-            updateConstraintsIfNeeded()
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(animationDuration,
@@ -271,12 +260,10 @@ extension Msr.UI {
                 layoutIfNeeded()
             }
         }
+        var constraintsUpdatingCount = 0
         override func updateConstraints() {
-            var begin = timeval()
-            var end = timeval()
-            gettimeofday(&begin, nil);
-            super.updateConstraints()
-            minWidthConstraint.constant = bounds.width
+            ++constraintsUpdatingCount
+            println("\(__FUNCTION__): \(constraintsUpdatingCount) time(s)")
             let value = indicatorPosition ?? 0
             let l = Int(floor(value))
             let r = Int(ceil(value))
@@ -298,9 +285,6 @@ extension Msr.UI {
                         rp += c
                     }
                 }
-                gettimeofday(&end, nil)
-                println("=================> cauculating constraints using \(end.tv_usec - begin.tv_usec)us")
-                begin = end
                 if s < bounds.width {
                     let increment = (bounds.width - s) / CGFloat(numberOfSegments)
                     lp += CGFloat(l) * increment
@@ -323,8 +307,21 @@ extension Msr.UI {
                 indicatorWrapperLeftConstraint.constant = 0
                 indicatorWrapperRightConstraint.constant = 0
             }
-            gettimeofday(&end, nil)
-            println("=================> setting constraints using \(end.tv_usec - begin.tv_usec)us")
+            super.updateConstraints()
+        }
+        override var bounds: CGRect {
+            didSet {
+                if bounds.size != oldValue.size {
+                    setNeedsUpdateConstraints() // It's not elegant but still needed.
+                }
+            }
+        }
+        override var frame: CGRect {
+            didSet {
+                if frame.size != oldValue.size {
+                    setNeedsUpdateConstraints() // It's not elegant but still needed.
+                }
+            }
         }
         override class func requiresConstraintBasedLayout() -> Bool {
             return true
@@ -444,14 +441,7 @@ extension Msr.UI {
                     oldValue?.removeTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
                 }
             }
-            internal func segmentedControlValueChanged(segmentedControl: SegmentedControl) {
-                let sc = segmentedControl
-                let index = sc.selectedSegmentIndex
-                if sc === self.segmentedControl && index != nil && sc.segmentAtIndex(index!) === self {
-                    segmentedControlDidSelectSelf()
-                }
-            }
-            func segmentedControlDidSelectSelf() {}
+            internal func segmentedControlValueChanged(segmentedControl: SegmentedControl) {}
             override func layoutSubviews() {
                 super.layoutSubviews()
                 setNeedsDisplay()
@@ -468,11 +458,14 @@ extension Msr.UI {
                     cv.addSubview(self!.imageView)
                     cv.addSubview(self!.titleLabel)
                     cv.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                    self!.imageView.msr_addAutoExpandingConstraintsToSuperview()
-                    self!.imageView.msr_removeBottomAttachedConstraintFromSuperview()
-                    self!.titleLabel.msr_addAutoExpandingConstraintsToSuperview()
-                    self!.titleLabel.msr_removeTopAttachedConstraintFromSuperview()
-                    cv.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[u][d]", options: nil, metrics: nil, views: ["u": self!.imageView, "d": self!.titleLabel]))
+                    self!.imageView.msr_addCenterXConstraintToSuperview()
+                    self!.titleLabel.msr_addCenterXConstraintToSuperview()
+                    self!.titleLabel.textAlignment = .Center
+                    let vs = ["u": self!.imageView, "d": self!.titleLabel]
+                    cv.addConstraints(
+                        NSLayoutConstraint.constraintsWithVisualFormat("V:|[u]-5-[d]|", options: nil, metrics: nil, views: vs) +
+                        NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[u]-(>=10)-|", options: nil, metrics: nil, views: vs) +
+                        NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[d]-(>=10)-|", options: nil, metrics: nil, views: vs))
                 }
                 return cv
             }()
@@ -484,11 +477,12 @@ extension Msr.UI {
             private(set) lazy var titleLabel: UILabel = {
                 let l = UILabel()
                 l.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                l.font = UIFont.systemFontOfSize(12)
                 return l
             }()
             var image: UIImage? {
                 set {
-                    imageView.image = newValue
+                    imageView.image = newValue?.imageWithRenderingMode(.AlwaysTemplate)
                     setNeedsRecalculateSystemLayoutSize()
                 }
                 get {
@@ -502,6 +496,12 @@ extension Msr.UI {
                 }
                 get {
                     return titleLabel.text
+                }
+            }
+            override var tintColor: UIColor! {
+                didSet {
+                    imageView.tintColor = tintColor
+                    titleLabel.textColor = tintColor
                 }
             }
             init(title: String?, image: UIImage?) {
@@ -519,10 +519,18 @@ extension Msr.UI {
                 super.msr_initialize()
                 addSubview(containerView)
                 let vs = ["c": containerView]
-                addConstraints(
-                    NSLayoutConstraint.constraintsWithVisualFormat("|-(>=5)-[c]-(>=5)-|", options: nil, metrics: nil, views: vs) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("V:|-(>=5)-[c]-(>=5)-|", options: nil, metrics: nil, views: vs))
+                addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[c]-(>=10)-|", options: nil, metrics: nil, views: vs))
+                containerView.msr_addCenterConstraintsToSuperview()
+                tintColor = UIColor.grayColor()
                 opaque = false
+            }
+            override func segmentedControlValueChanged(segmentedControl: SegmentedControl) {
+                super.segmentedControlValueChanged(segmentedControl)
+                if segmentedControl.selectedSegment === self {
+                    tintColor = UIColor.purpleColor()
+                } else {
+                    tintColor = UIColor.grayColor()
+                }
             }
         }
         func msr_initialize() {
