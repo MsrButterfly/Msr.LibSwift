@@ -2,66 +2,42 @@ import UIKit
 
 extension Msr.UI {
     class SegmentedViewController: UIViewController, UIToolbarDelegate {
-        let viewControllers: [UIViewController]
-        let segmentedControl: UISegmentedControl
-        let toolBar: UIToolbar
-        init(frame: CGRect, toolBarStyle: UIBarStyle, viewControllers: [UIViewController]) {
-            assert(viewControllers.count > 0, "The count of view controllers should be greater than 0.")
-            self.viewControllers = viewControllers
-            segmentedControl = UISegmentedControl(items: viewControllers.map({ $0.title ?? "" }))
-            toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: frame.width, height: 44))
-            toolBar.barStyle = toolBarStyle
-            super.init(nibName: nil, bundle: nil)
-            view = UIScrollView(frame: frame)
-            segmentedControl.bounds.size.width = toolBar.bounds.width - 20
-            segmentedControl.addTarget(self, action: "switchView", forControlEvents: .ValueChanged)
-            segmentedControl.selectedSegmentIndex = 0
-            toolBar.delegate = self
-            toolBar.tintColor = (toolBarStyle == .Default) ? UIColor.blackColor() : UIColor.whiteColor()
-            toolBar.setItems(
-                [
-                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
-                    UIBarButtonItem(customView: segmentedControl),
-                    UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-                ],
-                animated: false)
-            view.addSubview(toolBar)
-            for viewController in viewControllers {
-                addChildViewController(viewController)
-                view.insertSubview(viewController.view, belowSubview: toolBar)
+        private var _viewControllers = [UIViewController]()
+        var viewControllers: [UIViewController] {
+            return _viewControllers
+        }
+        let segmentedControl = SegmentedControl()
+        let scrollView = UIScrollView()
+        override init() {
+            super.init()
+            // msr_initialize() will be invoked by super.init() -> self.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        }
+        init(viewControllers: [UIViewController]) {
+            super.init()
+            // msr_initialize() will be invoked by super.init() -> self.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+            for vc in viewControllers {
+                
             }
-            switchView()
         }
         required init(coder aDecoder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
+            super.init(coder: aDecoder)
+            msr_initialize()
         }
-        func switchView() {
-            for viewController in viewControllers {
-                viewController.view.hidden = true
-            }
-            let selectedViewController = viewControllers[segmentedControl.selectedSegmentIndex]
-            selectedViewController.view.hidden = false
+        override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+            super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+            msr_initialize()
         }
-        func positionForBar(bar: UIBarPositioning) -> UIBarPosition {
-            return .TopAttached
+        internal func msr_initialize() {
+//            UITabBarController
         }
-        override func viewDidLayoutSubviews() {
-            for viewController in viewControllers {
-                viewController.view.frame = view.bounds
-                if let scrollView = viewController.view as? UIScrollView {
-                    scrollView.contentInset.top = toolBar.bounds.height + (view as! UIScrollView).contentInset.top
-                    scrollView.contentOffset.y = -scrollView.contentInset.top
-                    if let tableView = scrollView as? UITableView {
-                        tableView.scrollIndicatorInsets.top = toolBar.bounds.height + (view as! UIScrollView).contentInset.top
-                    }
-                } else {
-                    viewController.view.frame.origin.y += toolBar.bounds.height
-                    viewController.view.frame.size.height += toolBar.bounds.height
-                }
-            }
+        func appendViewController(viewController: UIViewController, animated: Bool) {
+            
         }
-        override func preferredStatusBarStyle() -> UIStatusBarStyle {
-            return (toolBar.barStyle == .Default) ? .Default : .LightContent
+        func insertViewController(viewController: UIViewController, atIndex index: Int, animated: Bool) {
+            
+        }
+        func removeViewController(viewController: UIViewController, atIndex index: Int, animated: Bool) {
+            
         }
     }
 }

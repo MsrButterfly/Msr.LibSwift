@@ -22,6 +22,8 @@ extension Msr.UI {
         func appendSegmentWithView(view: UIView, animated: Bool)
         func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool)
         func removeSegmentAtIndex(index: Int, animated: Bool)
+        func scrollIndicatorToVisibleAnimated(animated: Bool)
+        func scrollIndicatorToCenterAnimated(animated: Bool)
         func selectSegmentAtIndex(index: Int?, animated: Bool)
         func setIndicatorPosition(position: Float?, animated: Bool)
 
@@ -35,7 +37,11 @@ extension Msr.UI {
 */
 
 extension Msr.UI {
-    class SegmentedControl: UIControl {
+    @objc class SegmentedControl: UIControl {
+        override init() {
+            super.init()
+            // msr_initialize() will be called by super.init() -> self.init(frame:)
+        }
         init(views: [UIView]) {
             super.init()
             // msr_initialize() will be called by super.init() -> self.init(frame:)
@@ -172,12 +178,26 @@ extension Msr.UI {
                         finished in
                         wrapper.removeFromSuperview()
                         return
-                })
+                    })
             } else {
                 wrapper.alpha = 0
                 layoutIfNeeded()
                 wrapper.removeFromSuperview()
             }
+        }
+        func scrollIndicatorToVisibleAnimated(animated: Bool) {
+            let x = indicatorViewWrapperLeftConstraint.constant
+            let width = indicatorViewWrapperRightConstraint.constant - indicatorViewWrapperLeftConstraint.constant
+            scrollView.scrollRectToVisible(CGRect(x: x, y: 0, width: width, height: 1), animated: animated)
+        }
+        func scrollIndicatorToCenterAnimated(animated: Bool) {
+            var s: CGFloat = 0
+            for w in wrappers {
+                s += w.defaultValueOfWidthConstraint
+            }
+            let centerX = (indicatorViewWrapperLeftConstraint.constant + indicatorViewWrapperRightConstraint.constant) / 2
+            let offsetX = min(max(centerX - bounds.width / 2, 0), max(s - bounds.width, 0))
+            scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: animated)
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
             setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
