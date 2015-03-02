@@ -4,6 +4,10 @@ import UIKit
 
 Functional Synopsis
 
+@objc protocol MsrSegmentedControlDelegate {
+
+}
+
 extension Msr.UI {
 
     class SegmentedControl: UIControl {
@@ -20,14 +24,18 @@ extension Msr.UI {
         var selectedSegmentIndex: Int? // 0...numberOfSegments - 1
 
         func appendSegmentWithView(view: UIView, animated: Bool)
+        func indexOfSegment(segment: Segment) -> Int?
         func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool)
         func removeSegmentAtIndex(index: Int, animated: Bool)
         func scrollIndicatorToVisibleAnimated(animated: Bool)
         func scrollIndicatorToCenterAnimated(animated: Bool)
+        func segmentAtIndex(index: Int) -> UIView
         func selectSegmentAtIndex(index: Int?, animated: Bool)
         func setIndicatorPosition(position: Float?, animated: Bool)
 
         class DefaultIndicatorView: AutoExpandingView
+        class Segment: AutoExpandingView
+        class DefaultSegment: Segment
         class WrapperView: UIView
 
     }
@@ -42,11 +50,11 @@ extension Msr.UI {
             super.init()
             // msr_initialize() will be called by super.init() -> self.init(frame:)
         }
-        init(views: [UIView]) {
+        init(segments: [Segment]) {
             super.init()
             // msr_initialize() will be called by super.init() -> self.init(frame:)
-            for v in views {
-                appendSegmentWithView(v, animated: false)
+            for s in segments {
+                appendSegment(s, animated: false)
             }
         }
         override init(frame: CGRect) {
@@ -100,67 +108,114 @@ extension Msr.UI {
                 selectSegmentAtIndex(newValue, animated: false)
             }
             get {
-                if _indicatorPosition != nil {
-                    let value = _indicatorPosition!
-                    let l = Int(floor(value))
-                    let r = Int(ceil(value))
-                    let p = value - Float(l)
-                    return p < 0.5 ? l : r
-                } else {
-                    return nil
-                }
+                return selectedSegmentIndexFromIndicatorPosition(indicatorPosition)
             }
         }
-        func appendSegmentWithView(view: UIView, animated: Bool) {
-            insertSegmentWithView(view, atIndex: numberOfSegments, animated: animated)
+        func appendSegment(segment: Segment, animated: Bool) {
+            insertSegment(segment, atIndex: numberOfSegments, animated: animated)
         }
-        func insertSegmentWithView(view: UIView, atIndex index: Int, animated: Bool) {
-            let wrapper = WrapperView()
-            wrapper.contentView = view
-            wrapper.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-            wrappers.insert(wrapper, atIndex: index + 1)
-            scrollView.insertSubview(wrapper, belowSubview: indicatorViewWrapper)
-            if index <= selectedSegmentIndex {
-                _indicatorPosition = ceil(_indicatorPosition! + 1)
+        func indexOfSegment(segment: Segment) -> Int? {
+            if numberOfSegments == 0 {
+                return nil
             }
-            let vs = ["l": wrappers[index], "r": wrappers[index + 2], "w": wrapper]
-            scrollView.removeConstraint(segmentConstraints[index])
-            wrapper.msr_addTopAttachedConstraintToSuperview()
-            addConstraint(NSLayoutConstraint(item: wrapper, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
-            addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[w]|", options: nil, metrics: nil, views: vs))
-            segmentConstraints.replaceRange(index...index, with: NSLayoutConstraint.constraintsWithVisualFormat("[l][w][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint])
-            scrollView.addConstraints(Array(segmentConstraints[index...index + 1]))
-            wrapper.bounds.size = CGSize(width: wrapper.defaultValueOfWidthConstraint, height: bounds.height)
-            wrapper.frame.origin = CGPoint(x: wrappers[index].frame.msr_left, y: 0)
-            wrapper.alpha = 0
-            setNeedsLayout()
-            if animated {
-                UIView.animateWithDuration(animationDuration,
-                    delay: 0,
-                    usingSpringWithDamping: 1,
-                    initialSpringVelocity: 0,
-                    options: .BeginFromCurrentState,
-                    animations: {
-                        [weak self] in
-                        wrapper.alpha = 1
-                        self?.layoutIfNeeded()
-                        return
-                    },
-                    completion: nil)
-            } else {
-                wrapper.alpha = 1
-                layoutIfNeeded()
-            }
+            return find(map(wrappers[0...wrappers.endIndex - 2], { $0.segment ?? Segment() }), segment)
+        }
+        func insertSegment(segment: Segment, atIndex index: Int, animated: Bool) {
+            replaceSegmentsInRange(index..<index, withSegments: [segment], animated: animated)
         }
         func removeSegmentAtIndex(index: Int, animated: Bool) {
-            if index <= selectedSegmentIndex {
-                _indicatorPosition = numberOfSegments == 1 ? nil : _indicatorPosition <= 1 ? 0 : floor(_indicatorPosition! - 1)
+            replaceSegmentsInRange(index...index, withSegments: [], animated: animated)
+        }
+        func replaceSegmentsInRange(range: Range<Int>, withSegments segments: [Segment], animated: Bool) {
+            println("ATTEMPING TO REPLACE SEGMENTS ON RANGE \(range) WITH \(segments.count) NEW SEGMENTS.")
+            assert(range.isEmpty || (0 <= range.startIndex && range.endIndex <= numberOfSegments), "out of range: [0, numberOfSegments - 1]")
+            // selected segment index calculation
+            let numberOfSegmentsToBeRemoved = range.endIndex - range.startIndex
+            let numberOfSegmentsToBeInserted = segments.count
+            let indexOfFirstSegmentToBeRemoved = range.startIndex
+            let indexOfLastSegmentToBeRemoved = range.endIndex - 1
+            let indexOfFirstSegmentToBeInserted = indexOfFirstSegmentToBeRemoved
+            let indexOfLastSegmentToBeInserted = indexOfFirstSegmentToBeInserted + numberOfSegmentsToBeInserted - 1
+            var selectedSegmentIndexAfterReplacing = selectedSegmentIndex
+            println("number of segments to be removed: \(numberOfSegmentsToBeRemoved)")
+            println("number of segments to be inserted: \(numberOfSegmentsToBeInserted)")
+            println("index of first segment to be removed: \(indexOfFirstSegmentToBeRemoved)")
+            println("index of last segment to be removed: \(indexOfLastSegmentToBeRemoved)")
+            println("index of first segment to be inserted: \(indexOfFirstSegmentToBeInserted)")
+            println("index of last segment to be inserted: \(indexOfLastSegmentToBeInserted)")
+            if selectedSegmentIndex != nil {
+                if numberOfSegments == numberOfSegmentsToBeRemoved {
+                    selectedSegmentIndexAfterReplacing = nil
+                } else if selectedSegmentIndex >= indexOfFirstSegmentToBeRemoved && selectedSegmentIndex <= indexOfLastSegmentToBeRemoved {
+                    if indexOfFirstSegmentToBeRemoved != 0 {
+                        selectedSegmentIndexAfterReplacing = indexOfFirstSegmentToBeRemoved - 1
+                    } else {
+                        selectedSegmentIndexAfterReplacing = indexOfLastSegmentToBeRemoved + 1
+                    }
+                } else if selectedSegmentIndex > indexOfLastSegmentToBeRemoved {
+                    selectedSegmentIndexAfterReplacing = selectedSegmentIndex! - numberOfSegmentsToBeRemoved + numberOfSegmentsToBeInserted
+                }
             }
-            let wrapper = wrappers.removeAtIndex(index + 1)
-            scrollView.removeConstraints(Array(segmentConstraints[index...index + 1]))
-            let vs = ["l": wrappers[index], "r": wrappers[index + 1]]
-            segmentConstraints.replaceRange(index...index + 1, with: NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint])
-            scrollView.addConstraint(segmentConstraints[index])
+            // wrapper replacing
+            let rangeOfWrappersToBeRemoved = indexOfFirstSegmentToBeRemoved + 1..<indexOfLastSegmentToBeRemoved + 2
+            println("range of wrappers to be removed: \(rangeOfWrappersToBeRemoved)")
+            var wrappersToBeInserted = [WrapperView]()
+            let wrappersToBeRemoved = wrappers[rangeOfWrappersToBeRemoved]
+            for s in segments {
+                s.segmentedControl = self
+                let w = WrapperView()
+                w.segment = s
+                w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
+                scrollView.insertSubview(w, belowSubview: indicatorViewWrapper)
+                println(CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.defaultValueOfWidthConstraint, height: bounds.height))
+                w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.defaultValueOfWidthConstraint, height: bounds.height)
+                addConstraint(NSLayoutConstraint(item: w, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
+                w.msr_addVerticalExpandingConstraintsToSuperview()
+                wrappersToBeInserted.append(w)
+            }
+            for w in wrappersToBeRemoved {
+                w.segment?.segmentedControl = nil
+            }
+            wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
+            // constraint replacing
+            let rangeOfConstraintsToBeRemoved = indexOfFirstSegmentToBeRemoved..<indexOfLastSegmentToBeRemoved + 2
+            println("range of constraints to be removed: \(rangeOfConstraintsToBeRemoved)")
+            println(segmentConstraints)
+            var constraintsToBeInserted = [NSLayoutConstraint]()
+            let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
+            scrollView.removeConstraints(constraintsToBeRemoved)
+            for i in indexOfFirstSegmentToBeInserted...indexOfLastSegmentToBeInserted + 1 {
+                let lw = wrappers[i]
+                let rw = wrappers[i + 1]
+                if i > indexOfFirstSegmentToBeInserted {
+                    lw.alpha = 0
+                }
+                constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
+                println("ADDING: [\(unsafeAddressOf(lw))][\(unsafeAddressOf(rw))]")
+            }
+            segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
+            scrollView.addConstraints(constraintsToBeInserted)
+            // indicator moving if needed
+            println(selectedSegmentIndexAfterReplacing)
+            _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
+            // layout
+            let animations: () -> Void = {
+                [weak self] in
+                for w in wrappersToBeInserted {
+                    w.alpha = 1
+                }
+                for w in wrappersToBeRemoved {
+                    w.alpha = 0
+                }
+                self?.layoutIfNeeded()
+                return
+            }
+            let completion: (Bool) -> Void = {
+                finished in
+                for w in wrappersToBeRemoved {
+                    w.removeFromSuperview()
+                }
+            }
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(animationDuration,
@@ -168,21 +223,11 @@ extension Msr.UI {
                     usingSpringWithDamping: 1,
                     initialSpringVelocity: 0,
                     options: .BeginFromCurrentState,
-                    animations: {
-                        [weak self] in
-                        wrapper.alpha = 0
-                        self?.layoutIfNeeded()
-                        return
-                    },
-                    completion: {
-                        finished in
-                        wrapper.removeFromSuperview()
-                        return
-                    })
+                    animations: animations,
+                    completion: completion)
             } else {
-                wrapper.alpha = 0
-                layoutIfNeeded()
-                wrapper.removeFromSuperview()
+                animations()
+                completion(true)
             }
         }
         func scrollIndicatorToVisibleAnimated(animated: Bool) {
@@ -199,11 +244,13 @@ extension Msr.UI {
             let offsetX = min(max(centerX - bounds.width / 2, 0), max(s - bounds.width, 0))
             scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: animated)
         }
+        func segmentAtIndex(index: Int) -> UIView? {
+            return wrappers[index + 1].segment
+        }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
             setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
         }
         func setIndicatorPosition(position: Float?, animated: Bool) {
-            let oldSegmentIndex = selectedSegmentIndex
             _indicatorPosition = position
             setNeedsLayout()
             if animated {
@@ -220,9 +267,6 @@ extension Msr.UI {
                     completion: nil)
             } else {
                 layoutIfNeeded()
-            }
-            if selectedSegmentIndex != oldSegmentIndex {
-                sendActionsForControlEvents(.ValueChanged)
             }
         }
         override func layoutSubviews() {
@@ -276,11 +320,16 @@ extension Msr.UI {
             override func msr_initialize() {
                 super.msr_initialize()
                 opaque = false
+                tintColor = UIColor.purpleColor()
+            }
+            override func tintColorDidChange() {
+                super.tintColorDidChange()
+                setNeedsDisplay()
             }
             override func drawRect(rect: CGRect) {
                 let context = UIGraphicsGetCurrentContext()
                 CGContextSaveGState(context)
-                CGContextSetStrokeColorWithColor(context, UIColor.purpleColor().CGColor)
+                CGContextSetStrokeColorWithColor(context, tintColor?.CGColor)
                 CGContextSetLineCap(context, kCGLineCapSquare)
                 CGContextSetLineWidth(context, 10)
                 CGContextMoveToPoint(context, 0, rect.msr_bottom)
@@ -294,10 +343,10 @@ extension Msr.UI {
             }
         }
         class WrapperView: UIView {
-            var contentView: UIView? {
+            var segment: Segment? {
                 willSet {
                     if newValue != nil {
-                        insertSubview(newValue!, aboveSubview: button)
+                        insertSubview(newValue!, belowSubview: button)
                         newValue!.frame = bounds
                         newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                         newValue!.msr_addAutoExpandingConstraintsToSuperview()
@@ -310,17 +359,17 @@ extension Msr.UI {
             }
             override var frame: CGRect {
                 didSet {
-                    contentView?.frame = bounds
+                    segment?.frame = CGRect(origin: CGPointZero, size: frame.size) // for immediately changing before inserting
                 }
             }
             override var bounds: CGRect {
                 didSet {
-                    contentView?.frame = bounds
+                    segment?.frame = bounds // for immediately changing before inserting
                 }
             }
             override var center: CGPoint {
                 didSet {
-                    contentView?.center = center
+                    segment?.center = center // for immediately changing before inserting
                 }
             }
             private var widthConstraint: NSLayoutConstraint!
@@ -353,10 +402,83 @@ extension Msr.UI {
                 widthConstraint.constant = defaultValueOfWidthConstraint + value
             }
             var defaultValueOfWidthConstraint: CGFloat {
-                return contentView?.intrinsicContentSize().width ?? 0
+                return segment?.intrinsicContentSize().width ?? 0
             }
         }
-        internal func msr_initialize() {
+        class Segment: AutoExpandingView {
+            weak var segmentedControl: SegmentedControl? {
+                willSet {
+                    newValue?.addTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
+                }
+                didSet {
+                    oldValue?.removeTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
+                }
+            }
+            internal func segmentedControlValueChanged(segmentedControl: SegmentedControl) {
+                let sc = segmentedControl
+                let index = sc.selectedSegmentIndex
+                if sc === self.segmentedControl && index != nil && sc.segmentAtIndex(index!) === self {
+                    segmentedControlDidSelectSelf()
+                }
+            }
+            func segmentedControlDidSelectSelf() {
+                // ...
+            }
+            override func layoutSubviews() {
+                super.layoutSubviews()
+                setNeedsDisplay()
+            }
+            deinit {
+                segmentedControl = nil
+            }
+        }
+        class DefaultSegment: Segment {
+            private(set) lazy var imageView = {
+                return UIImageView()
+            }()
+            private(set) lazy var titleLabel = {
+                return UILabel()
+            }()
+            var image: UIImage? {
+                set {
+                    imageView.image = newValue
+                }
+                get {
+                    return imageView.image
+                }
+            }
+            var title: String? {
+                set {
+                    titleLabel.text = newValue
+                }
+                get {
+                    return titleLabel.text
+                }
+            }
+            init(title: String?, image: UIImage?) {
+                super.init()
+                self.title = title
+                self.image = image
+            }
+            required override init(coder aDecoder: NSCoder) {
+                super.init(coder: aDecoder)
+            }
+            override init(frame: CGRect) {
+                super.init(frame: frame)
+            }
+            override func msr_initialize() {
+                super.msr_initialize()
+//                addSubview(imageView)
+                addSubview(titleLabel)
+//                imageView.msr_addCenterXConstraintToSuperview()
+//                titleLabel.msr_addCenterXConstraintToSuperview()
+                titleLabel.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                titleLabel.msr_addAutoExpandingConstraintsToSuperview()
+                //
+                opaque = false
+            }
+        }
+        func msr_initialize() {
             addSubview(scrollView)
             scrollView.addSubview(leftView)
             scrollView.addSubview(rightView)
@@ -395,6 +517,17 @@ extension Msr.UI {
                 }
             }
         }
+        private func selectedSegmentIndexFromIndicatorPosition(position: Float?) -> Int? {
+            if position != nil {
+                let value = position!
+                let l = Int(floor(value))
+                let r = Int(ceil(value))
+                let p = value - Float(l)
+                return p < 0.5 ? l : r
+            } else {
+                return nil
+            }
+        }
         private var wrappers = [WrapperView]()
         private var segmentConstraints = [NSLayoutConstraint]() // initially [left][right]
         private let leftView = WrapperView(frame: CGRectZero)
@@ -406,7 +539,12 @@ extension Msr.UI {
         private var indicatorViewWrapper = UIView()
         private var _indicatorPosition: Float? {
             willSet {
-                assert(newValue == nil || newValue >= 0 && newValue <= Float(numberOfSegments - 1), "selectedSegmentIndex & indicatorPosition out of range: 0...numberOfSegments - 1")
+                assert(newValue == nil || newValue >= 0 && newValue <= Float(numberOfSegments - 1), "out of range: [0, numberOfSegments - 1]")
+            }
+            didSet {
+                if selectedSegmentIndex != selectedSegmentIndexFromIndicatorPosition(oldValue) {
+                    sendActionsForControlEvents(.ValueChanged)
+                }
             }
         }
         private var _indicatorView: UIView!
