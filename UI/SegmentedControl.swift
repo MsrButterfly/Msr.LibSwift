@@ -216,6 +216,8 @@ extension Msr.UI {
                     w.removeFromSuperview()
                 }
             }
+            setNeedsUpdateConstraints()
+            updateConstraintsIfNeeded()
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(animationDuration,
@@ -252,6 +254,8 @@ extension Msr.UI {
         }
         func setIndicatorPosition(position: Float?, animated: Bool) {
             _indicatorPosition = position
+            setNeedsUpdateConstraints()
+            updateConstraintsIfNeeded()
             setNeedsLayout()
             if animated {
                 UIView.animateWithDuration(animationDuration,
@@ -269,7 +273,8 @@ extension Msr.UI {
                 layoutIfNeeded()
             }
         }
-        override func layoutSubviews() {
+        override func updateConstraints() {
+            super.updateConstraints()
             minWidthConstraint.constant = bounds.width
             let value = indicatorPosition ?? 0
             let l = Int(floor(value))
@@ -314,7 +319,9 @@ extension Msr.UI {
                 indicatorViewWrapperLeftConstraint.constant = 0
                 indicatorViewWrapperRightConstraint.constant = 0
             }
-            super.layoutSubviews()
+        }
+        override class func requiresConstraintBasedLayout() -> Bool {
+            return true
         }
         class DefaultIndicatorView: AutoExpandingView {
             override func msr_initialize() {
@@ -402,7 +409,7 @@ extension Msr.UI {
                 widthConstraint.constant = defaultValueOfWidthConstraint + value
             }
             var defaultValueOfWidthConstraint: CGFloat {
-                return segment?.intrinsicContentSize().width ?? 0
+                return segment?.systemLayoutSizeFittingSize(UILayoutFittingCompressedSize).width ?? 0
             }
         }
         class Segment: AutoExpandingView {
@@ -421,9 +428,7 @@ extension Msr.UI {
                     segmentedControlDidSelectSelf()
                 }
             }
-            func segmentedControlDidSelectSelf() {
-                // ...
-            }
+            func segmentedControlDidSelectSelf() {}
             override func layoutSubviews() {
                 super.layoutSubviews()
                 setNeedsDisplay()
@@ -468,15 +473,19 @@ extension Msr.UI {
             }
             override func msr_initialize() {
                 super.msr_initialize()
-//                addSubview(imageView)
+                addSubview(imageView)
                 addSubview(titleLabel)
-//                imageView.msr_addCenterXConstraintToSuperview()
+                imageView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                imageView.msr_addAutoExpandingConstraintsToSuperview()
 //                titleLabel.msr_addCenterXConstraintToSuperview()
                 titleLabel.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                 titleLabel.msr_addAutoExpandingConstraintsToSuperview()
                 //
                 opaque = false
             }
+//            override func intrinsicContentSize() -> CGSize {
+//                return CGSize(width: max(titleLabel.intrinsicContentSize().width, imageView.intrinsicContentSize().width), height: 0)
+//            }
         }
         func msr_initialize() {
             addSubview(scrollView)
