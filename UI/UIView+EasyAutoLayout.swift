@@ -198,7 +198,7 @@ extension UIView {
                 .Horizontal: NSLayoutConstraint(item: self, attribute: .CenterX, relatedBy: .Equal, toItem: superview!, attribute: .CenterX, multiplier: 1, constant: 0),
                 .Vertical: NSLayoutConstraint(item: self, attribute: .CenterY, relatedBy: .Equal, toItem: superview!, attribute: .CenterY, multiplier: 1, constant: 0)]
             objc_setAssociatedObject(self, Msr.UI._Constant.UIViewCenterConstraintAssociationKeys[direction]!, constraints[direction]!, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-            addConstraint(msr_sizeConstraintOfDirection(direction)!)
+            addConstraint(msr_centerConstraintOfDirection(direction)!)
         }
     }
     func msr_removeCenterConstraintFromSuperviewWithDirection(direction: Msr.UI.FrameSizingDirection) {

@@ -22,7 +22,7 @@ extension Msr.UI {
             super.init(frame: frame)
             msr_initialize()
         }
-        private func msr_initialize() {
+        func msr_initialize() {
             let views = ["self": self]
             msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillChangeFrame:", name: UIKeyboardWillChangeFrameNotification, object: nil)
