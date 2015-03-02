@@ -1,4 +1,4 @@
-import UIKit
+//import UIKit
 
 /*
 
@@ -19,7 +19,7 @@ extension Msr.UI {
         var animationDuration: NSTimeInterval // default 0.5
         var backgroundView: UIView? // default nil
         var indicatorPosition: Float? // 0...numberOfSegments - 1
-        var indicatorView: UIView // default Msr.UI.SegmentedControl.DefaultIndicatorView
+        var indicator: UIView // default Msr.UI.SegmentedControl.DefaultIndicator
         var numberOfSegments: Int
         var selectedSegmentIndex: Int? // 0...numberOfSegments - 1
 
@@ -33,10 +33,10 @@ extension Msr.UI {
         func selectSegmentAtIndex(index: Int?, animated: Bool)
         func setIndicatorPosition(position: Float?, animated: Bool)
 
-        class DefaultIndicatorView: AutoExpandingView
+        class DefaultIndicator: AutoExpandingView
         class Segment: AutoExpandingView
         class DefaultSegment: Segment
-        class WrapperView: UIView
+        class SegmentWrapper: UIView
 
     }
 
@@ -86,16 +86,14 @@ extension Msr.UI {
                 return _indicatorPosition
             }
         }
-        var indicatorView: UIView {
+        var indicator: Indicator {
             set {
-                _indicatorView?.removeFromSuperview()
-                _indicatorView = newValue
-                indicatorViewWrapper.addSubview(_indicatorView)
-                newValue.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                newValue.msr_addAutoExpandingConstraintsToSuperview()
+                _indicator?.removeFromSuperview()
+                _indicator = newValue
+                indicatorWrapper.addSubview(_indicator)
             }
             get {
-                return _indicatorView
+                return _indicator
             }
         }
         var numberOfSegments: Int {
@@ -159,18 +157,18 @@ extension Msr.UI {
             // wrapper replacing
             let rangeOfWrappersToBeRemoved = indexOfFirstSegmentToBeRemoved + 1..<indexOfLastSegmentToBeRemoved + 2
             println("range of wrappers to be removed: \(rangeOfWrappersToBeRemoved)")
-            var wrappersToBeInserted = [WrapperView]()
+            var wrappersToBeInserted = [SegmentWrapper]()
             let wrappersToBeRemoved = wrappers[rangeOfWrappersToBeRemoved]
             for s in segments {
                 s.segmentedControl = self
-                let w = WrapperView()
+                let w = SegmentWrapper()
                 w.segment = s
                 w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-                scrollView.insertSubview(w, belowSubview: indicatorViewWrapper)
-                println(CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.defaultValueOfWidthConstraint, height: bounds.height))
-                w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.defaultValueOfWidthConstraint, height: bounds.height)
-                addConstraint(NSLayoutConstraint(item: w, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
+                scrollView.insertSubview(w, belowSubview: indicatorWrapper)
+                println(CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height))
+                w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height)
                 w.msr_addVerticalExpandingConstraintsToSuperview()
+                scrollView.addConstraint(NSLayoutConstraint(item: w, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
                 wrappersToBeInserted.append(w)
             }
             for w in wrappersToBeRemoved {
@@ -233,16 +231,16 @@ extension Msr.UI {
             }
         }
         func scrollIndicatorToVisibleAnimated(animated: Bool) {
-            let x = indicatorViewWrapperLeftConstraint.constant
-            let width = indicatorViewWrapperRightConstraint.constant - indicatorViewWrapperLeftConstraint.constant
+            let x = indicatorWrapperLeftConstraint.constant
+            let width = indicatorWrapperRightConstraint.constant - indicatorWrapperLeftConstraint.constant
             scrollView.scrollRectToVisible(CGRect(x: x, y: 0, width: width, height: 1), animated: animated)
         }
         func scrollIndicatorToCenterAnimated(animated: Bool) {
             var s: CGFloat = 0
             for w in wrappers {
-                s += w.defaultValueOfWidthConstraint
+                s += w.minimumLayoutSize.width
             }
-            let centerX = (indicatorViewWrapperLeftConstraint.constant + indicatorViewWrapperRightConstraint.constant) / 2
+            let centerX = (indicatorWrapperLeftConstraint.constant + indicatorWrapperRightConstraint.constant) / 2
             let offsetX = min(max(centerX - bounds.width / 2, 0), max(s - bounds.width, 0))
             scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: animated)
         }
@@ -274,6 +272,9 @@ extension Msr.UI {
             }
         }
         override func updateConstraints() {
+            var begin = timeval()
+            var end = timeval()
+            gettimeofday(&begin, nil);
             super.updateConstraints()
             minWidthConstraint.constant = bounds.width
             let value = indicatorPosition ?? 0
@@ -285,7 +286,7 @@ extension Msr.UI {
             var s: CGFloat = 0
             if wrappers.count > 2 {
                 for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
-                    let c = w.defaultValueOfWidthConstraint
+                    let c = w.minimumLayoutSize.width
                     s += c
                     if i < l {
                         lp += c
@@ -297,33 +298,38 @@ extension Msr.UI {
                         rp += c
                     }
                 }
+                gettimeofday(&end, nil)
+                println("=================> cauculating constraints using \(end.tv_usec - begin.tv_usec)us")
+                begin = end
                 if s < bounds.width {
                     let increment = (bounds.width - s) / CGFloat(numberOfSegments)
                     lp += CGFloat(l) * increment
                     mp += CGFloat(l + 1) * increment
                     rp += CGFloat(r + 1) * increment
                     for w in wrappers[1...wrappers.endIndex - 2] {
-                        w.setAdditionWidthToWidthConstraintWithValue(increment)
+                        w.widthConstraint.constant = w.minimumLayoutSize.width + increment
                     }
                 } else {
                     for w in wrappers[1...wrappers.endIndex - 2] {
-                        w.resetWidthConstraint()
+                        w.widthConstraint.constant = w.minimumLayoutSize.width
                     }
                 }
             }
             let p = CGFloat(value) - CGFloat(l)
-            indicatorViewWrapperLeftConstraint.constant = 0
-            indicatorViewWrapperRightConstraint.constant = mp + (rp - mp) * p
-            indicatorViewWrapperLeftConstraint.constant = lp + (mp - lp) * p
+            indicatorWrapperLeftConstraint.constant = 0
+            indicatorWrapperRightConstraint.constant = mp + (rp - mp) * p
+            indicatorWrapperLeftConstraint.constant = lp + (mp - lp) * p
             if indicatorPosition == nil {
-                indicatorViewWrapperLeftConstraint.constant = 0
-                indicatorViewWrapperRightConstraint.constant = 0
+                indicatorWrapperLeftConstraint.constant = 0
+                indicatorWrapperRightConstraint.constant = 0
             }
+            gettimeofday(&end, nil)
+            println("=================> setting constraints using \(end.tv_usec - begin.tv_usec)us")
         }
         override class func requiresConstraintBasedLayout() -> Bool {
             return true
         }
-        class DefaultIndicatorView: AutoExpandingView {
+        class Indicator: AutoExpandingView {
             override func msr_initialize() {
                 super.msr_initialize()
                 opaque = false
@@ -333,23 +339,38 @@ extension Msr.UI {
                 super.tintColorDidChange()
                 setNeedsDisplay()
             }
-            override func drawRect(rect: CGRect) {
-                let context = UIGraphicsGetCurrentContext()
-                CGContextSaveGState(context)
-                CGContextSetStrokeColorWithColor(context, tintColor?.CGColor)
-                CGContextSetLineCap(context, kCGLineCapSquare)
-                CGContextSetLineWidth(context, 10)
-                CGContextMoveToPoint(context, 0, rect.msr_bottom)
-                CGContextAddLineToPoint(context, rect.msr_right, rect.msr_bottom)
-                CGContextStrokePath(context)
-                CGContextRestoreGState(context)
-            }
             override func layoutSubviews() {
                 super.layoutSubviews()
                 setNeedsDisplay()
             }
         }
-        class WrapperView: UIView {
+        class OverlineIndicator: Indicator {
+            override func drawRect(rect: CGRect) {
+                let context = UIGraphicsGetCurrentContext()
+                CGContextSaveGState(context)
+                CGContextSetStrokeColorWithColor(context, tintColor?.CGColor)
+                CGContextSetLineCap(context, kCGLineCapSquare)
+                CGContextSetLineWidth(context, 2)
+                CGContextMoveToPoint(context, 0, rect.msr_top + 1)
+                CGContextAddLineToPoint(context, rect.msr_right, rect.msr_bottom)
+                CGContextStrokePath(context)
+                CGContextRestoreGState(context)
+            }
+        }
+        class UnderlineIndicator: Indicator {
+            override func drawRect(rect: CGRect) {
+                let context = UIGraphicsGetCurrentContext()
+                CGContextSaveGState(context)
+                CGContextSetStrokeColorWithColor(context, tintColor?.CGColor)
+                CGContextSetLineCap(context, kCGLineCapSquare)
+                CGContextSetLineWidth(context, 2)
+                CGContextMoveToPoint(context, 0, rect.msr_bottom - 1)
+                CGContextAddLineToPoint(context, rect.msr_right, rect.msr_bottom - 1)
+                CGContextStrokePath(context)
+                CGContextRestoreGState(context)
+            }
+        }
+        class SegmentWrapper: UIView {
             var segment: Segment? {
                 willSet {
                     if newValue != nil {
@@ -361,7 +382,6 @@ extension Msr.UI {
                 }
                 didSet {
                     oldValue?.removeFromSuperview()
-                    resetWidthConstraint()
                 }
             }
             override var frame: CGRect {
@@ -399,20 +419,23 @@ extension Msr.UI {
                 button.setBackgroundImage(UIImage.msr_rectangleWithColor(UIColor.blackColor().colorWithAlphaComponent(0.2), size: CGSize(width: 1, height: 1)), forState: .Highlighted)
                 addSubview(button)
                 msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                widthConstraint = NSLayoutConstraint(item: self, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: defaultValueOfWidthConstraint)
+                widthConstraint = NSLayoutConstraint(item: self, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: minimumLayoutSize.width)
                 addConstraint(widthConstraint)
             }
-            func resetWidthConstraint() {
-                widthConstraint.constant = defaultValueOfWidthConstraint
-            }
-            func setAdditionWidthToWidthConstraintWithValue(value: CGFloat) {
-                widthConstraint.constant = defaultValueOfWidthConstraint + value
-            }
-            var defaultValueOfWidthConstraint: CGFloat {
-                return segment?.systemLayoutSizeFittingSize(UILayoutFittingCompressedSize).width ?? 0
+            private var _minimumLayoutSize = CGSizeZero
+            var minimumLayoutSize: CGSize {
+                if segment?._needsRecalculateSystemLayoutSize ?? false {
+                    segment!._needsRecalculateSystemLayoutSize = false
+                    _minimumLayoutSize = segment?.systemLayoutSizeFittingSize(UILayoutFittingCompressedSize) ?? CGSizeZero
+                }
+                return _minimumLayoutSize
             }
         }
         class Segment: AutoExpandingView {
+            private var _needsRecalculateSystemLayoutSize: Bool = true // for efficency
+            func setNeedsRecalculateSystemLayoutSize() {
+                _needsRecalculateSystemLayoutSize = true
+            }
             weak var segmentedControl: SegmentedControl? {
                 willSet {
                     newValue?.addTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
@@ -438,15 +461,35 @@ extension Msr.UI {
             }
         }
         class DefaultSegment: Segment {
-            private(set) lazy var imageView = {
-                return UIImageView()
+            private lazy var containerView: UIView = {
+                [weak self] in
+                let cv = UIView()
+                if self != nil {
+                    cv.addSubview(self!.imageView)
+                    cv.addSubview(self!.titleLabel)
+                    cv.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                    self!.imageView.msr_addAutoExpandingConstraintsToSuperview()
+                    self!.imageView.msr_removeBottomAttachedConstraintFromSuperview()
+                    self!.titleLabel.msr_addAutoExpandingConstraintsToSuperview()
+                    self!.titleLabel.msr_removeTopAttachedConstraintFromSuperview()
+                    cv.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[u][d]", options: nil, metrics: nil, views: ["u": self!.imageView, "d": self!.titleLabel]))
+                }
+                return cv
             }()
-            private(set) lazy var titleLabel = {
-                return UILabel()
+            private(set) lazy var imageView: UIImageView = {
+                let iv = UIImageView()
+                iv.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                return iv
+            }()
+            private(set) lazy var titleLabel: UILabel = {
+                let l = UILabel()
+                l.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                return l
             }()
             var image: UIImage? {
                 set {
                     imageView.image = newValue
+                    setNeedsRecalculateSystemLayoutSize()
                 }
                 get {
                     return imageView.image
@@ -455,6 +498,7 @@ extension Msr.UI {
             var title: String? {
                 set {
                     titleLabel.text = newValue
+                    setNeedsRecalculateSystemLayoutSize()
                 }
                 get {
                     return titleLabel.text
@@ -473,25 +517,19 @@ extension Msr.UI {
             }
             override func msr_initialize() {
                 super.msr_initialize()
-                addSubview(imageView)
-                addSubview(titleLabel)
-                imageView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                imageView.msr_addAutoExpandingConstraintsToSuperview()
-//                titleLabel.msr_addCenterXConstraintToSuperview()
-                titleLabel.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                titleLabel.msr_addAutoExpandingConstraintsToSuperview()
-                //
+                addSubview(containerView)
+                let vs = ["c": containerView]
+                addConstraints(
+                    NSLayoutConstraint.constraintsWithVisualFormat("|-(>=5)-[c]-(>=5)-|", options: nil, metrics: nil, views: vs) +
+                    NSLayoutConstraint.constraintsWithVisualFormat("V:|-(>=5)-[c]-(>=5)-|", options: nil, metrics: nil, views: vs))
                 opaque = false
             }
-//            override func intrinsicContentSize() -> CGSize {
-//                return CGSize(width: max(titleLabel.intrinsicContentSize().width, imageView.intrinsicContentSize().width), height: 0)
-//            }
         }
         func msr_initialize() {
             addSubview(scrollView)
             scrollView.addSubview(leftView)
             scrollView.addSubview(rightView)
-            scrollView.addSubview(indicatorViewWrapper)
+            scrollView.addSubview(indicatorWrapper)
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             scrollView.msr_addAutoExpandingConstraintsToSuperview()
             leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
@@ -509,14 +547,14 @@ extension Msr.UI {
             scrollView.addConstraint(minWidthConstraint)
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.delaysContentTouches = true
-            indicatorViewWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            indicatorViewWrapper.msr_addVerticalExpandingConstraintsToSuperview()
-            indicatorViewWrapper.userInteractionEnabled = false
-            indicatorView = DefaultIndicatorView()
-            indicatorViewWrapperLeftConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            indicatorViewWrapperRightConstraint = NSLayoutConstraint(item: indicatorViewWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            scrollView.addConstraint(indicatorViewWrapperLeftConstraint)
-            scrollView.addConstraint(indicatorViewWrapperRightConstraint)
+            indicatorWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            indicatorWrapper.msr_addVerticalExpandingConstraintsToSuperview()
+            indicatorWrapper.userInteractionEnabled = false
+            indicator = UnderlineIndicator()
+            indicatorWrapperLeftConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            indicatorWrapperRightConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
+            scrollView.addConstraint(indicatorWrapperLeftConstraint)
+            scrollView.addConstraint(indicatorWrapperRightConstraint)
         }
         internal func didPressButton(button: UIButton) {
             for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
@@ -537,15 +575,15 @@ extension Msr.UI {
                 return nil
             }
         }
-        private var wrappers = [WrapperView]()
+        private var wrappers = [SegmentWrapper]()
         private var segmentConstraints = [NSLayoutConstraint]() // initially [left][right]
-        private let leftView = WrapperView(frame: CGRectZero)
-        private let rightView = WrapperView(frame: CGRectZero)
+        private let leftView = SegmentWrapper()
+        private let rightView = SegmentWrapper()
         private let scrollView = UIScrollView()
         private var minWidthConstraint: NSLayoutConstraint!
-        private var indicatorViewWrapperLeftConstraint: NSLayoutConstraint!
-        private var indicatorViewWrapperRightConstraint: NSLayoutConstraint!
-        private var indicatorViewWrapper = UIView()
+        private var indicatorWrapperLeftConstraint: NSLayoutConstraint!
+        private var indicatorWrapperRightConstraint: NSLayoutConstraint!
+        private var indicatorWrapper = UIView()
         private var _indicatorPosition: Float? {
             willSet {
                 assert(newValue == nil || newValue >= 0 && newValue <= Float(numberOfSegments - 1), "out of range: [0, numberOfSegments - 1]")
@@ -556,6 +594,6 @@ extension Msr.UI {
                 }
             }
         }
-        private var _indicatorView: UIView!
+        private var _indicator: Indicator!
     }
 }
