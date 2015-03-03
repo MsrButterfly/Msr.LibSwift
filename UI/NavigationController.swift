@@ -416,7 +416,7 @@ extension Msr.UI {
                 let orientation = UIApplication.sharedApplication().statusBarOrientation
                 super.layoutSubviews()
                 navigationBar.frame.origin.y = statusBarFrame.height
-                navigationBar.frame.size.height = orientation.isPortrait ? _Constant.UIToolBarHeightWhenPortrait : _Constant.UIToolBarHeightWhenLandscape
+                navigationBar.frame.size.height = orientation.isPortrait ? _Detail.UIToolBarHeightWhenPortrait : _Detail.UIToolBarHeightWhenLandscape
                 navigationBar.msr_backgroundView!.frame.size.height = navigationBar.frame.height + statusBarFrame.height
                 navigationBar.msr_backgroundView!.frame.origin.y = -statusBarFrame.height
                 contentView.frame.msr_top = navigationBar.frame.msr_bottom

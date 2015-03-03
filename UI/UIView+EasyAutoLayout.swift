@@ -1,6 +1,6 @@
 import UIKit
 
-extension Msr.UI._Constant {
+extension Msr.UI._Detail {
     static var UIViewEdgeAttachedConstraintAssociationKeys: [Msr.UI.FrameEdge: UnsafePointer<Void>] {
         struct _Static {
             static var _keys: Int32 = 0
@@ -18,7 +18,7 @@ extension Msr.UI._Constant {
 
 extension UIView {
     func msr_edgeAttachedConstraintAtEdge(edge: Msr.UI.FrameEdge) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!) as? NSLayoutConstraint
+        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewEdgeAttachedConstraintAssociationKeys[edge]!) as? NSLayoutConstraint
     }
     private func msr_setEdgeAttachedConstraintAtEdge(edge: Msr.UI.FrameEdge, toNil: Bool) {
         let views = ["self": self]
@@ -27,7 +27,7 @@ extension UIView {
             .Bottom: "V:[self]|",
             .Left: "|[self]",
             .Right: "[self]|"]
-        objc_setAssociatedObject(self, Msr.UI._Constant.UIViewEdgeAttachedConstraintAssociationKeys[edge]!, toNil ? nil : NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+        objc_setAssociatedObject(self, Msr.UI._Detail.UIViewEdgeAttachedConstraintAssociationKeys[edge]!, toNil ? nil : NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
     }
     var msr_shouldTranslateAutoresizingMaskIntoConstraints: Bool {
         get {
@@ -112,7 +112,7 @@ extension UIView {
     }
 }
 
-extension Msr.UI._Constant {
+extension Msr.UI._Detail {
     static var UIViewSizeConstraintAssociationKeys: [Msr.UI.FrameSizingDirection: UnsafePointer<Void>] {
         struct _Static {
             static var _keys: Int16 = 0
@@ -128,7 +128,7 @@ extension Msr.UI._Constant {
 
 extension UIView {
     func msr_sizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewSizeConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
+        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
     }
     func msr_addSizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection, value: CGFloat) {
         if msr_sizeConstraintOfDirection(direction) == nil {
@@ -136,7 +136,7 @@ extension UIView {
             let formats: [Msr.UI.FrameSizingDirection: String] = [
                 .Horizontal: "[self(==0)]",
                 .Vertical: "V:[self(==0)]|"]
-            objc_setAssociatedObject(self, Msr.UI._Constant.UIViewSizeConstraintAssociationKeys[direction]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[direction]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[direction]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[direction]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             addConstraint(msr_sizeConstraintOfDirection(direction)!)
         }
         msr_sizeConstraintOfDirection(direction)!.constant = value
@@ -174,7 +174,7 @@ extension UIView {
     }
 }
 
-extension Msr.UI._Constant {
+extension Msr.UI._Detail {
     static var UIViewCenterConstraintAssociationKeys: [Msr.UI.FrameSizingDirection: UnsafePointer<Void>] {
         struct _Static {
             static var _keys: Int16 = 0
@@ -190,14 +190,14 @@ extension Msr.UI._Constant {
 
 extension UIView {
     func msr_centerConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Constant.UIViewCenterConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
+        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
     }
     func msr_addCenterConstraintToSuperviewWithDirection(direction: Msr.UI.FrameSizingDirection) {
         if msr_centerConstraintOfDirection(direction) == nil {
             let constraints: [Msr.UI.FrameSizingDirection: NSLayoutConstraint] = [
                 .Horizontal: NSLayoutConstraint(item: self, attribute: .CenterX, relatedBy: .Equal, toItem: superview!, attribute: .CenterX, multiplier: 1, constant: 0),
                 .Vertical: NSLayoutConstraint(item: self, attribute: .CenterY, relatedBy: .Equal, toItem: superview!, attribute: .CenterY, multiplier: 1, constant: 0)]
-            objc_setAssociatedObject(self, Msr.UI._Constant.UIViewCenterConstraintAssociationKeys[direction]!, constraints[direction]!, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!, constraints[direction]!, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             superview!.addConstraint(msr_centerConstraintOfDirection(direction)!)
         }
     }
