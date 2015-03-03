@@ -17,10 +17,8 @@ extension Msr.UI {
         }
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
-            println(superview)
             if var sv: UIView? = superview as? Msr.UI._Detail.SegmentWrapper {
                 while !(sv is SegmentedControl) && sv != nil {
-                    println(sv!.superview)
                     sv = sv!.superview
                 }
                 segmentedControl = sv as? SegmentedControl
@@ -55,7 +53,8 @@ extension Msr.UI {
             setNeedsDisplay()
         }
         deinit {
-            segmentedControl = nil
+            segmentedControl?.removeTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
+            // segmentedControl = nil // Swift *WONT* invoke didSet in deinit
         }
     }
 }
