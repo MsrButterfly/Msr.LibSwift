@@ -383,6 +383,7 @@ extension Msr.UI {
             for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
                 if button === w.button {
                     selectSegmentAtIndex(i, animated: true)
+                    scrollIndicatorToVisibleAnimated(true)
                     break
                 }
             }
