@@ -284,8 +284,8 @@ extension Msr.UI {
             let offsetX = min(max(centerX - bounds.width / 2, 0), max(s - bounds.width, 0))
             scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: animated)
         }
-        func segmentAtIndex(index: Int) -> Segment? {
-            return wrappers[index + 1].segment
+        func segmentAtIndex(index: Int) -> Segment {
+            return wrappers[index + 1].segment!
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
             setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
