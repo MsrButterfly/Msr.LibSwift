@@ -2,6 +2,7 @@ import UIKit
 
 extension Msr.UI {
     class Segment: AutoExpandingView {
+        typealias SegmentedControl = Msr.UI.SegmentedControl
         private var needsRecalculateSystemLayoutSize: Bool = true // for efficency
         func setNeedsRecalculateSystemLayoutSize() {
             needsRecalculateSystemLayoutSize = true
@@ -14,7 +15,18 @@ extension Msr.UI {
             }
             return _minimumLayoutSize
         }
-        weak var segmentedControl: SegmentedControl? {
+        override func didMoveToSuperview() {
+            super.didMoveToSuperview()
+            println(superview)
+            if var sv: UIView? = superview as? Msr.UI._Detail.SegmentWrapper {
+                while !(sv is SegmentedControl) && sv != nil {
+                    println(sv!.superview)
+                    sv = sv!.superview
+                }
+                segmentedControl = sv as? SegmentedControl
+            }
+        }
+        private weak var segmentedControl: SegmentedControl? {
             willSet {
                 newValue?.addTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
             }
@@ -22,7 +34,22 @@ extension Msr.UI {
                 oldValue?.removeTarget(self, action: "segmentedControlValueChanged:", forControlEvents: .ValueChanged)
             }
         }
-        internal func segmentedControlValueChanged(segmentedControl: SegmentedControl) {}
+        private var selectedBefore: Bool = false
+        private var selected: Bool = false
+        // If you want to override this method, you must invoke super at the beginning.
+        func segmentedControlValueChanged(segmentedControl: SegmentedControl) {
+            selectedBefore = selected
+            selected = segmentedControl.selectedSegment === self
+            if selected != selectedBefore {
+                if selected {
+                    segmentedControlDidSelectedSelf(segmentedControl)
+                } else {
+                    segmentedControlDidDeselectedSelf(segmentedControl)
+                }
+            }
+        }
+        func segmentedControlDidSelectedSelf(segmentedControl: SegmentedControl) {}
+        func segmentedControlDidDeselectedSelf(segmentedControl: SegmentedControl) {}
         override func layoutSubviews() {
             super.layoutSubviews()
             setNeedsDisplay()
@@ -82,12 +109,6 @@ extension Msr.UI {
                 return titleLabel.text
             }
         }
-        override var tintColor: UIColor! {
-            didSet {
-                imageView.tintColor = tintColor
-                titleLabel.textColor = tintColor
-            }
-        }
         init(title: String?, image: UIImage?) {
             super.init()
             self.title = title
@@ -105,16 +126,23 @@ extension Msr.UI {
             let vs = ["c": containerView]
             addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[c]-(>=10)-|", options: nil, metrics: nil, views: vs))
             containerView.msr_addCenterConstraintsToSuperview()
-            tintColor = UIColor.grayColor()
             opaque = false
         }
-        override func segmentedControlValueChanged(segmentedControl: SegmentedControl) {
-            super.segmentedControlValueChanged(segmentedControl)
-            if segmentedControl.selectedSegment === self {
-                tintColor = UIColor.purpleColor()
-            } else {
-                tintColor = UIColor.grayColor()
+        override var tintColor: UIColor! {
+            didSet {
+                updateColor()
             }
+        }
+        override func segmentedControlDidSelectedSelf(segmentedControl: SegmentedControl) {
+            updateColor()
+        }
+        override func segmentedControlDidDeselectedSelf(segmentedControl: SegmentedControl) {
+            updateColor()
+        }
+        func updateColor() {
+            let color = selected ? tintColor : UIColor.lightGrayColor()
+            imageView.tintColor = color
+            titleLabel.textColor = color
         }
     }
 }

@@ -103,6 +103,7 @@ extension Msr.UI {
             indicatorWrapperRightConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
             scrollView.addConstraint(indicatorWrapperLeftConstraint)
             scrollView.addConstraint(indicatorWrapperRightConstraint)
+            indicator.tintColor = tintColor
         }
         var animationDuration = NSTimeInterval(0.5)
         var backgroundView: UIView? {
@@ -203,18 +204,15 @@ extension Msr.UI {
             var wrappersToBeInserted = [SegmentWrapper]()
             let wrappersToBeRemoved = wrappers[rangeOfWrappersToBeRemoved]
             for s in segments {
-                s.segmentedControl = self
+                s.tintColor = tintColor
                 let w = SegmentWrapper()
+                scrollView.insertSubview(w, belowSubview: indicatorWrapper)
                 w.segment = s
                 w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-                scrollView.insertSubview(w, belowSubview: indicatorWrapper)
                 w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height)
                 w.msr_addVerticalExpandingConstraintsToSuperview()
                 scrollView.addConstraint(NSLayoutConstraint(item: w, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
                 wrappersToBeInserted.append(w)
-            }
-            for w in wrappersToBeRemoved {
-                w.segment?.segmentedControl = nil
             }
             wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
             // constraint replacing
@@ -308,6 +306,14 @@ extension Msr.UI {
                     completion: nil)
             } else {
                 layoutIfNeeded()
+            }
+        }
+        override var tintColor: UIColor! {
+            didSet {
+                for w in wrappers {
+                    w.segment?.tintColor = tintColor
+                }
+                indicator.tintColor = tintColor
             }
         }
         override func updateConstraints() {

@@ -5,7 +5,6 @@ extension Msr.UI {
         override func msr_initialize() {
             super.msr_initialize()
             opaque = false
-            tintColor = UIColor.purpleColor()
         }
         override func tintColorDidChange() {
             super.tintColorDidChange()
