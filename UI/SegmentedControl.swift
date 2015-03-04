@@ -81,9 +81,10 @@ extension Msr.UI {
         }
         func msr_initialize() {
             addSubview(scrollView)
-            scrollView.addSubview(leftView)
-            scrollView.addSubview(rightView)
+            scrollView.addSubview(segmentsView)
             scrollView.addSubview(indicatorWrapper)
+            segmentsView.addSubview(leftView)
+            segmentsView.addSubview(rightView)
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             scrollView.msr_addAutoExpandingConstraintsToSuperview()
             leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
@@ -96,9 +97,9 @@ extension Msr.UI {
             wrappers = [leftView, rightView]
             let vs = ["l": leftView, "r": rightView]
             segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
-            minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
-            scrollView.addConstraints(segmentConstraints)
-            scrollView.addConstraint(minWidthConstraint)
+            minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: segmentsView, attribute: .Leading, multiplier: 1, constant: 0)
+            segmentsView.addConstraints(segmentConstraints)
+            segmentsView.addConstraint(minWidthConstraint)
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.delaysContentTouches = true
             indicatorWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
@@ -109,13 +110,15 @@ extension Msr.UI {
             indicatorWrapperRightConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
             scrollView.addConstraint(indicatorWrapperLeftConstraint)
             scrollView.addConstraint(indicatorWrapperRightConstraint)
-            indicator.tintColor = tintColor
+            scrollView.addConstraint(NSLayoutConstraint(item: segmentsView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
+            tintColor = UIColor.purpleColor()
         }
         var animationDuration = NSTimeInterval(0.5)
         var backgroundView: UIView? {
             willSet {
                 if newValue != nil {
-                    insertSubview(newValue!, belowSubview: scrollView)
+                    addSubview(newValue!)
+                    sendSubviewToBack(newValue!)
                     newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                     newValue!.msr_addAutoExpandingConstraintsToSuperview()
                 }
@@ -124,22 +127,23 @@ extension Msr.UI {
                 oldValue?.removeFromSuperview()
             }
         }
+        var indicator: Indicator {
+            set {
+                _indicator?.removeFromSuperview()
+                _indicator = newValue
+                indicatorWrapper.addSubview(_indicator)
+                scrollView.bringSubviewToFront(indicator.dynamicType.aboveSegments ? indicatorWrapper : segmentsView)
+            }
+            get {
+                return _indicator
+            }
+        }
         var indicatorPosition: Float? {
             set {
                 setIndicatorPosition(newValue, animated: false)
             }
             get {
                 return _indicatorPosition
-            }
-        }
-        var indicator: Indicator {
-            set {
-                _indicator?.removeFromSuperview()
-                _indicator = newValue
-                indicatorWrapper.addSubview(_indicator)
-            }
-            get {
-                return _indicator
             }
         }
         var numberOfSegments: Int {
@@ -229,12 +233,11 @@ extension Msr.UI {
             for s in newSegments {
                 s.tintColor = tintColor
                 let w = SegmentWrapper()
-                scrollView.insertSubview(w, belowSubview: indicatorWrapper)
+                segmentsView.addSubview(w)
                 w.segment = s
                 w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
                 w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height)
                 w.msr_addVerticalExpandingConstraintsToSuperview()
-                scrollView.addConstraint(NSLayoutConstraint(item: w, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
                 wrappersToBeInserted.append(w)
             }
             wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
@@ -242,7 +245,7 @@ extension Msr.UI {
             let rangeOfConstraintsToBeRemoved = indexOfFirstSegmentToBeRemoved..<indexOfLastSegmentToBeRemoved + 2
             var constraintsToBeInserted = [NSLayoutConstraint]()
             let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
-            scrollView.removeConstraints(constraintsToBeRemoved)
+            segmentsView.removeConstraints(constraintsToBeRemoved)
             for i in indexOfFirstSegmentToBeInserted...indexOfLastSegmentToBeInserted + 1 {
                 let lw = wrappers[i]
                 let rw = wrappers[i + 1]
@@ -252,7 +255,7 @@ extension Msr.UI {
                 constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
             }
             segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
-            scrollView.addConstraints(constraintsToBeInserted)
+            segmentsView.addConstraints(constraintsToBeInserted)
             // move indicator
             _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
             // layout
@@ -431,6 +434,7 @@ extension Msr.UI {
         private let leftView = SegmentWrapper()
         private let rightView = SegmentWrapper()
         private let scrollView = UIScrollView()
+        private let segmentsView = AutoExpandingView()
         private var minWidthConstraint: NSLayoutConstraint!
         private var indicatorWrapperLeftConstraint: NSLayoutConstraint!
         private var indicatorWrapperRightConstraint: NSLayoutConstraint!

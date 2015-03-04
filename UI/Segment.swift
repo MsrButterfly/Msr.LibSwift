@@ -87,7 +87,7 @@ extension Msr.UI {
         private(set) lazy var titleLabel: UILabel = {
             let l = UILabel()
             l.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            l.font = UIFont.systemFontOfSize(12)
+            l.font = UIFont.systemFontOfSize(10)
             return l
         }()
         var image: UIImage? {
