@@ -8,7 +8,6 @@ Functional Synopsis
     optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentAtIndex: Int) -> Bool
 }
 
-
 extension Msr.UI {
 
     class SegmentedControl: UIControl {
@@ -37,7 +36,7 @@ extension Msr.UI {
         var selectedSegmentIndex: Int?                // default nil, range 0...numberOfSegments - 1
         var selectedSegmentIndexChanged: Bool { get } // true if selectedSegmentIndex has been changed since last .ValueChanged action was sent, otherwise false.
         var selectedSegment: Segment? { get }         // default nil
-
+        var valueChangedByUserInteraction: Bool       // true if value changed by user interaction since last .ValueChanged action was sent, otherwise false.
         func appendSegment(segment: Segment, animated: Bool)
         func extendSegments(segments: [Segment], animated: Bool)
         func indexOfSegment(segment: Segment) -> Int?
@@ -66,8 +65,8 @@ extension Msr.UI {
 import UIKit
 
 @objc protocol MsrSegmentedControlDelegate {
-    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegment: Msr.UI.SegmentedControl.Segment) -> Bool
-    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentAtIndex: Int) -> Bool
+    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentByUserInteraction: Msr.UI.SegmentedControl.Segment) -> Bool
+    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentAtIndexByUserInteraction: Int) -> Bool
 }
 
 extension Msr.UI {
@@ -187,6 +186,7 @@ extension Msr.UI {
         var selectedSegment: Segment? {
             return selectedSegmentIndex == nil ? nil : segmentAtIndex(selectedSegmentIndex!)
         }
+        private(set) var valueChangedByUserInteraction: Bool = false
         func appendSegment(segment: Segment, animated: Bool) {
             insertSegment(segment, atIndex: numberOfSegments, animated: animated)
         }
@@ -284,7 +284,11 @@ extension Msr.UI {
             segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
             segmentsView.addConstraints(constraintsToBeInserted)
             // move indicator
-            _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
+            var indicatorPositionAfterReplacing: Float? = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
+            if _indicatorPosition != indicatorPositionAfterReplacing {
+                valueChangedByUserInteraction = false
+                _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
+            }
             // layout
             let animations: () -> Void = {
                 [weak self] in
@@ -342,27 +346,10 @@ extension Msr.UI {
             selectSegmentAtIndex(segment == nil ? nil : indexOfSegment(segment!), animated: animated)
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
-            setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
+            selectSegmentAtIndex(index, animated: animated, byUserInteraction: false)
         }
         func setIndicatorPosition(position: Float?, animated: Bool) {
-            _indicatorPosition = position
-            setNeedsUpdateConstraints()
-            setNeedsLayout()
-            if animated {
-                UIView.animateWithDuration(animationDuration,
-                    delay: 0,
-                    usingSpringWithDamping: 1,
-                    initialSpringVelocity: 0,
-                    options: .BeginFromCurrentState,
-                    animations: {
-                        [weak self] in
-                        self?.layoutIfNeeded()
-                        return
-                    },
-                    completion: nil)
-            } else {
-                layoutIfNeeded()
-            }
+            setIndicatorPosition(position, animated: animated, byUserInteraction: false)
         }
         override var tintColor: UIColor! {
             didSet {
@@ -439,10 +426,11 @@ extension Msr.UI {
             for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
                 if button === w.button {
                     var shouldBeSelected = true
-                    shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegment: segmentAtIndex(i)) ?? true
-                    shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentAtIndex: i) ?? true
+                    shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentByUserInteraction: segmentAtIndex(i)) ?? true
+                    shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentAtIndexByUserInteraction: i) ?? true
                     if shouldBeSelected {
-                        selectSegmentAtIndex(i, animated: true)
+                        valueChangedByUserInteraction = true
+                        selectSegmentAtIndex(i, animated: true, byUserInteraction: true)
                         scrollIndicatorToVisibleAnimated(true)
                     }
                     break
@@ -458,6 +446,30 @@ extension Msr.UI {
                 return p < 0.5 ? l : r
             } else {
                 return nil
+            }
+        }
+        private func selectSegmentAtIndex(index: Int?, animated: Bool, byUserInteraction userInteraction: Bool) {
+            setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated, byUserInteraction: userInteraction)
+        }
+        private func setIndicatorPosition(position: Float?, animated: Bool, byUserInteraction userInteraction: Bool) {
+            valueChangedByUserInteraction = userInteraction
+            _indicatorPosition = position
+            setNeedsUpdateConstraints()
+            setNeedsLayout()
+            if animated {
+                UIView.animateWithDuration(animationDuration,
+                    delay: 0,
+                    usingSpringWithDamping: 1,
+                    initialSpringVelocity: 0,
+                    options: .BeginFromCurrentState,
+                    animations: {
+                        [weak self] in
+                        self?.layoutIfNeeded()
+                        return
+                    },
+                    completion: nil)
+            } else {
+                layoutIfNeeded()
             }
         }
         private typealias SegmentWrapper = _Detail.SegmentWrapper
