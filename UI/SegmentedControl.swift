@@ -27,15 +27,16 @@ extension Msr.UI {
 
         func msr_initialize()
 
-        var animationDuration: NSTimeInterval  // default 0.5
-        var backgroundView: UIView?            // default nil
-        weak var delegate: Delegate?           // default nil
-        var indicatorPosition: Float?          // default nil, range 0...numberOfSegments - 1
-        var indicator: Indicator               // default UnderlineIndicator
+        var animationDuration: NSTimeInterval         // default 0.5
+        var backgroundView: UIView?                   // default nil
+        weak var delegate: Delegate?                  // default nil
+        var indicatorPosition: Float?                 // default nil, range 0...numberOfSegments - 1
+        var indicator: Indicator                      // default UnderlineIndicator
         var numberOfSegments: Int { get }
-        var selected: Bool                     // selectedSegmentIndex != nil. Select 1st if changed false to true from externals.
-        var selectedSegmentIndex: Int?         // default nil, range 0...numberOfSegments - 1
-        var selectedSegment: Segment? { get }  // default nil
+        var selected: Bool                            // selectedSegmentIndex != nil. Select 1st if changed false to true from externals.
+        var selectedSegmentIndex: Int?                // default nil, range 0...numberOfSegments - 1
+        var selectedSegmentIndexChanged: Bool { get } // true if selectedSegmentIndex has been changed since last .ValueChanged action was sent, otherwise false.
+        var selectedSegment: Segment? { get }         // default nil
 
         func appendSegment(segment: Segment, animated: Bool)
         func extendSegments(segments: [Segment], animated: Bool)
@@ -179,17 +180,10 @@ extension Msr.UI {
                 selectSegmentAtIndex(newValue, animated: false)
             }
             get {
-                if indicatorPosition != nil {
-                    let value = indicatorPosition!
-                    let l = Int(floor(value))
-                    let r = Int(ceil(value))
-                    let p = value - Float(l)
-                    return p < 0.5 ? l : r
-                } else {
-                    return nil
-                }
+                return segmentIndexFromIndicatorPosition(indicatorPosition)
             }
         }
+        private(set) var selectedSegmentIndexChanged: Bool = false
         var selectedSegment: Segment? {
             return selectedSegmentIndex == nil ? nil : segmentAtIndex(selectedSegmentIndex!)
         }
@@ -455,6 +449,17 @@ extension Msr.UI {
                 }
             }
         }
+        private func segmentIndexFromIndicatorPosition(position: Float?) -> Int? {
+            if position != nil {
+                let value = position!
+                let l = Int(floor(value))
+                let r = Int(ceil(value))
+                let p = value - Float(l)
+                return p < 0.5 ? l : r
+            } else {
+                return nil
+            }
+        }
         private typealias SegmentWrapper = _Detail.SegmentWrapper
         private var wrappers = [SegmentWrapper]()
         private var segmentConstraints = [NSLayoutConstraint]() // initially [left][right]
@@ -471,6 +476,7 @@ extension Msr.UI {
                 assert(newValue == nil || newValue >= 0 && newValue <= Float(numberOfSegments - 1), "out of range: [0, numberOfSegments - 1]")
             }
             didSet {
+                selectedSegmentIndexChanged = selectedSegmentIndex != segmentIndexFromIndicatorPosition(oldValue)
                 if _indicatorPosition != oldValue {
                     sendActionsForControlEvents(.ValueChanged)
                 }
