@@ -5,8 +5,4 @@ extension Msr.UI {
         case Left
         case Right
     }
-    enum FrameSizingDirection {
-        case Horizontal
-        case Vertical
-    }
 }

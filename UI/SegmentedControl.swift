@@ -236,7 +236,6 @@ extension Msr.UI {
                 segmentsView.addSubview(w)
                 w.segment = s
                 w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-                w.frame = CGRect(x: wrappers[indexOfFirstSegmentToBeRemoved].frame.msr_left, y: 0, width: w.minimumLayoutSize.width, height: bounds.height)
                 w.msr_addVerticalExpandingConstraintsToSuperview()
                 wrappersToBeInserted.append(w)
             }

@@ -113,7 +113,7 @@ extension UIView {
 }
 
 extension Msr.UI._Detail {
-    static var UIViewSizeConstraintAssociationKeys: [Msr.UI.FrameSizingDirection: UnsafePointer<Void>] {
+    static var UIViewSizeConstraintAssociationKeys: [UILayoutConstraintAxis: UnsafePointer<Void>] {
         struct _Static {
             static var _keys: Int16 = 0
             static var keys: UnsafePointer<Void> {
@@ -127,42 +127,42 @@ extension Msr.UI._Detail {
 }
 
 extension UIView {
-    func msr_sizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
+    func msr_sizeConstraintForAxis(axis: UILayoutConstraintAxis) -> NSLayoutConstraint? {
+        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[axis]!) as? NSLayoutConstraint
     }
-    func msr_addSizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection, value: CGFloat) {
-        if msr_sizeConstraintOfDirection(direction) == nil {
+    func msr_addSizeConstraintForAxis(axis: UILayoutConstraintAxis, value: CGFloat) {
+        if msr_sizeConstraintForAxis(axis) == nil {
             let views = ["self": self]
-            let formats: [Msr.UI.FrameSizingDirection: String] = [
+            let formats: [UILayoutConstraintAxis: String] = [
                 .Horizontal: "[self(==0)]",
                 .Vertical: "V:[self(==0)]|"]
-            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[direction]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[direction]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-            addConstraint(msr_sizeConstraintOfDirection(direction)!)
+            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[axis]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[axis]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            addConstraint(msr_sizeConstraintForAxis(axis)!)
         }
-        msr_sizeConstraintOfDirection(direction)!.constant = value
+        msr_sizeConstraintForAxis(axis)!.constant = value
     }
-    func msr_removeSizeConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) {
-        if msr_sizeConstraintOfDirection(direction) != nil {
-            removeConstraint(msr_sizeConstraintOfDirection(direction)!)
+    func msr_removeSizeConstraintForAxis(axis: UILayoutConstraintAxis) {
+        if msr_sizeConstraintForAxis(axis) != nil {
+            removeConstraint(msr_sizeConstraintForAxis(axis)!)
         }
     }
     var msr_widthConstraint: NSLayoutConstraint? {
-        return msr_sizeConstraintOfDirection(.Horizontal)
+        return msr_sizeConstraintForAxis(.Horizontal)
     }
     var msr_heightConstraint: NSLayoutConstraint? {
-        return msr_sizeConstraintOfDirection(.Vertical)
+        return msr_sizeConstraintForAxis(.Vertical)
     }
     func msr_addWidthConstraintWithValue(value: CGFloat) {
-        msr_addSizeConstraintOfDirection(.Horizontal, value: value)
+        msr_addSizeConstraintForAxis(.Horizontal, value: value)
     }
     func msr_addHeightConstraintWithValue(value: CGFloat) {
-        msr_addSizeConstraintOfDirection(.Vertical, value: value)
+        msr_addSizeConstraintForAxis(.Vertical, value: value)
     }
     func msr_removeWidthConstraint() {
-        msr_removeSizeConstraintOfDirection(.Horizontal)
+        msr_removeSizeConstraintForAxis(.Horizontal)
     }
     func msr_removeHeightConstraint() {
-        msr_removeSizeConstraintOfDirection(.Vertical)
+        msr_removeSizeConstraintForAxis(.Vertical)
     }
     func msr_addSizeConstraintsWithSize(size: CGSize) {
         msr_addWidthConstraintWithValue(size.width)
@@ -175,7 +175,7 @@ extension UIView {
 }
 
 extension Msr.UI._Detail {
-    static var UIViewCenterConstraintAssociationKeys: [Msr.UI.FrameSizingDirection: UnsafePointer<Void>] {
+    static var UIViewCenterConstraintAssociationKeys: [UILayoutConstraintAxis: UnsafePointer<Void>] {
         struct _Static {
             static var _keys: Int16 = 0
             static var keys: UnsafePointer<Void> {
@@ -189,19 +189,19 @@ extension Msr.UI._Detail {
 }
 
 extension UIView {
-    func msr_centerConstraintOfDirection(direction: Msr.UI.FrameSizingDirection) -> NSLayoutConstraint? {
+    func msr_centerConstraintOfDirection(direction: UILayoutConstraintAxis) -> NSLayoutConstraint? {
         return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
     }
-    func msr_addCenterConstraintToSuperviewWithDirection(direction: Msr.UI.FrameSizingDirection) {
+    func msr_addCenterConstraintToSuperviewWithDirection(direction: UILayoutConstraintAxis) {
         if msr_centerConstraintOfDirection(direction) == nil {
-            let constraints: [Msr.UI.FrameSizingDirection: NSLayoutConstraint] = [
+            let constraints: [UILayoutConstraintAxis: NSLayoutConstraint] = [
                 .Horizontal: NSLayoutConstraint(item: self, attribute: .CenterX, relatedBy: .Equal, toItem: superview!, attribute: .CenterX, multiplier: 1, constant: 0),
                 .Vertical: NSLayoutConstraint(item: self, attribute: .CenterY, relatedBy: .Equal, toItem: superview!, attribute: .CenterY, multiplier: 1, constant: 0)]
             objc_setAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!, constraints[direction]!, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             superview!.addConstraint(msr_centerConstraintOfDirection(direction)!)
         }
     }
-    func msr_removeCenterConstraintFromSuperviewWithDirection(direction: Msr.UI.FrameSizingDirection) {
+    func msr_removeCenterConstraintFromSuperviewWithDirection(direction: UILayoutConstraintAxis) {
         if msr_centerConstraintOfDirection(direction) != nil {
             removeConstraint(msr_centerConstraintOfDirection(direction)!)
         }
