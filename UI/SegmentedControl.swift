@@ -87,10 +87,9 @@ extension Msr.UI {
             segmentsView.addSubview(rightView)
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             scrollView.msr_addAutoExpandingConstraintsToSuperview()
-            leftView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             leftView.msr_addVerticalExpandingConstraintsToSuperview()
             leftView.msr_addLeftAttachedConstraintToSuperview()
-            rightView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            leftView.msr_addWidthConstraintWithValue(0)
             rightView.msr_addVerticalExpandingConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
             rightView.msr_addWidthConstraintWithValue(0)
@@ -205,13 +204,26 @@ extension Msr.UI {
         }
         func replaceSegmentsInRange(range: Range<Int>, withSegments newSegments: [Segment], animated: Bool) {
             assert(range.isEmpty || (0 <= range.startIndex && range.endIndex <= numberOfSegments), "out of range: [0, numberOfSegments - 1]")
-            // calculate selected segment index
+            // calculate value
             let numberOfSegmentsToBeRemoved = range.endIndex - range.startIndex
             let numberOfSegmentsToBeInserted = newSegments.count
+            let numberOfWrappersToBeRemoved = numberOfSegmentsToBeRemoved
+            let numberOfWrappersToBeInserted = numberOfSegmentsToBeInserted
+            let numberOfConstraintsToBeRemoved = numberOfWrappersToBeRemoved + 1
+            let numberOfConstraintsToBeInserted = numberOfWrappersToBeInserted + 1
             let indexOfFirstSegmentToBeRemoved = range.startIndex
             let indexOfLastSegmentToBeRemoved = range.endIndex - 1
-            let indexOfFirstSegmentToBeInserted = indexOfFirstSegmentToBeRemoved
-            let indexOfLastSegmentToBeInserted = indexOfFirstSegmentToBeInserted + numberOfSegmentsToBeInserted - 1
+            let indexOfFirstWrapperToBeRemoved = indexOfFirstSegmentToBeRemoved + 1
+            let indexOfLastWrapperToBeRemoved = indexOfFirstWrapperToBeRemoved + numberOfWrappersToBeRemoved - 1
+            let indexOfFirstWrapperToBeInserted = indexOfFirstWrapperToBeRemoved
+            let indexOfLastWrapperToBeInserted = indexOfFirstWrapperToBeInserted + numberOfWrappersToBeInserted - 1
+            let indexOfFirstConstraintToBeRemoved = indexOfFirstSegmentToBeRemoved
+            let indexOfLastConstraintToBeRemoved = indexOfFirstConstraintToBeRemoved + numberOfConstraintsToBeRemoved - 1
+            let indexOfFirstConstraintToBeInserted = indexOfFirstConstraintToBeRemoved
+            let indexOfLastConstraintToBeInserted = indexOfFirstConstraintToBeInserted + numberOfConstraintsToBeInserted - 1
+            let rangeOfWrappersToBeRemoved = indexOfFirstWrapperToBeRemoved..<indexOfLastWrapperToBeRemoved + 1
+            let rangeOfConstraintsToBeRemoved = indexOfFirstConstraintToBeRemoved..<indexOfLastConstraintToBeRemoved + 1
+            // calculate selected segment
             var selectedSegmentIndexAfterReplacing = selectedSegmentIndex
             if selectedSegmentIndex != nil {
                 if numberOfSegments == numberOfSegmentsToBeRemoved {
@@ -227,7 +239,6 @@ extension Msr.UI {
                 }
             }
             // replace wrappers
-            let rangeOfWrappersToBeRemoved = indexOfFirstSegmentToBeRemoved + 1..<indexOfLastSegmentToBeRemoved + 2
             var wrappersToBeInserted = [SegmentWrapper]()
             let wrappersToBeRemoved = wrappers[rangeOfWrappersToBeRemoved]
             for s in newSegments {
@@ -241,15 +252,14 @@ extension Msr.UI {
             }
             wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
             // replace constraints
-            let rangeOfConstraintsToBeRemoved = indexOfFirstSegmentToBeRemoved..<indexOfLastSegmentToBeRemoved + 2
             var constraintsToBeInserted = [NSLayoutConstraint]()
             let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
             segmentsView.removeConstraints(constraintsToBeRemoved)
-            for i in indexOfFirstSegmentToBeInserted...indexOfLastSegmentToBeInserted + 1 {
-                let lw = wrappers[i]
-                let rw = wrappers[i + 1]
-                if i > indexOfFirstSegmentToBeInserted {
-                    lw.alpha = 0
+            for i in indexOfFirstWrapperToBeInserted...indexOfLastWrapperToBeInserted + 1 {
+                let lw = wrappers[i - 1]
+                let rw = wrappers[i]
+                if i <= indexOfLastWrapperToBeInserted {
+                    rw.alpha = 0
                 }
                 constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
             }
