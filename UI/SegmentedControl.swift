@@ -32,8 +32,9 @@ extension Msr.UI {
         func indexOfSegment(segment: Segment) -> Int?                                 // O(numberOfSegments)
         func insertSegment(segment: Segment, atIndex index: Int, animated: Bool)
         func insertSegments(segments: [Segment], atIndex index: Int, animated: Bool)
+        func removeSegment(segment: Segment, animated: Bool)
         func removeSegmentAtIndex(index: Int, animated: Bool)
-        func removeSegmentInRange(range: Range<Int>, animated: Bool)
+        func removeSegmentsInRange(range: Range<Int>, animated: Bool)
         func replaceSegmentsInRange(range: Range<Int>, withSegments segments: [Segment], animated: Bool)
         func setSegments(segments: [Segment], animated: Bool)
         func scrollIndicatorToVisibleAnimated(animated: Bool)
@@ -170,11 +171,20 @@ extension Msr.UI {
         func insertSegments(segments: [Segment], atIndex index: Int, animated: Bool) {
             replaceSegmentsInRange(index..<index, withSegments: segments, animated: animated)
         }
+        func removeSegment(segment: Segment, animated: Bool) {
+            removeSegmentAtIndex(indexOfSegment(segment)!, animated: animated)
+        }
         func removeSegmentAtIndex(index: Int, animated: Bool) {
             replaceSegmentsInRange(index...index, withSegments: [], animated: animated)
         }
-        func removeSegmentInRange(range: Range<Int>, animated: Bool) {
+        func removeSegmentsInRange(range: Range<Int>, animated: Bool) {
             replaceSegmentsInRange(range, withSegments: [], animated: animated)
+        }
+        func replaceSegment(segment: Segment, withSegment newSegment: Segment, animated: Bool) {
+            replaceSegmentAtIndex(indexOfSegment(segment)!, withSegment: newSegment, animated: animated)
+        }
+        func replaceSegmentAtIndex(index: Int, withSegment segment: Segment, animated: Bool) {
+            replaceSegmentsInRange(index...index, withSegments: [segment], animated: animated)
         }
         func replaceSegmentsInRange(range: Range<Int>, withSegments segments: [Segment], animated: Bool) {
             assert(range.isEmpty || (0 <= range.startIndex && range.endIndex <= numberOfSegments), "out of range: [0, numberOfSegments - 1]")
