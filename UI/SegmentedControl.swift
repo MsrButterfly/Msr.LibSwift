@@ -24,6 +24,7 @@ extension Msr.UI {
         var indicatorPosition: Float?          // default nil, range 0...numberOfSegments - 1
         var indicator: Indicator               // default UnderlineIndicator
         var numberOfSegments: Int { get }
+        var selected: Bool                     // selectedSegmentIndex != nil. Select 1st if changed false to true from externals.
         var selectedSegmentIndex: Int?         // default nil, range 0...numberOfSegments - 1
         var selectedSegment: Segment? { get }  // default nil
 
@@ -140,6 +141,14 @@ extension Msr.UI {
         var numberOfSegments: Int {
             get {
                 return wrappers.count - 2
+            }
+        }
+        override var selected: Bool {
+            set {
+                selectSegmentAtIndex(0, animated: false)
+            }
+            get {
+                return selectedSegmentIndex != nil
             }
         }
         var selectedSegmentIndex: Int? {
@@ -294,6 +303,9 @@ extension Msr.UI {
         }
         func segmentAtIndex(index: Int) -> Segment {
             return wrappers[index + 1].segment!
+        }
+        func selectSegment(segment: Segment, animated: Bool) {
+            selectSegmentAtIndex(indexOfSegment(segment)!, animated: animated)
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
             setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
