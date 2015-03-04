@@ -30,23 +30,27 @@ extension Msr.UI {
 
         func appendSegment(segment: Segment, animated: Bool)
         func extendSegments(segments: [Segment], animated: Bool)
-        func indexOfSegment(segment: Segment) -> Int?                                 // O(numberOfSegments)
+        func indexOfSegment(segment: Segment) -> Int?
         func insertSegment(segment: Segment, atIndex index: Int, animated: Bool)
         func insertSegments(segments: [Segment], atIndex index: Int, animated: Bool)
         func removeSegment(segment: Segment, animated: Bool)
         func removeSegmentAtIndex(index: Int, animated: Bool)
         func removeSegmentsInRange(range: Range<Int>, animated: Bool)
-        func replaceSegmentsInRange(range: Range<Int>, withSegments segments: [Segment], animated: Bool)
-        func setSegments(segments: [Segment], animated: Bool)
+        func replaceSegment(segment: Segment, withSegment newSegment: Segment, animated: Bool)
+        func replaceSegmentAtIndex(index: Int, withSegment newSegment: Segment, animated: Bool)
+        func replaceSegmentsInRange(range: Range<Int>, withSegments newSegments: [Segment], animated: Bool)
+        func setSegments(newSegments: [Segment], animated: Bool)
         func scrollIndicatorToVisibleAnimated(animated: Bool)
         func scrollIndicatorToCenterAnimated(animated: Bool)
-        func segmentAtIndex(index: Int) -> Segment?                                   // O(1)
+        func segmentAtIndex(index: Int) -> Segment
+        func selectSegment(segment: Segment?, animated: Bool)
         func selectSegmentAtIndex(index: Int?, animated: Bool)
         func setIndicatorPosition(position: Float?, animated: Bool)
 
     }
 
 }
+
 */
 
 import UIKit
@@ -192,14 +196,14 @@ extension Msr.UI {
         func replaceSegment(segment: Segment, withSegment newSegment: Segment, animated: Bool) {
             replaceSegmentAtIndex(indexOfSegment(segment)!, withSegment: newSegment, animated: animated)
         }
-        func replaceSegmentAtIndex(index: Int, withSegment segment: Segment, animated: Bool) {
-            replaceSegmentsInRange(index...index, withSegments: [segment], animated: animated)
+        func replaceSegmentAtIndex(index: Int, withSegment newSegment: Segment, animated: Bool) {
+            replaceSegmentsInRange(index...index, withSegments: [newSegment], animated: animated)
         }
-        func replaceSegmentsInRange(range: Range<Int>, withSegments segments: [Segment], animated: Bool) {
+        func replaceSegmentsInRange(range: Range<Int>, withSegments newSegments: [Segment], animated: Bool) {
             assert(range.isEmpty || (0 <= range.startIndex && range.endIndex <= numberOfSegments), "out of range: [0, numberOfSegments - 1]")
-            // selected segment index calculation
+            // calculate selected segment index
             let numberOfSegmentsToBeRemoved = range.endIndex - range.startIndex
-            let numberOfSegmentsToBeInserted = segments.count
+            let numberOfSegmentsToBeInserted = newSegments.count
             let indexOfFirstSegmentToBeRemoved = range.startIndex
             let indexOfLastSegmentToBeRemoved = range.endIndex - 1
             let indexOfFirstSegmentToBeInserted = indexOfFirstSegmentToBeRemoved
@@ -218,11 +222,11 @@ extension Msr.UI {
                     selectedSegmentIndexAfterReplacing = selectedSegmentIndex! - numberOfSegmentsToBeRemoved + numberOfSegmentsToBeInserted
                 }
             }
-            // wrapper replacing
+            // replace wrappers
             let rangeOfWrappersToBeRemoved = indexOfFirstSegmentToBeRemoved + 1..<indexOfLastSegmentToBeRemoved + 2
             var wrappersToBeInserted = [SegmentWrapper]()
             let wrappersToBeRemoved = wrappers[rangeOfWrappersToBeRemoved]
-            for s in segments {
+            for s in newSegments {
                 s.tintColor = tintColor
                 let w = SegmentWrapper()
                 scrollView.insertSubview(w, belowSubview: indicatorWrapper)
@@ -234,7 +238,7 @@ extension Msr.UI {
                 wrappersToBeInserted.append(w)
             }
             wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
-            // constraint replacing
+            // replace constraints
             let rangeOfConstraintsToBeRemoved = indexOfFirstSegmentToBeRemoved..<indexOfLastSegmentToBeRemoved + 2
             var constraintsToBeInserted = [NSLayoutConstraint]()
             let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
@@ -249,7 +253,7 @@ extension Msr.UI {
             }
             segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
             scrollView.addConstraints(constraintsToBeInserted)
-            // indicator moving if needed
+            // move indicator
             _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
             // layout
             let animations: () -> Void = {
@@ -284,8 +288,8 @@ extension Msr.UI {
                 completion(true)
             }
         }
-        func setSegments(segments: [Segment], animated: Bool) {
-            replaceSegmentsInRange(0..<numberOfSegments, withSegments: segments, animated: animated)
+        func setSegments(newSegments: [Segment], animated: Bool) {
+            replaceSegmentsInRange(0..<numberOfSegments, withSegments: newSegments, animated: animated)
         }
         func scrollIndicatorToVisibleAnimated(animated: Bool) {
             let x = indicatorWrapperLeftConstraint.constant
@@ -304,8 +308,8 @@ extension Msr.UI {
         func segmentAtIndex(index: Int) -> Segment {
             return wrappers[index + 1].segment!
         }
-        func selectSegment(segment: Segment, animated: Bool) {
-            selectSegmentAtIndex(indexOfSegment(segment)!, animated: animated)
+        func selectSegment(segment: Segment?, animated: Bool) {
+            selectSegmentAtIndex(segment == nil ? nil : indexOfSegment(segment!), animated: animated)
         }
         func selectSegmentAtIndex(index: Int?, animated: Bool) {
             setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated)
