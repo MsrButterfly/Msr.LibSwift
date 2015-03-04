@@ -2,14 +2,22 @@
 
 Functional Synopsis
 
+@objc protocol MsrSegmentedControlDelegate {
+    // Segments won't be selected by user interaction if one of these methods return false.
+    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegment: Msr.UI.SegmentedControl.Segment) -> Bool
+    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentAtIndex: Int) -> Bool
+}
+
+
 extension Msr.UI {
 
     class SegmentedControl: UIControl {
 
-        typealias Segment = Msr.UI.Segment
         typealias DefaultSegment = Msr.UI.DefaultSegment
+        typealias Delegate = MsrSegmentedControlDelegate
         typealias Indicator = Msr.UI.Indicator
         typealias OverlineIndicator = Msr.UI.OverlineIndicator
+        typealias Segment = Msr.UI.Segment
         typealias UnderlineIndicator = Msr.UI.UnderlineIndicator
 
         init()
@@ -21,6 +29,7 @@ extension Msr.UI {
 
         var animationDuration: NSTimeInterval  // default 0.5
         var backgroundView: UIView?            // default nil
+        weak var delegate: Delegate?           // default nil
         var indicatorPosition: Float?          // default nil, range 0...numberOfSegments - 1
         var indicator: Indicator               // default UnderlineIndicator
         var numberOfSegments: Int { get }
@@ -55,13 +64,19 @@ extension Msr.UI {
 
 import UIKit
 
+@objc protocol MsrSegmentedControlDelegate {
+    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegment: Msr.UI.SegmentedControl.Segment) -> Bool
+    optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentAtIndex: Int) -> Bool
+}
+
 extension Msr.UI {
     @objc class SegmentedControl: UIControl {
+        typealias DefaultSegment = Msr.UI.DefaultSegment
+        typealias Delegate = MsrSegmentedControlDelegate
         typealias Indicator = Msr.UI.Indicator
         typealias OverlineIndicator = Msr.UI.OverlineIndicator
-        typealias UnderlineIndicator = Msr.UI.UnderlineIndicator
         typealias Segment = Msr.UI.Segment
-        typealias DefaultSegment = Msr.UI.DefaultSegment
+        typealias UnderlineIndicator = Msr.UI.UnderlineIndicator
         override init() {
             super.init()
             // msr_initialize() will be called by super.init() -> self.init(frame:)
@@ -126,6 +141,7 @@ extension Msr.UI {
                 oldValue?.removeFromSuperview()
             }
         }
+        weak var delegate: Delegate?
         var indicator: Indicator {
             set {
                 _indicator?.removeFromSuperview()
@@ -163,7 +179,15 @@ extension Msr.UI {
                 selectSegmentAtIndex(newValue, animated: false)
             }
             get {
-                return selectedSegmentIndexFromIndicatorPosition(indicatorPosition)
+                if indicatorPosition != nil {
+                    let value = indicatorPosition!
+                    let l = Int(floor(value))
+                    let r = Int(ceil(value))
+                    let p = value - Float(l)
+                    return p < 0.5 ? l : r
+                } else {
+                    return nil
+                }
             }
         }
         var selectedSegment: Segment? {
@@ -255,10 +279,10 @@ extension Msr.UI {
             var constraintsToBeInserted = [NSLayoutConstraint]()
             let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
             segmentsView.removeConstraints(constraintsToBeRemoved)
-            for i in indexOfFirstWrapperToBeInserted...indexOfLastWrapperToBeInserted + 1 {
-                let lw = wrappers[i - 1]
-                let rw = wrappers[i]
-                if i <= indexOfLastWrapperToBeInserted {
+            for i in indexOfFirstConstraintToBeInserted...indexOfLastConstraintToBeInserted {
+                let lw = wrappers[i]
+                let rw = wrappers[i + 1]
+                if i < indexOfLastConstraintToBeInserted {
                     rw.alpha = 0
                 }
                 constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
@@ -420,21 +444,15 @@ extension Msr.UI {
         internal func didPressButton(button: UIButton) {
             for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
                 if button === w.button {
-                    selectSegmentAtIndex(i, animated: true)
-                    scrollIndicatorToVisibleAnimated(true)
+                    var shouldBeSelected = true
+                    shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegment: segmentAtIndex(i)) ?? true
+                    shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentAtIndex: i) ?? true
+                    if shouldBeSelected {
+                        selectSegmentAtIndex(i, animated: true)
+                        scrollIndicatorToVisibleAnimated(true)
+                    }
                     break
                 }
-            }
-        }
-        private func selectedSegmentIndexFromIndicatorPosition(position: Float?) -> Int? {
-            if position != nil {
-                let value = position!
-                let l = Int(floor(value))
-                let r = Int(ceil(value))
-                let p = value - Float(l)
-                return p < 0.5 ? l : r
-            } else {
-                return nil
             }
         }
         private typealias SegmentWrapper = _Detail.SegmentWrapper
@@ -453,7 +471,7 @@ extension Msr.UI {
                 assert(newValue == nil || newValue >= 0 && newValue <= Float(numberOfSegments - 1), "out of range: [0, numberOfSegments - 1]")
             }
             didSet {
-                if selectedSegmentIndex != selectedSegmentIndexFromIndicatorPosition(oldValue) {
+                if _indicatorPosition != oldValue {
                     sendActionsForControlEvents(.ValueChanged)
                 }
             }
