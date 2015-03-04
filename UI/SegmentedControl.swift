@@ -186,7 +186,7 @@ extension Msr.UI {
         var selectedSegment: Segment? {
             return selectedSegmentIndex == nil ? nil : segmentAtIndex(selectedSegmentIndex!)
         }
-        private(set) var valueChangedByUserInteraction: Bool = false
+        var valueChangedByUserInteraction: Bool = false
         func appendSegment(segment: Segment, animated: Bool) {
             insertSegment(segment, atIndex: numberOfSegments, animated: animated)
         }
