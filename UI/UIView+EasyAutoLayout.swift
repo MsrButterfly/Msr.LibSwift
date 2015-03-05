@@ -18,16 +18,21 @@ extension Msr.UI._Detail {
 
 extension UIView {
     func msr_edgeAttachedConstraintAtEdge(edge: Msr.UI.FrameEdge) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewEdgeAttachedConstraintAssociationKeys[edge]!) as? NSLayoutConstraint
+        return (objc_getAssociatedObject(self, Msr.UI._Detail.UIViewEdgeAttachedConstraintAssociationKeys[edge]!) as? MsrWeak<NSLayoutConstraint>)?.object
     }
-    private func msr_setEdgeAttachedConstraintAtEdge(edge: Msr.UI.FrameEdge, toNil: Bool) {
-        let views = ["self": self]
-        let formats: [Msr.UI.FrameEdge: String] = [
-            .Top: "V:|[self]",
-            .Bottom: "V:[self]|",
-            .Left: "|[self]",
-            .Right: "[self]|"]
-        objc_setAssociatedObject(self, Msr.UI._Detail.UIViewEdgeAttachedConstraintAssociationKeys[edge]!, toNil ? nil : NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+    private func msr_addEdgeAttachedConstraintToSuperviewAtEdge(edge: Msr.UI.FrameEdge) {
+        if msr_edgeAttachedConstraintAtEdge(edge) == nil {
+            let views = ["self": self]
+            let formats: [Msr.UI.FrameEdge: String] = [
+                .Top: "V:|[self]",
+                .Bottom: "V:[self]|",
+                .Left: "|[self]",
+                .Right: "[self]|"]
+            let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first as! NSLayoutConstraint
+            let w = MsrWeak(object: c)
+            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewEdgeAttachedConstraintAssociationKeys[edge]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            superview!.addConstraint(c)
+        }
     }
     var msr_shouldTranslateAutoresizingMaskIntoConstraints: Bool {
         get {
@@ -35,12 +40,6 @@ extension UIView {
         }
         set {
             setTranslatesAutoresizingMaskIntoConstraints(newValue)
-        }
-    }
-    func msr_addEdgeAttachedConstraintToSuperviewAtEdge(edge: Msr.UI.FrameEdge) {
-        if msr_edgeAttachedConstraintAtEdge(edge) == nil {
-            msr_setEdgeAttachedConstraintAtEdge(edge, toNil: false)
-            superview!.addConstraint(msr_edgeAttachedConstraintAtEdge(edge)!)
         }
     }
     var msr_topAttachedConstraint: NSLayoutConstraint? {
@@ -83,7 +82,6 @@ extension UIView {
         let constraint = msr_edgeAttachedConstraintAtEdge(edge)
         if constraint != nil {
             superview!.removeConstraint(constraint!)
-            msr_setEdgeAttachedConstraintAtEdge(edge, toNil: true)
         }
     }
     func msr_removeTopAttachedConstraintFromSuperview() {
@@ -128,7 +126,7 @@ extension Msr.UI._Detail {
 
 extension UIView {
     func msr_sizeConstraintForAxis(axis: UILayoutConstraintAxis) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[axis]!) as? NSLayoutConstraint
+        return (objc_getAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[axis]!) as? MsrWeak<NSLayoutConstraint>)?.object
     }
     func msr_addSizeConstraintForAxis(axis: UILayoutConstraintAxis, value: CGFloat) {
         if msr_sizeConstraintForAxis(axis) == nil {
@@ -136,7 +134,9 @@ extension UIView {
             let formats: [UILayoutConstraintAxis: String] = [
                 .Horizontal: "[self(==0)]",
                 .Vertical: "V:[self(==0)]|"]
-            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[axis]!, NSLayoutConstraint.constraintsWithVisualFormat(formats[axis]!, options: nil, metrics: nil, views: views).first, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[axis]!, options: nil, metrics: nil, views: views).first as! NSLayoutConstraint
+            let w = MsrWeak(object: c)
+            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewSizeConstraintAssociationKeys[axis]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
             addConstraint(msr_sizeConstraintForAxis(axis)!)
         }
         msr_sizeConstraintForAxis(axis)!.constant = value
@@ -190,15 +190,17 @@ extension Msr.UI._Detail {
 
 extension UIView {
     func msr_centerConstraintOfDirection(direction: UILayoutConstraintAxis) -> NSLayoutConstraint? {
-        return objc_getAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!) as? NSLayoutConstraint
+        return (objc_getAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!) as? MsrWeak<NSLayoutConstraint>)?.object
     }
     func msr_addCenterConstraintToSuperviewWithDirection(direction: UILayoutConstraintAxis) {
         if msr_centerConstraintOfDirection(direction) == nil {
             let constraints: [UILayoutConstraintAxis: NSLayoutConstraint] = [
                 .Horizontal: NSLayoutConstraint(item: self, attribute: .CenterX, relatedBy: .Equal, toItem: superview!, attribute: .CenterX, multiplier: 1, constant: 0),
                 .Vertical: NSLayoutConstraint(item: self, attribute: .CenterY, relatedBy: .Equal, toItem: superview!, attribute: .CenterY, multiplier: 1, constant: 0)]
-            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!, constraints[direction]!, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
-            superview!.addConstraint(msr_centerConstraintOfDirection(direction)!)
+            let c = constraints[direction]!
+            let w = MsrWeak(object: c)
+            objc_setAssociatedObject(self, Msr.UI._Detail.UIViewCenterConstraintAssociationKeys[direction]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            superview!.addConstraint(c)
         }
     }
     func msr_removeCenterConstraintFromSuperviewWithDirection(direction: UILayoutConstraintAxis) {
