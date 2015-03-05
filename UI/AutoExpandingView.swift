@@ -17,6 +17,11 @@ extension Msr.UI {
         func msr_initialize() {
             msr_shouldTranslateAutoresizingMaskIntoConstraints = false
         }
+        override func willMoveToSuperview(newSuperview: UIView?) {
+            if superview != nil {
+                msr_removeAllEdgeAttachedConstraintsFromSuperview()
+            }
+        }
         override func didMoveToSuperview() {
             if superview != nil {
                 msr_addAllEdgeAttachedConstraintsToSuperview()
