@@ -30,13 +30,13 @@ extension Msr.UI {
         override func willMoveToSuperview(newSuperview: UIView?) {
             super.willMoveToSuperview(newSuperview)
             if superview != nil {
-                msr_removeAutoExpandingConstraintsFromSuperview()
+                msr_removeAllEdgeAttachedConstraintsFromSuperview()
             }
         }
         override func didMoveToSuperview() {
             super.didMoveToSuperview()
             if superview != nil {
-                msr_addHorizontalExpandingConstraintsToSuperview()
+                msr_addHorizontalEdgeAttachedConstraintsToSuperview()
                 msr_addBottomAttachedConstraintToSuperview()
             }
         }

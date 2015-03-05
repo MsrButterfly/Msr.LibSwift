@@ -67,17 +67,17 @@ extension UIView {
     func msr_addRightAttachedConstraintToSuperview() {
         msr_addEdgeAttachedConstraintToSuperviewAtEdge(.Right)
     }
-    func msr_addHorizontalExpandingConstraintsToSuperview() {
+    func msr_addHorizontalEdgeAttachedConstraintsToSuperview() {
         msr_addLeftAttachedConstraintToSuperview()
         msr_addRightAttachedConstraintToSuperview()
     }
-    func msr_addVerticalExpandingConstraintsToSuperview() {
+    func msr_addVerticalEdgeAttachedConstraintsToSuperview() {
         msr_addTopAttachedConstraintToSuperview()
         msr_addBottomAttachedConstraintToSuperview()
     }
-    func msr_addAutoExpandingConstraintsToSuperview() {
-        msr_addHorizontalExpandingConstraintsToSuperview()
-        msr_addVerticalExpandingConstraintsToSuperview()
+    func msr_addAllEdgeAttachedConstraintsToSuperview() {
+        msr_addHorizontalEdgeAttachedConstraintsToSuperview()
+        msr_addVerticalEdgeAttachedConstraintsToSuperview()
     }
     func msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(edge: Msr.UI.FrameEdge) {
         let constraint = msr_edgeAttachedConstraintAtEdge(edge)
@@ -98,17 +98,17 @@ extension UIView {
     func msr_removeRightAttachedConstraintFromSuperview() {
         msr_removeEdgeAttachedConstraintFromSuperviewAtEdge(.Right)
     }
-    func msr_removeHorizontalExpandingConstraintsFromSuperview() {
+    func msr_removeHorizontalEdgeAttachedConstraintsFromSuperview() {
         msr_removeLeftAttachedConstraintFromSuperview()
         msr_removeRightAttachedConstraintFromSuperview()
     }
-    func msr_removeVerticalExpandingConstraintsFromSuperview() {
+    func msr_removeVerticalEdgeAttachedConstraintsFromSuperview() {
         msr_removeTopAttachedConstraintFromSuperview()
         msr_removeBottomAttachedConstraintFromSuperview()
     }
-    func msr_removeAutoExpandingConstraintsFromSuperview() {
-        msr_removeHorizontalExpandingConstraintsFromSuperview()
-        msr_removeVerticalExpandingConstraintsFromSuperview()
+    func msr_removeAllEdgeAttachedConstraintsFromSuperview() {
+        msr_removeHorizontalEdgeAttachedConstraintsFromSuperview()
+        msr_removeVerticalEdgeAttachedConstraintsFromSuperview()
     }
 }
 

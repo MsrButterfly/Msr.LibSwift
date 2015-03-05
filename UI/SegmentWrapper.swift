@@ -9,7 +9,7 @@ extension Msr.UI._Detail {
                     insertSubview(newValue!, belowSubview: button)
                     newValue!.frame = bounds
                     newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                    newValue!.msr_addAutoExpandingConstraintsToSuperview()
+                    newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
                 }
             }
             didSet {

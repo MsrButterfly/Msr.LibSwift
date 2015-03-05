@@ -66,7 +66,7 @@ extension Msr.UI {
                 .Bottom: _Detail.SegmentedControlDefaultHeightAtBottom]
             segmentedControl.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             segmentedControl.msr_addHeightConstraintWithValue(heights[position]!)
-            segmentedControl.msr_addHorizontalExpandingConstraintsToSuperview()
+            segmentedControl.msr_addHorizontalEdgeAttachedConstraintsToSuperview()
             segmentedControl.backgroundView = backgroundBar
             segmentedControl.delegate = self
             segmentedControl.addTarget(self, action: "segmentedControlValueDidChange:", forControlEvents: .ValueChanged)
@@ -76,14 +76,14 @@ extension Msr.UI {
             scrollView.pagingEnabled = true
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            scrollView.msr_addHorizontalExpandingConstraintsToSuperview()
+            scrollView.msr_addHorizontalEdgeAttachedConstraintsToSuperview()
             // If write UILayoutPriorityDefaultLow in iOS8 SDK, a link error will occur. This might be a bug.
             scrollView.addConstraint(NSLayoutConstraint(item: scrollView, attribute: .Height, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 0))
             wrappers = [leftView, rightView]
-            leftView.msr_addVerticalExpandingConstraintsToSuperview()
+            leftView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             leftView.msr_addLeftAttachedConstraintToSuperview()
             leftView.msr_addWidthConstraintWithValue(0)
-            rightView.msr_addVerticalExpandingConstraintsToSuperview()
+            rightView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
             rightView.msr_addWidthConstraintWithValue(0)
             let vs = ["l": leftView, "r": rightView, "sc": segmentedControl, "v": scrollView]
@@ -262,7 +262,7 @@ extension Msr.UI {
                     if newValue != nil {
                         addSubview(newValue!)
                         newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                        newValue!.msr_addAutoExpandingConstraintsToSuperview()
+                        newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
                     }
                 }
                 didSet {

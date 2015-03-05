@@ -2,7 +2,7 @@ import UIKit
 import QuartzCore
 
 extension Msr.UI {
-    class NavigationController: UIViewController, UINavigationBarDelegate, UIToolbarDelegate, UIGestureRecognizerDelegate {
+    class NavigationController: UIViewController, UIGestureRecognizerDelegate {
         private(set) var viewControllers = [UIViewController]()
         var rootViewController: UIViewController? {
             return viewControllers.first
@@ -29,8 +29,13 @@ extension Msr.UI {
         func msr_initialize() {
             gesture = UIPanGestureRecognizer(target: self, action: "didPerformPanGesture:")
             gesture.delegate = self
-            view.backgroundColor = UIColor.blackColor()
             modalPresentationCapturesStatusBarAppearance = true
+            let _ = view // Views should be loaded in initializers.
+        }
+        override func loadView() {
+            super.loadView()
+            view = AutoExpandingView()
+            view.backgroundColor = UIColor.whiteColor()
         }
         func pushViewController(viewController: UIViewController, animated: Bool) {
             pushViewController(viewController, animated: animated, completion: nil)
@@ -365,7 +370,7 @@ extension Msr.UI {
         func didPressBackButton() {
             popViewController(animated: true)
         }
-        class WrapperView: AutoExpandingView {
+        class WrapperView: AutoExpandingView, UINavigationBarDelegate {
             let navigationBar = UINavigationBar()
             var navigationItem: UINavigationItem {
                 get {
@@ -375,14 +380,13 @@ extension Msr.UI {
                     navigationBar.setItems([newValue], animated: false)
                 }
             }
-            let contentView = UIView()
             let overlay = AutoExpandingView()
             var bodyView: UIView? {
                 willSet {
                     if newValue != nil {
                         newValue!.autoresizingMask = .FlexibleHeight | .FlexibleWidth
-                        newValue!.frame = contentView.bounds
-                        contentView.addSubview(newValue!)
+                        newValue!.frame = bounds
+                        insertSubview(newValue!, belowSubview: navigationBar)
                     }
                 }
                 didSet {
@@ -398,18 +402,19 @@ extension Msr.UI {
                 layer.masksToBounds = false
                 overlay.backgroundColor = UIColor.blackColor()
                 overlay.alpha = 0
-                contentView.layer.masksToBounds = false
-                addSubview(contentView)
                 addSubview(navigationBar)
                 addSubview(overlay)
-                contentView.autoresizingMask = .FlexibleWidth | .FlexibleHeight
                 navigationBar.autoresizingMask = .FlexibleWidth
-                layer.addObserver(self, forKeyPath: "bounds", options: NSKeyValueObservingOptions.New, context: nil)
+                navigationBar.delegate = self
+                layer.addObserver(self, forKeyPath: "bounds", options: .New, context: nil)
             }
             internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
                 if object === layer && keyPath == "bounds" {
                     layer.shadowPath = UIBezierPath(rect: layer.bounds).CGPath
                 }
+            }
+            func positionForBar(bar: UIBarPositioning) -> UIBarPosition {
+                return .TopAttached
             }
             override func layoutSubviews() {
                 let statusBarFrame = UIApplication.sharedApplication().statusBarFrame
@@ -419,7 +424,6 @@ extension Msr.UI {
                 navigationBar.frame.size.height = orientation.isPortrait ? _Detail.UIToolBarHeightWhenPortrait : _Detail.UIToolBarHeightWhenLandscape
                 navigationBar.msr_backgroundView!.frame.size.height = navigationBar.frame.height + statusBarFrame.height
                 navigationBar.msr_backgroundView!.frame.origin.y = -statusBarFrame.height
-                contentView.frame.msr_top = navigationBar.frame.msr_bottom
             }
             deinit {
                 layer.removeObserver(self, forKeyPath: "bounds")

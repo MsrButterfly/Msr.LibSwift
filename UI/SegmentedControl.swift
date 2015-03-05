@@ -101,11 +101,11 @@ extension Msr.UI {
             segmentsView.addSubview(leftView)
             segmentsView.addSubview(rightView)
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            scrollView.msr_addAutoExpandingConstraintsToSuperview()
-            leftView.msr_addVerticalExpandingConstraintsToSuperview()
+            scrollView.msr_addAllEdgeAttachedConstraintsToSuperview()
+            leftView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             leftView.msr_addLeftAttachedConstraintToSuperview()
             leftView.msr_addWidthConstraintWithValue(0)
-            rightView.msr_addVerticalExpandingConstraintsToSuperview()
+            rightView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
             rightView.msr_addWidthConstraintWithValue(0)
             wrappers = [leftView, rightView]
@@ -117,7 +117,7 @@ extension Msr.UI {
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.delaysContentTouches = true
             indicatorWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-            indicatorWrapper.msr_addVerticalExpandingConstraintsToSuperview()
+            indicatorWrapper.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             indicatorWrapper.userInteractionEnabled = false
             indicator = UnderlineIndicator()
             indicatorWrapperLeftConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
@@ -134,7 +134,7 @@ extension Msr.UI {
                     addSubview(newValue!)
                     sendSubviewToBack(newValue!)
                     newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
-                    newValue!.msr_addAutoExpandingConstraintsToSuperview()
+                    newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
                 }
             }
             didSet {
@@ -265,7 +265,7 @@ extension Msr.UI {
                 segmentsView.addSubview(w)
                 w.segment = s
                 w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
-                w.msr_addVerticalExpandingConstraintsToSuperview()
+                w.msr_addVerticalEdgeAttachedConstraintsToSuperview()
                 wrappersToBeInserted.append(w)
             }
             wrappers.replaceRange(rangeOfWrappersToBeRemoved, with: wrappersToBeInserted)
