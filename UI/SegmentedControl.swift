@@ -30,7 +30,7 @@ extension Msr.UI {
         var backgroundView: UIView?                   // default nil
         weak var delegate: Delegate?                  // default nil
         var indicatorPosition: Float?                 // default nil, range [-1, numberOfSegments]
-                                                      //   indicatorPosition = selectedSegmentIndex if indicatorPosition is an integer (excepts -1 & numberOfSegments)
+                                                      //     indicatorPosition = selectedSegmentIndex if indicatorPosition is an integer (excepts -1 & numberOfSegments)
         var indicator: Indicator                      // default UnderlineIndicator
         var numberOfSegments: Int { get }
         var selected: Bool                            // selectedSegmentIndex != nil. Select 1st if changed false to true from externals.
@@ -38,7 +38,7 @@ extension Msr.UI {
         var selectedSegmentIndexChanged: Bool { get } // true if selectedSegmentIndex has been changed since last .ValueChanged action was sent, otherwise false.
         var selectedSegment: Segment? { get }         // default nil
         var valueChangedByUserInteraction: Bool       // true if value changed by user interaction since last .ValueChanged action was sent, otherwise false.
-                                                      //   Make it 'public' for subclass customization
+                                                      //     Make it 'public' for subclass customization
         func appendSegment(segment: Segment, animated: Bool)
         func extendSegments(segments: [Segment], animated: Bool)
         func indexOfSegment(segment: Segment) -> Int?

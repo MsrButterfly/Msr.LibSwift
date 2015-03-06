@@ -21,7 +21,7 @@ extension Msr.UI {
             case Bottom
         }
         class var positionOfSegmentedControl: SegmentedControlPosition {
-            return .Bottom
+            return .Top
         }
         var selectedIndex: Int? {
             return segmentedControl.selectedSegmentIndex
@@ -72,6 +72,7 @@ extension Msr.UI {
             segmentedControl.addTarget(self, action: "segmentedControlValueDidChange:", forControlEvents: .ValueChanged)
             segmentedControl.addObserver(self, forKeyPath: "indicatorPosition", options: .New, context: nil)
             backgroundBar.delegate = self
+            segmentedControl.indicator = BlockIndicator()
             scrollView.delegate = self
             scrollView.pagingEnabled = true
             scrollView.showsHorizontalScrollIndicator = false
@@ -86,12 +87,12 @@ extension Msr.UI {
             rightView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
             rightView.msr_addWidthConstraintWithValue(0)
-            let vs = ["l": leftView, "r": rightView, "sc": segmentedControl, "v": scrollView]
+            let vs: [String: AnyObject] = ["l": leftView, "r": rightView, "sc": segmentedControl, "v": scrollView, "tg": topLayoutGuide, "bg": bottomLayoutGuide]
             wrapperConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
             scrollView.addConstraints(wrapperConstraints)
             let formats: [SegmentedControlPosition: String] = [
-                .Top: "V:|[sc][v]|",
-                .Bottom: "V:|[v][sc]|"]
+                .Top: "V:[tg][sc][v][bg]",
+                .Bottom: "V:[tg][v][sc][bg]"]
             view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(formats[position]!, options: nil, metrics: nil, views: vs))
         }
         func appendViewController(viewController: UIViewController, animated: Bool) {}
@@ -225,9 +226,10 @@ extension Msr.UI {
         }
         private var wrapperConstraints = [NSLayoutConstraint]()
         func scrollViewDidScroll(scrollView: UIScrollView) {
-            if scrollView === self.scrollView && !segmentedControl.valueChangedByUserInteraction {
+            if scrollView === self.scrollView && !segmentedControl.valueChangedByUserInteraction && selectedIndex != nil {
+                println((__FUNCTION__, scrollView.contentOffset.x))
                 let offset = scrollView.contentOffset
-                let position = min(max(Float(offset.x / view.bounds.width), Float(0)), Float(numberOfViewControllers - 1))
+                let position = min(max(Float(offset.x / view.bounds.width), Float(-1)), Float(numberOfViewControllers))
                 segmentedControl.setIndicatorPosition(position, animated: false)
                 segmentedControl.scrollIndicatorToVisibleAnimated(false)
             }
@@ -239,10 +241,10 @@ extension Msr.UI {
                         delay: 0,
                         usingSpringWithDamping: 1,
                         initialSpringVelocity: 0,
-                        options: .BeginFromCurrentState,
+                        options: .BeginFromCurrentState | .AllowUserInteraction,
                         animations: {
                             [weak self] in
-                            self?.scrollView.setContentOffset(CGPoint(x: self!.view.bounds.width * CGFloat(self!.segmentedControl.selectedSegmentIndex ?? 0), y: 0), animated: false)
+                            self?.scrollView.contentOffset.x = self!.view.bounds.width * CGFloat(self!.segmentedControl.selectedSegmentIndex ?? 0)
                             return
                         },
                         completion: {
@@ -255,6 +257,21 @@ extension Msr.UI {
                     title = selectedViewController?.title ?? ""
                 }
             }
+        }
+        override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+            super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+            let originalSize = view.bounds.size
+            let originalOffset = scrollView.contentOffset
+            coordinator.animateAlongsideTransition(
+                /* animation: */ {
+                    [weak self] _ in
+                    self?.scrollView.contentOffset.x = originalOffset.x / originalSize.width * size.width
+                    // Not 'self?.scrollView.contentOffset.x *= size.width / originalSize.width',
+                    //     because self?.scrollView.contentOffset.x will be changed at the beginning,
+                    //     maybe the 2nd animation loop.
+                    return
+                },
+                completion: nil)
         }
         class WrapperView: UIView {
             var contentView: UIView? {
