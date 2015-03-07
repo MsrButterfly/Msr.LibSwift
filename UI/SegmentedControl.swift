@@ -433,11 +433,10 @@ extension Msr.UI {
                 indicatorWrapperLeftConstraint.constant = 0
                 indicatorWrapperRightConstraint.constant = 0
             }
-            super.updateConstraints()
-        }
-        override func layoutSubviews() {
-            super.layoutSubviews()
+            indicator.setNeedsUpdateConstraints()
+            indicator.setNeedsLayout()
             indicator.setNeedsDisplay()
+            super.updateConstraints()
         }
         override var bounds: CGRect {
             didSet {
