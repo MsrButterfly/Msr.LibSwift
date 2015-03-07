@@ -21,7 +21,7 @@ extension Msr.UI {
             case Bottom
         }
         class var positionOfSegmentedControl: SegmentedControlPosition {
-            return .Top
+            return .Bottom
         }
         var selectedIndex: Int? {
             return segmentedControl.selectedSegmentIndex
@@ -54,8 +54,6 @@ extension Msr.UI {
         }
         override func loadView() {
             super.loadView()
-            view = AutoExpandingView()
-            view.removeConstraints(view.constraints() as! [NSLayoutConstraint])
             view.addSubview(scrollView)
             view.addSubview(segmentedControl)
             scrollView.addSubview(leftView)
@@ -70,7 +68,6 @@ extension Msr.UI {
             segmentedControl.backgroundView = backgroundBar
             segmentedControl.delegate = self
             segmentedControl.addTarget(self, action: "segmentedControlValueDidChange:", forControlEvents: .ValueChanged)
-            segmentedControl.addObserver(self, forKeyPath: "indicatorPosition", options: .New, context: nil)
             backgroundBar.delegate = self
             segmentedControl.indicator = BlockIndicator()
             scrollView.delegate = self
@@ -78,8 +75,6 @@ extension Msr.UI {
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             scrollView.msr_addHorizontalEdgeAttachedConstraintsToSuperview()
-            // If write UILayoutPriorityDefaultLow in iOS8 SDK, a link error will occur. This might be a bug.
-            scrollView.addConstraint(NSLayoutConstraint(item: scrollView, attribute: .Height, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 0))
             wrappers = [leftView, rightView]
             leftView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             leftView.msr_addLeftAttachedConstraintToSuperview()
@@ -87,24 +82,45 @@ extension Msr.UI {
             rightView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
             rightView.msr_addRightAttachedConstraintToSuperview()
             rightView.msr_addWidthConstraintWithValue(0)
-            let vs: [String: AnyObject] = ["l": leftView, "r": rightView, "sc": segmentedControl, "v": scrollView, "tg": topLayoutGuide, "bg": bottomLayoutGuide]
+            let vs: [String: AnyObject] = ["l": leftView, "r": rightView, "sc": segmentedControl, "sv": scrollView, "tg": topLayoutGuide, "bg": bottomLayoutGuide]
             wrapperConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
             scrollView.addConstraints(wrapperConstraints)
             let formats: [SegmentedControlPosition: String] = [
-                .Top: "V:[tg][sc][v][bg]",
-                .Bottom: "V:[tg][v][sc][bg]"]
+                .Top: "V:[tg][sc]-(>=0)-[bg]",
+                .Bottom: "V:[tg]-(>=0)-[sc][bg]"]
             view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(formats[position]!, options: nil, metrics: nil, views: vs))
+            view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[sv][bg]", options: nil, metrics: nil, views: vs))
         }
-        func appendViewController(viewController: UIViewController, animated: Bool) {}
-        func extendViewControllers(viewControllers: [UIViewController], animated: Bool) {}
-        func indexOfViewController(viewController: UIViewController) -> Int? { return nil }
-        func insertViewController(viewController: UIViewController, animated: Bool) {}
-        func insertViewControllers(viewControllers: [UIViewController], animated: Bool) {}
-        func removeViewController(viewController: UIViewController, animated: Bool) {}
-        func removeViewControllerAtIndex(index: Int, animated: Bool) {}
-        func removeViewControllersInRange(range: Range<Int>, animated: Bool) {}
-        func replaceViewController(viewController: UIViewController, withViewController newViewController: UIViewController, animated: Bool) {}
-        func replaceViewControllerAtIndex(index: Int, withViewController newViewController: UIViewController, animated: Bool) {}
+        func appendViewController(viewController: UIViewController, animated: Bool) {
+            extendViewControllers([viewController], animated: animated)
+        }
+        func extendViewControllers(viewControllers: [UIViewController], animated: Bool) {
+            replaceViewControllersInRange(numberOfViewControllers..<numberOfViewControllers, withViewControllers: viewControllers, animated: animated)
+        }
+        func indexOfViewController(viewController: UIViewController) -> Int? {
+            return find(viewControllers, viewController)
+        }
+        func insertViewController(viewController: UIViewController, atIndex index: Int, animated: Bool) {
+            insertViewControllers([viewController], atIndex: index, animated: animated)
+        }
+        func insertViewControllers(viewControllers: [UIViewController], atIndex index: Int, animated: Bool) {
+            replaceViewControllersInRange(index..<index, withViewControllers: viewControllers, animated: animated)
+        }
+        func removeViewController(viewController: UIViewController, animated: Bool) {
+            removeViewControllerAtIndex(indexOfViewController(viewController)!, animated: animated)
+        }
+        func removeViewControllerAtIndex(index: Int, animated: Bool) {
+            removeViewControllersInRange(index...index, animated: animated)
+        }
+        func removeViewControllersInRange(range: Range<Int>, animated: Bool) {
+            replaceViewControllersInRange(range, withViewControllers: [], animated: animated)
+        }
+        func replaceViewController(viewController: UIViewController, withViewController newViewController: UIViewController, animated: Bool) {
+            replaceViewControllerAtIndex(indexOfViewController(viewController)!, withViewController: newViewController, animated: animated)
+        }
+        func replaceViewControllerAtIndex(index: Int, withViewController newViewController: UIViewController, animated: Bool) {
+            replaceViewControllersInRange(index...index, withViewControllers: [newViewController], animated: animated)
+        }
         func replaceViewControllersInRange(range: Range<Int>, withViewControllers newViewControllers: [UIViewController], animated: Bool) {
             // calculate value
             let numberOfWrappersToBeRemoved = range.endIndex - range.startIndex
@@ -211,10 +227,17 @@ extension Msr.UI {
             replaceViewControllersInRange(0..<numberOfViewControllers, withViewControllers: newViewControllers, animated: animated)
         }
         func selectViewController(viewController: UIViewController, animated: Bool) {
-            
+            let index = indexOfViewController(viewController)!
         }
-        func selectViewControllerAtIndex(index: Int?, animated: Bool) {}
-        func viewControllerAtIndex(index: Int) -> UIViewController? { return nil }
+        func selectViewControllerAtIndex(index: Int?, animated: Bool) {
+            if !animated {
+                scrollView.contentOffset.x = view.bounds.width * CGFloat(index ?? 0)
+            }
+            segmentedControl.selectSegmentAtIndex(index, animated: animated)
+        }
+        func viewControllerAtIndex(index: Int) -> UIViewController? {
+            return viewControllers[index]
+        }
         func positionForBar(bar: UIBarPositioning) -> UIBarPosition {
             if bar === backgroundBar {
                 let ps: [SegmentedControlPosition: UIBarPosition] = [
@@ -227,7 +250,6 @@ extension Msr.UI {
         private var wrapperConstraints = [NSLayoutConstraint]()
         func scrollViewDidScroll(scrollView: UIScrollView) {
             if scrollView === self.scrollView && !segmentedControl.valueChangedByUserInteraction && selectedIndex != nil {
-                println((__FUNCTION__, scrollView.contentOffset.x))
                 let offset = scrollView.contentOffset
                 let position = min(max(Float(offset.x / view.bounds.width), Float(-1)), Float(numberOfViewControllers))
                 segmentedControl.setIndicatorPosition(position, animated: false)
@@ -241,7 +263,7 @@ extension Msr.UI {
                         delay: 0,
                         usingSpringWithDamping: 1,
                         initialSpringVelocity: 0,
-                        options: .BeginFromCurrentState | .AllowUserInteraction,
+                        options: .BeginFromCurrentState,
                         animations: {
                             [weak self] in
                             self?.scrollView.contentOffset.x = self!.view.bounds.width * CGFloat(self!.segmentedControl.selectedSegmentIndex ?? 0)
@@ -273,6 +295,9 @@ extension Msr.UI {
                 },
                 completion: nil)
         }
+        deinit {
+            scrollView.delegate = nil // App may crash without it.
+        }
         class WrapperView: UIView {
             var contentView: UIView? {
                 willSet {
@@ -301,9 +326,16 @@ extension Msr.UI {
             func msr_initialize() {
                 msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             }
-        }
-        deinit {
-            segmentedControl.removeObserver(self, forKeyPath: "indicatorPosition")
+            override func didMoveToSuperview() {
+                if superview != nil {
+                    msr_addVerticalEdgeAttachedConstraintsToSuperview()
+                }
+            }
+            override func willMoveToSuperview(newSuperview: UIView?) {
+                if superview != nil {
+                    msr_removeVerticalEdgeAttachedConstraintsFromSuperview()
+                }
+            }
         }
     }
 }
