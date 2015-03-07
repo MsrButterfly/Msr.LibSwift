@@ -2,7 +2,7 @@ import UIKit
 
 extension Msr.UI {
     class Indicator: AutoExpandingView {
-        weak var segmentedControl: UISegmentedControl?
+        weak var segmentedControl: SegmentedControl?
         class var aboveSegments: Bool {
             return true
         }
@@ -10,27 +10,23 @@ extension Msr.UI {
             super.msr_initialize()
             opaque = false
         }
-        override func tintColorDidChange() {
-            super.tintColorDidChange()
-            setNeedsDisplay()
-        }
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            setNeedsDisplay()
-        }
     }
 }
 
 extension Msr.UI {
-    class OverlineIndicator: Indicator {
+    class LinearIndicator: Indicator {
+        var lineCap: CGLineCap { return kCGLineCapSquare }
+        var lineColor: UIColor { return tintColor }
+        var lineJoin: CGLineJoin { return kCGLineJoinMiter }
+        var linePath: CGPath { return CGPathCreateMutable() }
+        var lineWidth: CGFloat = 3
         override func drawRect(rect: CGRect) {
             let c = UIGraphicsGetCurrentContext()
             CGContextSaveGState(c)
-            CGContextSetStrokeColorWithColor(c, tintColor.CGColor)
-            CGContextSetLineCap(c, kCGLineCapSquare)
-            CGContextSetLineWidth(c, 2)
-            CGContextMoveToPoint(c, 0, rect.msr_top + 1)
-            CGContextAddLineToPoint(c, rect.msr_right, rect.msr_bottom)
+            CGContextSetStrokeColorWithColor(c, lineColor.CGColor)
+            CGContextSetLineCap(c, lineCap)
+            CGContextSetLineWidth(c, lineWidth)
+            CGContextAddPath(c, linePath)
             CGContextStrokePath(c)
             CGContextRestoreGState(c)
         }
@@ -38,17 +34,23 @@ extension Msr.UI {
 }
 
 extension Msr.UI {
-    class UnderlineIndicator: Indicator {
-        override func drawRect(rect: CGRect) {
-            let c = UIGraphicsGetCurrentContext()
-            CGContextSaveGState(c)
-            CGContextSetStrokeColorWithColor(c, tintColor.CGColor)
-            CGContextSetLineCap(c, kCGLineCapSquare)
-            CGContextSetLineWidth(c, 2)
-            CGContextMoveToPoint(c, 0, rect.msr_bottom - 1)
-            CGContextAddLineToPoint(c, rect.msr_right, rect.msr_bottom - 1)
-            CGContextStrokePath(c)
-            CGContextRestoreGState(c)
+    class OverlineIndicator: LinearIndicator {
+        override var linePath: CGPath {
+            let p = CGPathCreateMutable()
+            CGPathMoveToPoint(p, nil, 0, lineWidth / 2)
+            CGPathAddLineToPoint(p, nil, bounds.width, lineWidth / 2)
+            return p
+        }
+    }
+}
+
+extension Msr.UI {
+    class UnderlineIndicator: LinearIndicator {
+        override var linePath: CGPath {
+            let p = CGPathCreateMutable()
+            CGPathMoveToPoint(p, nil, 0, bounds.height - lineWidth / 2)
+            CGPathAddLineToPoint(p, nil, bounds.width, bounds.height - lineWidth / 2)
+            return p
         }
     }
 }
@@ -58,12 +60,33 @@ extension Msr.UI {
         override class var aboveSegments: Bool {
             return false
         }
+        var blockColor: UIColor { return tintColor.colorWithAlphaComponent(0.2) }
         override func drawRect(rect: CGRect) {
             let c = UIGraphicsGetCurrentContext()
             CGContextSaveGState(c)
-            CGContextSetFillColorWithColor(c, tintColor.colorWithAlphaComponent(0.2).CGColor)
+            CGContextSetFillColorWithColor(c, blockColor.CGColor)
             CGContextFillRect(c, rect)
             CGContextRestoreGState(c)
+        }
+    }
+}
+
+extension Msr.UI {
+    class RainbowBlockIndicator: BlockIndicator {
+        override var blockColor: UIColor {
+            let indicatorPosition = segmentedControl?.indicatorPosition
+            let numberOfSegments = segmentedControl?.numberOfSegments
+            if indicatorPosition == nil || numberOfSegments == nil {
+                return UIColor.clearColor()
+            }
+            let maxValue = CGFloat(numberOfSegments! - 1)
+            let minValue = CGFloat(0)
+            if minValue >= maxValue {
+                return UIColor.clearColor()
+            }
+            let value = min(max(CGFloat(indicatorPosition!), minValue), maxValue)
+            let hue = (value - minValue) / (maxValue - minValue)
+            return UIColor(hue: hue, saturation: 0.5, brightness: 1, alpha: 1)
         }
     }
 }

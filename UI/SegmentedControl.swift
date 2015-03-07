@@ -149,7 +149,9 @@ extension Msr.UI {
         var indicator: Indicator {
             set {
                 _indicator?.removeFromSuperview()
+                _indicator?.segmentedControl = nil
                 _indicator = newValue
+                _indicator.segmentedControl = self
                 indicatorWrapper.addSubview(_indicator)
                 scrollView.bringSubviewToFront(indicator.dynamicType.aboveSegments ? indicatorWrapper : wrappersView)
             }
@@ -432,6 +434,10 @@ extension Msr.UI {
                 indicatorWrapperRightConstraint.constant = 0
             }
             super.updateConstraints()
+        }
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            indicator.setNeedsDisplay()
         }
         override var bounds: CGRect {
             didSet {
