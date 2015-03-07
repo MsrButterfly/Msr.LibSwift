@@ -6,7 +6,7 @@ extension Msr.UI._Detail {
         var segment: Segment? {
             willSet {
                 if newValue != nil {
-                    insertSubview(newValue!, belowSubview: button)
+                    addSubview(newValue!)
                     newValue!.frame = bounds
                     newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
                     newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
@@ -17,7 +17,6 @@ extension Msr.UI._Detail {
             }
         }
         var widthConstraint: NSLayoutConstraint!
-        var button: UIButton!
         override init() {
             super.init()
             // msr_initialize() will be invoked by super.init() -> self.init(frame:).
@@ -31,10 +30,6 @@ extension Msr.UI._Detail {
             msr_initialize()
         }
         func msr_initialize() {
-            button = UIButton(frame: bounds)
-            button.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-            button.setBackgroundImage(UIImage.msr_rectangleWithColor(UIColor.blackColor().colorWithAlphaComponent(0.2), size: CGSize(width: 1, height: 1)), forState: .Highlighted)
-            addSubview(button)
             msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             widthConstraint = NSLayoutConstraint(item: self, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: minimumLayoutSize.width)
             addConstraint(widthConstraint)

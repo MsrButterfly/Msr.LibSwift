@@ -100,10 +100,10 @@ extension Msr.UI {
         }
         func msr_initialize() {
             addSubview(scrollView)
-            scrollView.addSubview(segmentsView)
+            scrollView.addSubview(wrappersView)
             scrollView.addSubview(indicatorWrapper)
-            segmentsView.addSubview(leftView)
-            segmentsView.addSubview(rightView)
+            wrappersView.addSubview(leftView)
+            wrappersView.addSubview(rightView)
             scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
             scrollView.msr_addAllEdgeAttachedConstraintsToSuperview()
             leftView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
@@ -115,9 +115,9 @@ extension Msr.UI {
             wrappers = [leftView, rightView]
             let vs = ["l": leftView, "r": rightView]
             segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
-            minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: segmentsView, attribute: .Leading, multiplier: 1, constant: 0)
-            segmentsView.addConstraints(segmentConstraints)
-            segmentsView.addConstraint(minWidthConstraint)
+            minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: wrappersView, attribute: .Leading, multiplier: 1, constant: 0)
+            wrappersView.addConstraints(segmentConstraints)
+            wrappersView.addConstraint(minWidthConstraint)
             scrollView.showsHorizontalScrollIndicator = false
             scrollView.delaysContentTouches = true
             indicatorWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
@@ -128,7 +128,7 @@ extension Msr.UI {
             indicatorWrapperRightConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
             scrollView.addConstraint(indicatorWrapperLeftConstraint)
             scrollView.addConstraint(indicatorWrapperRightConstraint)
-            scrollView.addConstraint(NSLayoutConstraint(item: segmentsView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
+            scrollView.addConstraint(NSLayoutConstraint(item: wrappersView, attribute: .Height, relatedBy: .Equal, toItem: scrollView, attribute: .Height, multiplier: 1, constant: 0))
             tintColor = UIColor.purpleColor()
         }
         var animationDuration = NSTimeInterval(0.5)
@@ -151,7 +151,7 @@ extension Msr.UI {
                 _indicator?.removeFromSuperview()
                 _indicator = newValue
                 indicatorWrapper.addSubview(_indicator)
-                scrollView.bringSubviewToFront(indicator.dynamicType.aboveSegments ? indicatorWrapper : segmentsView)
+                scrollView.bringSubviewToFront(indicator.dynamicType.aboveSegments ? indicatorWrapper : wrappersView)
             }
             get {
                 return _indicator
@@ -266,9 +266,9 @@ extension Msr.UI {
             for s in newSegments {
                 s.tintColor = tintColor
                 let w = SegmentWrapper()
-                segmentsView.addSubview(w)
+                wrappersView.addSubview(w)
                 w.segment = s
-                w.button.addTarget(self, action: "didPressButton:", forControlEvents: .TouchUpInside)
+                w.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "handleTapGesture:"))
                 w.msr_addVerticalEdgeAttachedConstraintsToSuperview()
                 wrappersToBeInserted.append(w)
             }
@@ -276,7 +276,7 @@ extension Msr.UI {
             // replace constraints
             var constraintsToBeInserted = [NSLayoutConstraint]()
             let constraintsToBeRemoved = Array(segmentConstraints[rangeOfConstraintsToBeRemoved])
-            segmentsView.removeConstraints(constraintsToBeRemoved)
+            wrappersView.removeConstraints(constraintsToBeRemoved)
             for i in indexOfFirstConstraintToBeInserted...indexOfLastConstraintToBeInserted {
                 let lw = wrappers[i]
                 let rw = wrappers[i + 1]
@@ -286,7 +286,7 @@ extension Msr.UI {
                 constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
             }
             segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
-            segmentsView.addConstraints(constraintsToBeInserted)
+            wrappersView.addConstraints(constraintsToBeInserted)
             // move indicator
             var indicatorPositionAfterReplacing: Float? = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
             if _indicatorPosition != indicatorPositionAfterReplacing {
@@ -450,9 +450,10 @@ extension Msr.UI {
         override class func requiresConstraintBasedLayout() -> Bool {
             return true
         }
-        internal func didPressButton(button: UIButton) {
+        internal func handleTapGesture(gestureRecognizer: UITapGestureRecognizer) {
+            let sw = gestureRecognizer.view!
             for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
-                if button === w.button {
+                if w === sw {
                     var shouldBeSelected = true
                     shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentByUserInteraction: segmentAtIndex(i)) ?? true
                     shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentAtIndexByUserInteraction: i) ?? true
@@ -482,7 +483,7 @@ extension Msr.UI {
         private let leftView = SegmentWrapper()
         private let rightView = SegmentWrapper()
         private let scrollView = UIScrollView()
-        private let segmentsView = AutoExpandingView()
+        private let wrappersView = AutoExpandingView()
         private var minWidthConstraint: NSLayoutConstraint!
         private var indicatorWrapperLeftConstraint: NSLayoutConstraint!
         private var indicatorWrapperRightConstraint: NSLayoutConstraint!
