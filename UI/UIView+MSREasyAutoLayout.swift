@@ -127,7 +127,7 @@ extension UIView {
             let views = ["self": self]
             let formats: [UILayoutConstraintAxis: String] = [
                 .Horizontal: "[self(==0)]",
-                .Vertical: "V:[self(==0)]|"]
+                .Vertical: "V:[self(==0)]"]
             let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[axis]!, options: nil, metrics: nil, views: views).first as! NSLayoutConstraint
             let w = MSRWeak(object: c)
             objc_setAssociatedObject(self, _UIViewMSRSizeConstraintAssociationKeys[axis]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
