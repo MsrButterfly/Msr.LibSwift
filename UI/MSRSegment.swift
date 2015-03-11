@@ -54,7 +54,7 @@
     }
 }
 
-class MSRDefaultSegment: MSRSegment {
+@objc class MSRDefaultSegment: MSRSegment {
     private lazy var containerView: UIView = {
         [weak self] in
         let cv = UIView()

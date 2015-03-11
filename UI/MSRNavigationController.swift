@@ -377,9 +377,9 @@ extension UIViewController {
         return nil
     }
     @objc var msr_navigationBar: UINavigationBar? {
-        return msr_navigationControllerWrapperController?.navigationBar
+        return msr_navigationWrapperController?.navigationBar
     }
-    @objc var msr_navigationControllerWrapperController: MSRNavigationWrapperController? {
+    @objc var msr_navigationWrapperController: MSRNavigationWrapperController? {
         var current = parentViewController
         while current != nil {
             if current is MSRNavigationWrapperController {
