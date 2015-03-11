@@ -1,5 +1,3 @@
-import UIKit
-
 extension UIView {
     @objc func msr_resignFirstResponderOfAllSubviews() -> Void {
         for subview in subviews {

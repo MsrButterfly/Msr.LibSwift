@@ -1,4 +1,4 @@
-@objc class MSRAlertAction {
+@objc class MSRAlertAction: NSObject {
     var title: String
     var style: UIAlertActionStyle
     var handler: ((MSRAlertAction) -> Void)?
@@ -8,5 +8,6 @@
         self.style = style
         self.handler = handler
         enabled = true
+        super.init()
     }
 }
