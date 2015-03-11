@@ -1,4 +1,4 @@
-@objc class MSROverlineIndicator: MSRLinearIndicator {
+@objc class MSRSegmentedControlOverlineIndicator: MSRSegmentedControlLinearIndicator {
     override var linePath: CGPath {
         let p = CGPathCreateMutable()
         CGPathMoveToPoint(p, nil, 0, lineWidth / 2)

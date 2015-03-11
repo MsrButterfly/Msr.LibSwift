@@ -1,4 +1,4 @@
-@objc class MSRLinearIndicator: MSRIndicator {
+@objc class MSRSegmentedControlLinearIndicator: MSRSegmentedControlIndicator {
     var lineCap: CGLineCap { return kCGLineCapSquare }
     var lineColor: UIColor { return tintColor }
     var lineJoin: CGLineJoin { return kCGLineJoinMiter }

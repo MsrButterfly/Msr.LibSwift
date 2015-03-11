@@ -1,4 +1,4 @@
-@objc class MSRIndicator: MSRAutoExpandingView {
+@objc class MSRSegmentedControlIndicator: MSRAutoExpandingView {
     weak var segmentedControl: MSRSegmentedControl?
     class var aboveSegments: Bool {
         return true

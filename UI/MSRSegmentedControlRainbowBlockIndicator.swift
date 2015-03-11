@@ -1,4 +1,4 @@
-@objc class MSRRainbowBlockIndicator: MSRBlockIndicator {
+@objc class MSRSegmentedControlRainbowBlockIndicator: MSRSegmentedControlBlockIndicator {
     override var blockColor: UIColor {
         let indicatorPosition = segmentedControl?.indicatorPosition
         let numberOfSegments = segmentedControl?.numberOfSegments

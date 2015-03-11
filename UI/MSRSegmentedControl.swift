@@ -103,7 +103,7 @@ Functional Synopsis
         indicatorWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
         indicatorWrapper.msr_addVerticalEdgeAttachedConstraintsToSuperview()
         indicatorWrapper.userInteractionEnabled = false
-        indicator = MSRUnderlineIndicator()
+        indicator = MSRSegmentedControlUnderlineIndicator()
         indicatorWrapperLeftConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Leading, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
         indicatorWrapperRightConstraint = NSLayoutConstraint(item: indicatorWrapper, attribute: .Trailing, relatedBy: .Equal, toItem: scrollView, attribute: .Leading, multiplier: 1, constant: 0)
         scrollView.addConstraint(indicatorWrapperLeftConstraint)
@@ -126,7 +126,7 @@ Functional Synopsis
         }
     }
     weak var delegate: MSRSegmentedControlDelegate?
-    var indicator: MSRIndicator {
+    var indicator: MSRSegmentedControlIndicator {
         set {
             _indicator?.removeFromSuperview()
             _indicator?.segmentedControl = nil
@@ -483,5 +483,5 @@ Functional Synopsis
             }
         }
     }
-    private var _indicator: MSRIndicator!
+    private var _indicator: MSRSegmentedControlIndicator!
 }

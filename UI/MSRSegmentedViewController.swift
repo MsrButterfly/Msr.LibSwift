@@ -69,7 +69,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         segmentedControl.delegate = self
         segmentedControl.addTarget(self, action: "segmentedControlValueDidChange:", forControlEvents: .ValueChanged)
         backgroundBar.delegate = self
-        segmentedControl.indicator = MSRBlockIndicator()
+        segmentedControl.indicator = MSRSegmentedControlBlockIndicator()
         scrollView.delegate = self
         scrollView.pagingEnabled = true
         scrollView.showsHorizontalScrollIndicator = false
