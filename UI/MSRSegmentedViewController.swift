@@ -1,5 +1,4 @@
 @objc protocol MSRSegmentedViewControllerDelegate: NSObjectProtocol {
-    optional func msr_segmentedViewController(segmentedViewController: MSRSegmentedViewController, didDeselectViewController viewController: UIViewController)
     optional func msr_segmentedViewController(segmentedViewController: MSRSegmentedViewController, didSelectViewController viewController: UIViewController)
 }
 
@@ -277,6 +276,9 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
                     })
             }
             if segmentedControl.selectedSegmentIndexChanged {
+                if selectedViewController != nil {
+                    delegate?.msr_segmentedViewController?(self, didSelectViewController: selectedViewController!)
+                }
                 title = selectedViewController?.title ?? ""
             }
         }
@@ -299,7 +301,6 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
     deinit {
         scrollView.delegate = nil // App may crash without it.
     }
-    
 }
 
 @objc class _MSRSegmentedViewControllerWrapperView: UIView {
