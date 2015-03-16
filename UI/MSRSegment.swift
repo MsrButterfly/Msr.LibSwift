@@ -55,6 +55,7 @@
 }
 
 @objc class MSRDefaultSegment: MSRSegment {
+    private var imageTitleDistanceConstraint: NSLayoutConstraint!
     private lazy var containerView: UIView = {
         [weak self] in
         let cv = UIView()
@@ -66,10 +67,13 @@
             self!.titleLabel.msr_addCenterXConstraintToSuperview()
             self!.titleLabel.textAlignment = .Center
             let vs = ["u": self!.imageView, "d": self!.titleLabel]
+            self!.imageTitleDistanceConstraint = NSLayoutConstraint.constraintsWithVisualFormat("V:[u]-5-[d]", options: nil, metrics: nil, views: vs).first as! NSLayoutConstraint
             cv.addConstraints(
-                NSLayoutConstraint.constraintsWithVisualFormat("V:|[u]-5-[d]|", options: nil, metrics: nil, views: vs) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[u]-(>=10)-|", options: nil, metrics: nil, views: vs) +
-                    NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[d]-(>=10)-|", options: nil, metrics: nil, views: vs))
+                [self!.imageTitleDistanceConstraint] +
+                NSLayoutConstraint.constraintsWithVisualFormat("V:|[u]", options: nil, metrics: nil, views: vs) +
+                NSLayoutConstraint.constraintsWithVisualFormat("V:[d]|", options: nil, metrics: nil, views: vs) +
+                NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[u]-(>=10)-|", options: nil, metrics: nil, views: vs) +
+                NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[d]-(>=10)-|", options: nil, metrics: nil, views: vs))
         }
         return cv
     }()
@@ -87,6 +91,7 @@
     var image: UIImage? {
         set {
             imageView.image = newValue?.imageWithRenderingMode(.AlwaysTemplate)
+            imageTitleDistanceConstraint.constant = newValue == nil || title == nil ? 0 : 5
             setNeedsRecalculateSystemLayoutSize()
         }
         get {
@@ -96,6 +101,7 @@
     var title: String? {
         set {
             titleLabel.text = newValue
+            imageTitleDistanceConstraint.constant = newValue == nil || image == nil ? 0 : 5
             setNeedsRecalculateSystemLayoutSize()
         }
         get {
