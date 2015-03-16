@@ -13,15 +13,7 @@
     func beginLoadingMore() {
         if !loadingMore {
             loadingMore = true
-            UIView.animateWithDuration(0.5,
-                delay: 0,
-                usingSpringWithDamping: 1,
-                initialSpringVelocity: 0,
-                options: UIViewAnimationOptions.BeginFromCurrentState,
-                animations: {
-                    self.scrollView!.contentSize.height += 80
-                },
-                completion: nil)
+            scrollView!.contentInset.bottom += self.triggerHeight
         }
     }
     func endLoadingMore() {
@@ -36,7 +28,8 @@
                     alpha = min(max(overHeight, 0), frame.height) / frame.height
                     if overHeight > 0 {
                         setNeedsDisplay()
-                        if overHeight > triggerHeight && !loadingMore {
+                        if overHeight > triggerHeight && !loadingMore && !scrollView!.dragging {
+                            loadingMore = true
                             beginLoadingMore()
                             sendActionsForControlEvents(.ValueChanged)
                         }

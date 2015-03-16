@@ -8,7 +8,7 @@ Functional Synopsis
     optional func msr_segmentedControl(segmentedControl: Msr.UI.SegmentedControl, shouldSelectSegmentAtIndex: Int) -> Bool
 }
 
-@objc class MSRSegmentedControl: UIControl {
+@objc class MSRSegmentedControl: UIControl, UILayoutSupport {
 
     init()
     init(segments: [Segment])
@@ -60,7 +60,7 @@ Functional Synopsis
     optional func msr_segmentedControl(segmentedControl: MSRSegmentedControl, shouldSelectSegmentAtIndexByUserInteraction: Int) -> Bool
 }
 
-@objc class MSRSegmentedControl: UIControl {
+@objc class MSRSegmentedControl: UIControl, UILayoutSupport {
     override init() {
         super.init()
         // msr_initialize() will be called by super.init() -> self.init(frame:)
@@ -431,6 +431,9 @@ Functional Synopsis
                 setNeedsUpdateConstraints() // It's not elegant but still needed.
             }
         }
+    }
+    var length: CGFloat {
+        return bounds.height
     }
     override class func requiresConstraintBasedLayout() -> Bool {
         return true
