@@ -139,7 +139,7 @@
         updateColor()
     }
     func updateColor() {
-        let color = selected ? tintColor : UIColor.lightGrayColor()
+        let color = selected ? tintColor : tintColor.colorWithAlphaComponent(0.3)
         imageView.tintColor = color
         titleLabel.textColor = color
     }
