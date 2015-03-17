@@ -24,10 +24,34 @@
     override var length: CGFloat {
         return bounds.height
     }
+    override var bounds: CGRect {
+        willSet {
+            if bounds.height != newValue.height {
+                willChangeValueForKey("length")
+            }
+        }
+        didSet {
+            if bounds.height != oldValue.height {
+                didChangeValueForKey("length")
+            }
+        }
+    }
 }
 
 @objc class MSRHorizontalLayoutGuide: MSRLayoutGuide {
     override var length: CGFloat {
         return bounds.width
+    }
+    override var bounds: CGRect {
+        willSet {
+            if bounds.width != newValue.width {
+                willChangeValueForKey("length")
+            }
+        }
+        didSet {
+            if bounds.width != oldValue.width {
+                didChangeValueForKey("length")
+            }
+        }
     }
 }
