@@ -1,4 +1,7 @@
 extension UIImage {
+    class func msr_imageWithColor(color: UIColor) -> Self {
+        return msr_rectangleWithColor(color, size: CGSize(width: 1, height: 1))
+    }
     class func msr_circleWithColor(color: UIColor, radius: CGFloat) -> Self {
         let context = _MSRDefaultRGBBitmapContextWithSize(CGSize(width: radius * 2, height: radius * 2))
         CGContextBeginPath(context)

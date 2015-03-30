@@ -106,7 +106,6 @@ class MSRSidebar: UIView, UIGestureRecognizerDelegate {
         let recognizer = UIScreenEdgePanGestureRecognizer(target: self!, action: "handleScreenEdgePanGesture:")
         recognizer.delegate = self
         recognizer.edges = self!.edge == .Left ? .Left : .Right
-        recognizer.delaysTouchesBegan = true
         return recognizer
     }()
     var width: CGFloat {
