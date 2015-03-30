@@ -6,21 +6,23 @@ class MSRSidebar: UIView, UIGestureRecognizerDelegate {
 
     init(width: CGFloat, edge: MSRFrameEdge)
 
-    var backgroundView: UIView?
-    var collapsed: Bool
-    var contentView: UIView
-    var edge: MSRFrameEdge { get }
-    var overlay: UIView?
+    var backgroundView: UIView?     // default is UIVisualEffectView(effect: UIBlurEffect(style: .Dark))
+    var collapsed: Bool             // default is true
+    var contentView: UIView         // the view container
+    var edge: MSRFrameEdge { get }  // default is .Left, initialized by init(width:edge:)
+    var overlay: UIView?            // default is nil, the view above contents and attachs to sidebar
     var overlayPanGestureRecognizer: UIPanGestureRecognizer { get }
     var overlayTapGestureRecognizer: UITapGestureRecognizer { get }
     var screenEdgePanGestureRecognizer: UIScreenEdgePanGestureRecognizer { get }
-    var width: CGFloat
+    var width: CGFloat              // default is 0, animatable
 
     func collapse()
     func collapse(#animated: Bool)
     func setCollapsed(collapsed: Bool, animated: Bool)
     func expand()
     func expand(#animated: Bool)
+
+}
 
 */
 

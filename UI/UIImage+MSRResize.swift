@@ -19,8 +19,8 @@ extension UIImage {
             transform = CGAffineTransformRotate(transform, CGFloat(M_PI))
             break
         case .DownMirrored:
-            transform = CGAffineTransformMakeTranslation(0, sourceSize.height);
-            transform = CGAffineTransformScale(transform, 1, -1);
+            transform = CGAffineTransformMakeTranslation(0, sourceSize.height)
+            transform = CGAffineTransformScale(transform, 1, -1)
             break
         case .Left:
             destinationSize = CGSize(width: destinationSize.height, height: destinationSize.width)
@@ -35,8 +35,8 @@ extension UIImage {
             break
         case .Right:
             destinationSize = CGSize(width: destinationSize.height, height: destinationSize.width)
-            transform = CGAffineTransformMakeTranslation(sourceSize.height, 0);
-            transform = CGAffineTransformRotate(transform, CGFloat(M_PI_2));
+            transform = CGAffineTransformMakeTranslation(sourceSize.height, 0)
+            transform = CGAffineTransformRotate(transform, CGFloat(M_PI_2))
             break
         case .RightMirrored:
             destinationSize = CGSize(width: destinationSize.height, height: destinationSize.width)
