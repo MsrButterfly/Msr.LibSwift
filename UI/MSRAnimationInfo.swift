@@ -1,4 +1,7 @@
 @objc class MSRAnimationInfo: NSObject {
+    override init() {
+        super.init()
+    }
     init(keyboardNotification: NSNotification) {
         let info = keyboardNotification.userInfo! as! [NSString: AnyObject]
         frameBegin = info[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue()

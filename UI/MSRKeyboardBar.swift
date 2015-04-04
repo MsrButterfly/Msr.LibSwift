@@ -1,11 +1,15 @@
-@objc protocol MSRKeyboardBarDelegate: NSObjectProtocol {
-    optional func msr_keyboardBarWillChangeFrame(keyboardBar: MSRKeyboardBar, animationInfo: MSRAnimationInfo)
-    optional func msr_keyboardBarDidChangeFrame(keyboardBar: MSRKeyboardBar, animationInfo: MSRAnimationInfo)
-}
-
 @objc class MSRKeyboardBar: UIView {
-    var backgroundView: UIView!
-    weak var keyboardBarDelegate: MSRKeyboardBarDelegate?
+    var backgroundView: UIView? {
+        didSet {
+            oldValue?.removeFromSuperview()
+            if backgroundView != nil {
+                addSubview(backgroundView!)
+                sendSubviewToBack(backgroundView!)
+                backgroundView!.frame = bounds
+                backgroundView!.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+            }
+        }
+    }
     override init() {
         super.init()
         // msr_initialize() will be invoked by init(frame:)
@@ -26,7 +30,7 @@
     override func willMoveToSuperview(newSuperview: UIView?) {
         super.willMoveToSuperview(newSuperview)
         if superview != nil {
-            msr_removeAllEdgeAttachedConstraintsFromSuperview()
+            msr_removeHorizontalEdgeAttachedConstraintsFromSuperview()
         }
     }
     override func didMoveToSuperview() {
@@ -40,25 +44,18 @@
         updateFrame(notification, completion: nil)
     }
     private func updateFrame(notification: NSNotification, completion: ((Bool) -> Void)?) {
-        let info = notification.userInfo!
-        let frameEnd = info[UIKeyboardFrameEndUserInfoKey]!.CGRectValue()
-        let duration = info[UIKeyboardAnimationDurationUserInfoKey]!.doubleValue!
-        let curve = UIViewAnimationCurve(rawValue: info[UIKeyboardAnimationCurveUserInfoKey]!.integerValue)
-        keyboardBarDelegate?.msr_keyboardBarWillChangeFrame?(self, animationInfo: MSRAnimationInfo(keyboardNotification: notification))
-        msr_bottomAttachedConstraint?.constant = min((window?.frame.height ?? 0) - frameEnd.msr_top, frameEnd.height)
-        UIView.animateWithDuration(duration,
+        let info = MSRAnimationInfo(keyboardNotification: notification)
+        let bottom = min((superview?.bounds.height ?? 0) - info.frameEnd.msr_top, info.frameEnd.height)
+        UIView.animateWithDuration(info.animationDuration,
             delay: 0,
-            options: UIViewAnimationOptions(rawValue: UInt((curve ?? .EaseOut).rawValue)),
+            options: UIViewAnimationOptions(rawValue: UInt(info.animationCurve.rawValue)),
             animations: {
                 [weak self] in
+                self?.transform = CGAffineTransformMakeTranslation(0, -bottom)
                 self?.layoutIfNeeded()
                 return
             },
-            completion: {
-                [weak self] finished in
-                self?.keyboardBarDelegate?.msr_keyboardBarWillChangeFrame?(self!, animationInfo: MSRAnimationInfo(keyboardNotification: notification))
-                return
-            })
+            completion: nil)
     }
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
