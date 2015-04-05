@@ -100,7 +100,25 @@
             transformAtPercentage(percentage, frontViewController: wrappers.last, backViewController: wrappers.msr_penultimate)
             break
         case .Ended, .Cancelled:
-            if gesture.velocityInView(view).x > 0 {
+            // velocity
+            // 1024|./////////////////////////////////
+            //     |./////////////////////////////////
+            //     | .////////////////////////////////
+            //     |  .///////////////////////////////
+            //     |    ./////////////////////////////
+            //  512|      .///////////////////////////
+            //     |        ./////////////////////////
+            //     |          .///////////////////////
+            //  256|             .////////////////////
+            //     |                ./////////////////
+            //  128|                    ./////////////
+            //   64|                           .//////
+            //    0|__________________________________
+            //     0      0.2    0.4    0.6    0.8   1 location
+            // (0, 1024), (0.2, 512), (0.4, 256), (0.6, 128), (0.8, 64)
+            // velocity = 1024 / pow(2, location * 5)
+            let minVelocity = 1024 / pow(2, gesture.locationInView(view).x / view.bounds.width * 5)
+            if gesture.velocityInView(view).x > minVelocity {
                 popViewController(animated: true, completion: nil)
             } else {
                 let distance = gesture.translationInView(view).x
@@ -132,17 +150,11 @@
     func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
         if gestureRecognizer === gesture {
             let velocity = gesture.velocityInView(view)
-            if velocity.x < velocity.y {
-                return false
-            }
+            let x = abs(velocity.x)
+            let y = abs(velocity.y)
+            return velocity.x > 256 && atan(y / x) < CGFloat(M_PI / 4)
         }
         return true
-    }
-    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailByGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer === otherGestureRecognizer {
-            return true
-        }
-        return false
     }
     func popViewController(#animated: Bool) -> UIViewController {
         return popViewController(animated: animated, completion: nil)
