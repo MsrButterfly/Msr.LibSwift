@@ -1,12 +1,10 @@
 extension CGRect {
     var msr_left: CGFloat {
         set {
-            let right = msr_right
-            origin.x = newValue
-            msr_right = right
+            self = CGRect(x: newValue, y: origin.y, width: width - (newValue - msr_left), height: height)
         }
         get {
-            return origin.x
+            return CGRectGetMinX(self)
         }
     }
     var msr_right: CGFloat {
@@ -14,17 +12,15 @@ extension CGRect {
             size.width = newValue - msr_left
         }
         get {
-            return msr_left + width
+            return CGRectGetMaxX(self)
         }
     }
     var msr_top: CGFloat {
         set {
-            let bottom = msr_bottom
-            origin.y = newValue
-            msr_bottom = bottom
+            self = CGRect(x: origin.x, y: newValue, width: width, height: height - (newValue - msr_top))
         }
         get {
-            return origin.y
+            return CGRectGetMinY(self)
         }
     }
     var msr_bottom: CGFloat {
@@ -32,16 +28,15 @@ extension CGRect {
             size.height = newValue - msr_top
         }
         get {
-            return msr_top + height
+            return CGRectGetMaxY(self)
         }
     }
     var msr_center: CGPoint {
         set {
-            msr_left = newValue.x - width / 2
-            msr_top = newValue.y - height / 2
+            origin = CGPoint(x: newValue.x - width / 2, y: newValue.y - height / 2)
         }
         get {
-            return CGPoint(x: msr_left + width / 2, y: msr_top + height / 2)
+            return CGPoint(x: CGRectGetMidX(self), y: CGRectGetMidY(self))
         }
     }
 }
