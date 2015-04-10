@@ -7,7 +7,7 @@ import UIKit
     var cornerRadius: CGFloat
     private(set) var actions: [MSRAlertAction]
     private(set) var buttons: [UIButton]
-    override init() {
+    init() {
         _contentView = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: 270, height: 0)))
         contentView = UIView(frame: _contentView.bounds)
         backgroundView = UIScrollView(frame: UIScreen.mainScreen().bounds)

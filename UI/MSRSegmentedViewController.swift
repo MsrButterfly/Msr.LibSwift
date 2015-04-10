@@ -37,13 +37,11 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
     var numberOfViewControllers: Int {
         return viewControllers.count
     }
-    override init() {
-        super.init()
-        // msr_initialize() will be invoked by super.init() -> self.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    convenience init() {
+        self.init(nibName: nil, bundle: nil)
     }
-    init(viewControllers: [UIViewController]) {
-        super.init()
-        // msr_initialize() will be invoked by super.init() -> self.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    convenience init(viewControllers: [UIViewController]) {
+        self.init()
         setViewControllers(viewControllers, animated: false)
     }
     required init(coder aDecoder: NSCoder) {
@@ -332,12 +330,11 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
             oldValue?.removeFromSuperview()
         }
     }
-    override init() {
-        super.init()
-        // msr_initialize() will be invoked by super.init() -> self.init(frame:)
+    convenience init() {
+        self.init(frame: CGRectZero)
     }
-    init(controller: MSRSegmentedViewController) {
-        super.init()
+    convenience init(controller: MSRSegmentedViewController) {
+        self.init()
         self.controller = controller
     }
     required init(coder aDecoder: NSCoder) {

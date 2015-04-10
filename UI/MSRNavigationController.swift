@@ -357,7 +357,7 @@ import UIKit
         let wrapper = MSRNavigationWrapperController(rootViewController: viewController)
         if viewController.navigationItem.leftBarButtonItems == nil && previousViewController != nil {
             // TODO: - SET TO DEFAULT NAVIGATION BUTTON
-            let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: .Bordered, target: self, action: "didPressBackButton")
+            let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: .Plain, target: self, action: "didPressBackButton")
             (wrapper.navigationBar.items[0] as! UINavigationItem).leftBarButtonItem = backButton
         }
         return wrapper

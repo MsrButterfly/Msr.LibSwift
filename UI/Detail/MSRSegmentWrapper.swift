@@ -15,9 +15,8 @@ import UIKit
         }
     }
     var widthConstraint: NSLayoutConstraint!
-    override init() {
-        super.init()
-        // msr_initialize() will be invoked by super.init() -> self.init(frame:).
+    convenience init() {
+        self.init(frame: CGRectZero)
     }
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

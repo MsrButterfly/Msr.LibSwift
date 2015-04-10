@@ -110,12 +110,12 @@ import UIKit
             return titleLabel.text
         }
     }
-    init(title: String?, image: UIImage?) {
-        super.init()
+    convenience init(title: String?, image: UIImage?) {
+        self.init(frame: CGRectZero)
         self.title = title
         self.image = image
     }
-    required override init(coder aDecoder: NSCoder) {
+    required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     override init(frame: CGRect) {

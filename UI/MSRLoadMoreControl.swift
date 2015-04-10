@@ -2,7 +2,7 @@ import UIKit
 
 @objc class MSRLoadMoreControl: UIControl {
     private(set) var loadingMore: Bool = false
-    convenience override init() {
+    convenience init() {
         self.init(frame: CGRect(x: 0, y: 0, width: 0, height: 40))
         backgroundColor = UIColor.clearColor()
     }

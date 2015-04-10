@@ -63,13 +63,11 @@ import UIKit
 }
 
 @objc class MSRSegmentedControl: UIControl, UILayoutSupport {
-    override init() {
-        super.init()
-        // msr_initialize() will be called by super.init() -> self.init(frame:)
+    convenience init() {
+        self.init(frame: CGRectZero)
     }
-    init(segments: [MSRSegment]) {
-        super.init()
-        // msr_initialize() will be called by super.init() -> self.init(frame:)
+    convenience init(segments: [MSRSegment]) {
+        self.init()
         setSegments(segments, animated: false)
     }
     override init(frame: CGRect) {

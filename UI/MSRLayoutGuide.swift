@@ -1,8 +1,8 @@
 import UIKit
 
 @objc class MSRLayoutGuide: UIView, UILayoutSupport {
-    override init() {
-        super.init()
+    convenience init() {
+        self.init(frame: CGRectZero)
         // msr_initialize() will be invoked by init(frame:)
     }
     required init(coder aDecoder: NSCoder) {

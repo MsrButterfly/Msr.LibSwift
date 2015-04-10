@@ -12,9 +12,8 @@ import UIKit
             }
         }
     }
-    override init() {
-        super.init()
-        // msr_initialize() will be invoked by init(frame:)
+    convenience init() {
+        self.init(frame: CGRectZero)
     }
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
