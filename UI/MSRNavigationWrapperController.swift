@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRNavigationWrapperController: UINavigationController {
     let overlay = MSRAutoExpandingView()
     override func loadView() {

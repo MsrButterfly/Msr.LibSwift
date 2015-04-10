@@ -1,3 +1,4 @@
+import ObjectiveC
 import UIKit
 
 var _NSObjectMSRUserInfoAssociationKey: UnsafePointer<Void> {

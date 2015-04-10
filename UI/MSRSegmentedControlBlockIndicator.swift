@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRSegmentedControlBlockIndicator: MSRSegmentedControlIndicator {
     override class var aboveSegments: Bool {
         return false

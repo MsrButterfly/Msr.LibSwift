@@ -1,3 +1,5 @@
+import UIKit
+
 @objc protocol MSRSegmentedViewControllerDelegate: NSObjectProtocol {
     optional func msr_segmentedViewController(segmentedViewController: MSRSegmentedViewController, didSelectViewController viewController: UIViewController?)
 }

@@ -1,3 +1,6 @@
+import Foundation
+// TODO: find a way to automatically import CommonCrypto
+
 extension String {
     var msr_MD5EncryptedString: String {
         let cStr = NSString(string: self).UTF8String

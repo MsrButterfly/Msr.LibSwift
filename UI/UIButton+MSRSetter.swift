@@ -1,3 +1,5 @@
+import UIKit
+
 extension UIButton {
     func msr_setBackgroundImageWithColor(color: UIColor) {
         msr_setBackgroundImageWithColor(color, forState: .Normal)

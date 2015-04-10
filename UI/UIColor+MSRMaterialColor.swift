@@ -1,3 +1,5 @@
+import UIKit
+
 extension UIColor {
 
     @objc class func msr_materialRed50() -> UIColor { return %+0xfde0dc }

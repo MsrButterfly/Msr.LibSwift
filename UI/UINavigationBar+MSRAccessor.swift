@@ -1,3 +1,5 @@
+import UIKit
+
 extension UINavigationBar {
     @objc var msr_backgroundView: UIImageView? {
         return subviews.filter({

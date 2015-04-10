@@ -1,3 +1,5 @@
+import UIKit
+
 extension UIColor {
     @objc convenience init(msr_RGBA: UInt32) {
         var v = [CGFloat]()

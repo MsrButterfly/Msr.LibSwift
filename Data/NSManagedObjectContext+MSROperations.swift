@@ -1,4 +1,5 @@
 import CoreData
+import Foundation
 
 extension NSManagedObjectContext {
     @objc func msr_deleteAllObjectsWithEntityName(entityName: String, error: NSErrorPointer) {

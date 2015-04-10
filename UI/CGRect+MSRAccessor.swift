@@ -1,10 +1,12 @@
+import CoreGraphics
+
 extension CGRect {
     var msr_left: CGFloat {
         set {
             self = CGRect(x: newValue, y: origin.y, width: width - (newValue - msr_left), height: height)
         }
         get {
-            return CGRectGetMinX(self)
+            return minX
         }
     }
     var msr_right: CGFloat {
@@ -12,7 +14,7 @@ extension CGRect {
             size.width = newValue - msr_left
         }
         get {
-            return CGRectGetMaxX(self)
+            return maxX
         }
     }
     var msr_top: CGFloat {
@@ -20,7 +22,7 @@ extension CGRect {
             self = CGRect(x: origin.x, y: newValue, width: width, height: height - (newValue - msr_top))
         }
         get {
-            return CGRectGetMinY(self)
+            return minY
         }
     }
     var msr_bottom: CGFloat {
@@ -28,7 +30,7 @@ extension CGRect {
             size.height = newValue - msr_top
         }
         get {
-            return CGRectGetMaxY(self)
+            return maxY
         }
     }
     var msr_center: CGPoint {
@@ -36,7 +38,7 @@ extension CGRect {
             origin = CGPoint(x: newValue.x - width / 2, y: newValue.y - height / 2)
         }
         get {
-            return CGPoint(x: CGRectGetMidX(self), y: CGRectGetMidY(self))
+            return CGPoint(x: midX, y: midY)
         }
     }
 }

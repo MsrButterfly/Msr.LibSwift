@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRNavigationController: UIViewController, UIGestureRecognizerDelegate {
     private(set) var viewControllers = [UIViewController]()
     var rootViewController: UIViewController? {

@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRSegmentedControlLinearIndicator: MSRSegmentedControlIndicator {
     var lineCap: CGLineCap { return kCGLineCapSquare }
     var lineColor: UIColor { return tintColor }

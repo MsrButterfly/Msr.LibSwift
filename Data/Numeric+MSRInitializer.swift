@@ -1,3 +1,5 @@
+import Foundation
+
 extension Int {
     init?(msr_object: AnyObject?) {
         if msr_object == nil {

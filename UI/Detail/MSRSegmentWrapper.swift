@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class _MSRSegmentWrapper: UIView {
     var segment: MSRSegment? {
         willSet {

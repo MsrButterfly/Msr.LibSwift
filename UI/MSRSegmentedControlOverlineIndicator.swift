@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRSegmentedControlOverlineIndicator: MSRSegmentedControlLinearIndicator {
     override var linePath: CGPath {
         let p = CGPathCreateMutable()

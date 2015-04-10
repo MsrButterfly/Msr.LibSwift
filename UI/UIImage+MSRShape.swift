@@ -1,3 +1,5 @@
+import UIKit
+
 extension UIImage {
     class func msr_imageWithColor(color: UIColor) -> Self {
         return msr_rectangleWithColor(color, size: CGSize(width: 1, height: 1))

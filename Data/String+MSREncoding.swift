@@ -1,3 +1,5 @@
+import Foundation
+
 extension String {
     func msr_stringByConvertingFromEncoding(source: NSStringEncoding, toEncoding destination: NSStringEncoding) -> String? {
         let cString = cStringUsingEncoding(source)

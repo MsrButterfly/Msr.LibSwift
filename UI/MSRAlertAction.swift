@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRAlertAction: NSObject {
     var title: String
     var style: UIAlertActionStyle

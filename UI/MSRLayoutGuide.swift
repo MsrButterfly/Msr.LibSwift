@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRLayoutGuide: UIView, UILayoutSupport {
     override init() {
         super.init()

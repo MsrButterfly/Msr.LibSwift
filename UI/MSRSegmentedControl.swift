@@ -55,6 +55,8 @@ Functional Synopsis
 
 */
 
+import UIKit
+
 @objc protocol MSRSegmentedControlDelegate {
     optional func msr_segmentedControl(segmentedControl: MSRSegmentedControl, shouldSelectSegmentByUserInteraction: MSRSegment) -> Bool
     optional func msr_segmentedControl(segmentedControl: MSRSegmentedControl, shouldSelectSegmentAtIndexByUserInteraction: Int) -> Bool

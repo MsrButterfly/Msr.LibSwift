@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRKeyboardBar: UIView {
     var backgroundView: UIView? {
         didSet {

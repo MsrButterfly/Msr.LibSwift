@@ -1,3 +1,5 @@
+import UIKit
+
 class MSRCollectionView: UICollectionView {
     
     override var contentSize: CGSize {

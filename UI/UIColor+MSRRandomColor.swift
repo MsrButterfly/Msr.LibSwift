@@ -1,3 +1,5 @@
+import UIKit
+
 extension UIColor {
     @objc class func msr_randomColor(#opaque: Bool) -> UIColor {
         let max = 255 as UInt32

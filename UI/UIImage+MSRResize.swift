@@ -1,3 +1,5 @@
+import UIKit
+
 extension UIImage {
     @objc func msr_imageOfSize(size: CGSize) -> UIImage {
         let sourceSize = CGSize(width: CGFloat(CGImageGetWidth(CGImage)), height: CGFloat(CGImageGetHeight(CGImage)))

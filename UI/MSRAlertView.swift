@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRAlertView: UIScrollView, UITextFieldDelegate {
     private let _contentView: UIView
     let contentView: UIView

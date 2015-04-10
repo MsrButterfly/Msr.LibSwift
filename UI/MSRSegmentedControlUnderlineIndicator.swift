@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRSegmentedControlUnderlineIndicator: MSRSegmentedControlLinearIndicator {
     override var linePath: CGPath {
         let p = CGPathCreateMutable()

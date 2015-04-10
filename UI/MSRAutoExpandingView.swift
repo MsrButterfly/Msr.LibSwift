@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRAutoExpandingView: UIView {
     override init() {
         super.init()

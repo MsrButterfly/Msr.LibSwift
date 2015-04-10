@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRAnimationInfo: NSObject {
     override init() {
         super.init()

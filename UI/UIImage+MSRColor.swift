@@ -1,10 +1,4 @@
-//
-//  UIImage+MSRColor.swift
-//  WeCenterMobile
-//
-//  Created by Darren Liu on 15/4/10.
-//  Copyright (c) 2015年 Beijing Information Science and Technology University. All rights reserved.
-//
+import UIKit
 
 extension UIImage {
     func msr_averageColorWithAccuracy(accuracy: CGFloat) -> UIColor? {

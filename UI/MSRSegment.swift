@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRSegment: MSRAutoExpandingView {
     private var needsRecalculateSystemLayoutSize: Bool = true // for efficency
     func setNeedsRecalculateSystemLayoutSize() {

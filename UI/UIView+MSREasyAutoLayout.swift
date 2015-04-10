@@ -1,3 +1,6 @@
+import ObjectiveC
+import UIKit
+
 var _UIViewMSREdgeAttachedConstraintAssociationKeys: [MSRFrameEdge: UnsafePointer<Void>] {
     struct _Static {
         static var _keys: Int32 = 0

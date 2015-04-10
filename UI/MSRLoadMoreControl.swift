@@ -1,3 +1,5 @@
+import UIKit
+
 @objc class MSRLoadMoreControl: UIControl {
     private(set) var loadingMore: Bool = false
     convenience override init() {
@@ -48,7 +50,7 @@
         let lineWidth = CGFloat(2)
         let lineHeight = CGFloat(5.5)
         let context = UIGraphicsGetCurrentContext()
-        let color = UIColor.darkGrayColor()
+        let color = tintColor
         CGContextSetLineCap(context, kCGLineCapRound)
         CGContextSetLineWidth(context, lineWidth)
         CGContextTranslateCTM(context, frame.width / 2, frame.height / 2)
@@ -65,7 +67,7 @@
                 }
             }
         } else {
-            //                CGContextRotateCTM(context, CGFloat(M_PI) * 2 / 12 * CGFloat(arc4random_uniform(12)))
+//                CGContextRotateCTM(context, CGFloat(M_PI) * 2 / 12 * CGFloat(arc4random_uniform(12)))
             for i in 0..<12 {
                 CGContextSetStrokeColorWithColor(context, color.colorWithAlphaComponent(CGFloat(1) / CGFloat(i)).CGColor)
                 CGContextMoveToPoint(context, 0, space / 2)
