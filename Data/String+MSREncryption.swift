@@ -1,5 +1,5 @@
 import Foundation
-// TODO: find a way to automatically import CommonCrypto
+import CommonCrypto
 
 extension String {
     var msr_MD5EncryptedString: String {
