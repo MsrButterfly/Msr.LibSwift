@@ -335,6 +335,7 @@ import UIKit
         selectSegmentAtIndex(index, animated: animated, byUserInteraction: false)
     }
     func selectSegmentAtIndex(index: Int?, animated: Bool, byUserInteraction userInteraction: Bool) {
+        assert(index == nil || index >= 0 && index <= numberOfSegments - 1, "out of range: [0, numberOfSegments - 1]")
         setIndicatorPosition(index == nil ? nil : Float(index!), animated: animated, byUserInteraction: userInteraction)
     }
     func setIndicatorPosition(position: Float?, animated: Bool) {
