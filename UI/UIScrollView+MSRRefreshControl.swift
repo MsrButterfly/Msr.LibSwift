@@ -25,7 +25,7 @@ extension UIScrollView {
         method_exchangeImplementations(class_getInstanceMethod(self, "setContentInset:"), class_getInstanceMethod(self, "msr_setContentInset:"))
         
     }
-    func msr_setContentInset(contentInset: UIEdgeInsets) {
+    private func msr_setContentInset(contentInset: UIEdgeInsets) {
         if !(self is UITableView) && tracking {
             let offset = contentInset.top - self.contentInset.top
             var translation = panGestureRecognizer.translationInView(self)
