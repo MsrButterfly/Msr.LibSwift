@@ -1,12 +1,14 @@
 import UIKit
 import ObjectiveC
 
-var _UIScrollViewMSRUIRefreshControlAssociationKey: UnsafePointer<Void> {
+private var _UIScrollViewMSRUIRefreshControlAssociationKey: UnsafePointer<Void> {
     struct _Static {
         static var key = CChar()
     }
     return UnsafePointer<Void>(msr_memory: &_Static.key)
 }
+
+private var _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled = false
 
 extension UIScrollView {
     var msr_uiRefreshControl: UIRefreshControl? {
@@ -21,12 +23,24 @@ extension UIScrollView {
             return objc_getAssociatedObject(self, _UIScrollViewMSRUIRefreshControlAssociationKey) as? UIRefreshControl
         }
     }
-    class func msr_installUIRefreshControlPanGestureAdjustment() {
-        method_exchangeImplementations(class_getInstanceMethod(self, "setContentInset:"), class_getInstanceMethod(self, "msr_setContentInset:"))
-        
+    class func msr_installPanGestureTranslationAdjustment() {
+        if !_MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled {
+            _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled = true
+            method_exchangeImplementations(
+                class_getInstanceMethod(self, "setContentInset:"),
+                class_getInstanceMethod(self, "msr_setContentInset:"))
+        }
+    }
+    class func msr_removePanGestureTranslationAdjustment() {
+        if _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled {
+            _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled = false
+            method_exchangeImplementations(
+                class_getInstanceMethod(self, "setContentInset:"),
+                class_getInstanceMethod(self, "msr_setContentInset:"))
+        }
     }
     internal func msr_setContentInset(contentInset: UIEdgeInsets) {
-        if !(self is UITableView) && tracking {
+        if !(nextResponder() is UITableViewController) && tracking {
             let offset = contentInset.top - self.contentInset.top
             var translation = panGestureRecognizer.translationInView(self)
             translation.y -= offset * 3 / 2
