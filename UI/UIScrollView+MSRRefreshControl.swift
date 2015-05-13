@@ -8,8 +8,6 @@ private var _UIScrollViewMSRUIRefreshControlAssociationKey: UnsafePointer<Void> 
     return UnsafePointer<Void>(msr_memory: &_Static.key)
 }
 
-private var _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled = false
-
 extension UIScrollView {
     var msr_uiRefreshControl: UIRefreshControl? {
         set {
@@ -23,17 +21,11 @@ extension UIScrollView {
             return objc_getAssociatedObject(self, _UIScrollViewMSRUIRefreshControlAssociationKey) as? UIRefreshControl
         }
     }
-    class func msr_installPanGestureTranslationAdjustment() {
-        if !_MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled {
-            _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled = true
-            method_exchangeImplementations(
-                class_getInstanceMethod(self, "setContentInset:"),
-                class_getInstanceMethod(self, "msr_setContentInset:"))
+    class func msr_installPanGestureTranslationAdjustmentExtension() {
+        struct _Static {
+            static var id: dispatch_once_t = 0
         }
-    }
-    class func msr_removePanGestureTranslationAdjustment() {
-        if _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled {
-            _MSRUIScrollViewPanGestureTranslationAdjustmentIsInstalled = false
+        dispatch_once(&_Static.id) {
             method_exchangeImplementations(
                 class_getInstanceMethod(self, "setContentInset:"),
                 class_getInstanceMethod(self, "msr_setContentInset:"))
