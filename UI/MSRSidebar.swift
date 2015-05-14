@@ -2,13 +2,21 @@
 
 Functional Synopsis
 
-class MSRSidebar: UIView, UIGestureRecognizerDelegate {
+import UIKit
+
+@objc protocol MSRSidebarDelegate {
+    optional func msr_sidebarDidCollapse(sidebar: MSRSidebar)
+    optional func msr_sidebarDidExpand(sidebar: MSRSidebar)
+}
+
+@objc class MSRSidebar: UIView, UIGestureRecognizerDelegate {
 
     init(width: CGFloat, edge: MSRFrameEdge)
 
     var backgroundView: UIView?     // default is UIVisualEffectView(effect: UIBlurEffect(style: .Dark))
     var collapsed: Bool             // default is true
     var contentView: UIView         // the view container
+    var delegate: MSRSidebarDelegate?
     var edge: MSRFrameEdge { get }  // default is .Left, initialized by init(width:edge:)
     var overlay: UIView?            // default is nil, the view above contents and attachs to sidebar
     var overlayPanGestureRecognizer: UIPanGestureRecognizer { get }
@@ -28,7 +36,12 @@ class MSRSidebar: UIView, UIGestureRecognizerDelegate {
 
 import UIKit
 
-class MSRSidebar: UIView, UIGestureRecognizerDelegate {
+@objc protocol MSRSidebarDelegate {
+    optional func msr_sidebarDidCollapse(sidebar: MSRSidebar)
+    optional func msr_sidebarDidExpand(sidebar: MSRSidebar)
+}
+
+@objc class MSRSidebar: UIView, UIGestureRecognizerDelegate {
     // MARK: - Initializers
     init(width: CGFloat, edge: MSRFrameEdge) {
         self.edge = edge
@@ -72,6 +85,11 @@ class MSRSidebar: UIView, UIGestureRecognizerDelegate {
     var collapsed: Bool = true {
         didSet {
             updateUIWithValue(collapsed ? 0 : width)
+            if collapsed {
+                delegate?.msr_sidebarDidCollapse?(self)
+            } else {
+                delegate?.msr_sidebarDidExpand?(self)
+            }
         }
     }
     lazy var contentView: UIView = {
@@ -79,6 +97,7 @@ class MSRSidebar: UIView, UIGestureRecognizerDelegate {
         v.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
         return v
     }()
+    var delegate: MSRSidebarDelegate?
     let edge: MSRFrameEdge
     var overlay: UIView? {
         didSet {
