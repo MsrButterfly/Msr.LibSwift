@@ -47,16 +47,12 @@ import UIKit
     private func updateFrame(notification: NSNotification, completion: ((Bool) -> Void)?) {
         let info = MSRAnimationInfo(keyboardNotification: notification)
         let bottom = min((superview?.bounds.height ?? 0) - info.frameEnd.msr_top, info.frameEnd.height)
-        UIView.animateWithDuration(info.animationDuration,
-            delay: 0,
-            options: UIViewAnimationOptions(rawValue: UInt(info.animationCurve.rawValue)),
-            animations: {
-                [weak self] in
-                self?.transform = CGAffineTransformMakeTranslation(0, -bottom)
-                self?.layoutIfNeeded()
-                return
-            },
-            completion: nil)
+        info.animate() {
+            [weak self] in
+            self?.transform = CGAffineTransformMakeTranslation(0, -bottom)
+            self?.layoutIfNeeded()
+            return
+        }
     }
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
