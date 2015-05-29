@@ -5,6 +5,7 @@ Functional Synopsis
 import UIKit
 
 @objc protocol MSRSidebarDelegate {
+    optional func msr_sidebar(sidebar: MSRSidebar, didShowAtPercentage percentage: CGFloat)
     optional func msr_sidebarDidCollapse(sidebar: MSRSidebar)
     optional func msr_sidebarDidExpand(sidebar: MSRSidebar)
 }
@@ -37,6 +38,7 @@ import UIKit
 import UIKit
 
 @objc protocol MSRSidebarDelegate {
+    optional func msr_sidebar(sidebar: MSRSidebar, didShowAtPercentage percentage: CGFloat)
     optional func msr_sidebarDidCollapse(sidebar: MSRSidebar)
     optional func msr_sidebarDidExpand(sidebar: MSRSidebar)
 }
@@ -262,10 +264,12 @@ import UIKit
     }
     private func updateUIWithValue(value: CGFloat) {
         let translation = value <= width ? value : ((value + width) / 2)
+        let percentage = translation / width
         edgeConstraint?.constant = edge == .Left ? translation : -translation
-        overlayWrapper.alpha = min(max(translation / width, 0), 1)
+        overlayWrapper.alpha = max(0, min(1, percentage))
         overlayWrapper.layoutIfNeeded()
         layoutIfNeeded()
+        delegate?.msr_sidebar?(self, didShowAtPercentage: percentage)
     }
     // MARK: Deinitializer
     deinit {
