@@ -19,6 +19,7 @@ import UIKit
     var contentView: UIView         // the view container
     var delegate: MSRSidebarDelegate?
     var edge: MSRFrameEdge { get }  // default is .Left, initialized by init(width:edge:)
+    var enableBouncing: Bool        // default is true
     var overlay: UIView?            // default is nil, the view above contents and attachs to sidebar
     var overlayPanGestureRecognizer: UIPanGestureRecognizer { get }
     var overlayTapGestureRecognizer: UITapGestureRecognizer { get }
@@ -101,6 +102,7 @@ import UIKit
     }()
     var delegate: MSRSidebarDelegate?
     let edge: MSRFrameEdge
+    var enableBouncing: Bool = true
     var overlay: UIView? {
         didSet {
             oldValue?.removeFromSuperview()
@@ -152,7 +154,7 @@ import UIKit
         if animated {
             UIView.animateWithDuration(0.5,
                 delay: 0,
-                usingSpringWithDamping: collapsed ? 1 : 0.5,
+                usingSpringWithDamping: collapsed || !enableBouncing ? 1 : 0.5,
                 initialSpringVelocity: 0.7,
                 options: .BeginFromCurrentState,
                 animations: animations,
@@ -263,7 +265,7 @@ import UIKit
         }
     }
     private func updateUIWithValue(value: CGFloat) {
-        let translation = value <= width ? value : ((value + width) / 2)
+        let translation = value <= width ? value : enableBouncing ? ((value + width) / 2) : width
         let percentage = translation / width
         edgeConstraint?.constant = edge == .Left ? translation : -translation
         overlayWrapper.alpha = max(0, min(1, percentage))
