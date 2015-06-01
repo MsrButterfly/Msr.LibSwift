@@ -293,5 +293,16 @@ extension UIColor {
     @objc class func msr_materialBlueGray800() -> UIColor { return %+0x37474f }
     @objc class func msr_materialBlueGray900() -> UIColor { return %+0x263238 }
     @objc class func msr_materialBlueGray() -> UIColor { return msr_materialBlueGray500() }
-
+    
+    @objc class func msr_materialBlack() -> UIColor { return blackColor() }
+    @objc class func msr_materialWhite() -> UIColor { return whiteColor() }
+    
+    @objc class func msr_materialDarkPrimaryTextColor() -> UIColor { return msr_materialBlack().colorWithAlphaComponent(0.87) }
+    @objc class func msr_materialDarkSecondaryTextColor() -> UIColor { return msr_materialBlack().colorWithAlphaComponent(0.54) }
+    @objc class func msr_materialDarkHintTextColor() -> UIColor { return msr_materialBlack().colorWithAlphaComponent(0.26) }
+    
+    @objc class func msr_materialLightPrimaryTextColor() -> UIColor { return msr_materialWhite().colorWithAlphaComponent(1) }
+    @objc class func msr_materialLightSecondaryTextColor() -> UIColor { return msr_materialWhite().colorWithAlphaComponent(0.7) }
+    @objc class func msr_materialLightHintTextColor() -> UIColor { return msr_materialWhite().colorWithAlphaComponent(0.3) }
+    
 }
