@@ -17,7 +17,7 @@ import UIKit
     var backgroundView: UIView?     // default is UIVisualEffectView(effect: UIBlurEffect(style: .Dark))
     var collapsed: Bool             // default is true
     var contentView: UIView         // the view container
-    var delegate: MSRSidebarDelegate?
+    weak var delegate: MSRSidebarDelegate?
     var edge: MSRFrameEdge { get }  // default is .Left, initialized by init(width:edge:)
     var enableBouncing: Bool        // default is true
     var overlay: UIView?            // default is nil, the view above contents and attachs to sidebar
@@ -100,7 +100,7 @@ import UIKit
         v.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
         return v
     }()
-    var delegate: MSRSidebarDelegate?
+    weak var delegate: MSRSidebarDelegate?
     let edge: MSRFrameEdge
     var enableBouncing: Bool = true
     var overlay: UIView? {

@@ -16,7 +16,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
     private(set) var viewControllers: [UIViewController] = []
     let segmentedControl = MSRSegmentedControl()
     let scrollView = UIScrollView()
-    var delegate: MSRSegmentedViewControllerDelegate?
+    weak var delegate: MSRSegmentedViewControllerDelegate?
     var wrappers = [_MSRSegmentedViewControllerWrapperView]()
     var backgroundBar = UIToolbar()
     lazy private var leftView: _MSRSegmentedViewControllerWrapperView = {
