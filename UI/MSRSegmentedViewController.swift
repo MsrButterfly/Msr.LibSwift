@@ -20,10 +20,16 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
     var wrappers = [_MSRSegmentedViewControllerWrapperView]()
     var backgroundBar = UIToolbar()
     lazy private var leftView: _MSRSegmentedViewControllerWrapperView = {
-        _MSRSegmentedViewControllerWrapperView(controller: self)
+        [weak self] in
+        let v = _MSRSegmentedViewControllerWrapperView(frame: CGRectZero)
+        v.controller = self
+        return v
     }()
     lazy private var rightView: _MSRSegmentedViewControllerWrapperView = {
-        _MSRSegmentedViewControllerWrapperView(controller: self)
+        [weak self] in
+        let v = _MSRSegmentedViewControllerWrapperView(frame: CGRectZero)
+        v.controller = self
+        return v
     }()
     class var positionOfSegmentedControl: MSRSegmentedControlPosition {
         return .Bottom
@@ -155,7 +161,8 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         var wrappersToBeInserted = [_MSRSegmentedViewControllerWrapperView]()
         for vc in viewControllersToBeInserted {
             addChildViewController(vc)
-            let w = _MSRSegmentedViewControllerWrapperView(controller: self)
+            let w = _MSRSegmentedViewControllerWrapperView(frame: CGRectZero)
+            w.controller = self
             w.contentView = vc.view
             scrollView.addSubview(w)
             scrollView.addConstraint(NSLayoutConstraint(item: w, attribute: .Width, relatedBy: .Equal, toItem: scrollView, attribute: .Width, multiplier: 1, constant: 0))
@@ -317,7 +324,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
 }
 
 @objc class _MSRSegmentedViewControllerWrapperView: UIView {
-    weak var controller: MSRSegmentedViewController!
+    weak var controller: MSRSegmentedViewController?
     var contentView: UIView? {
         willSet {
             if newValue != nil {
@@ -329,13 +336,6 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         didSet {
             oldValue?.removeFromSuperview()
         }
-    }
-    convenience init() {
-        self.init(frame: CGRectZero)
-    }
-    convenience init(controller: MSRSegmentedViewController) {
-        self.init()
-        self.controller = controller
     }
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -361,8 +361,8 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
     override func layoutSubviews() {
         super.layoutSubviews()
         if let sv = contentView as? UIScrollView {
-            sv.contentInset.top = controller.topLayoutGuide.length
-            sv.contentInset.bottom = controller.bottomLayoutGuide.length
+            sv.contentInset.top = controller?.topLayoutGuide.length ?? 0
+            sv.contentInset.bottom = controller?.bottomLayoutGuide.length ?? 0
             sv.scrollIndicatorInsets.top = sv.contentInset.top
             sv.scrollIndicatorInsets.bottom = sv.contentInset.bottom
         }
