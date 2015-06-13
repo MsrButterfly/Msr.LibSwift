@@ -5,6 +5,9 @@ import UIKit
     var rootViewController: UIViewController? {
         return viewControllers.first
     }
+    var topViewController: UIViewController? {
+        return viewControllers.last
+    }
     private(set) var gesture: UIPanGestureRecognizer!
     var interactivePopGestureRecognizer: UIPanGestureRecognizer {
         return gesture
