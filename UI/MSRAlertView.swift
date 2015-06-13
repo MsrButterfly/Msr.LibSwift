@@ -45,7 +45,7 @@ import UIKit
             completion: nil)
     }
     func hide() {
-        msr_resignFirstResponderOfAllSubviews()
+        endEditing(true)
         alpha = 1
         _contentView.transform = CGAffineTransformMakeScale(1, 1)
         UIView.animateWithDuration(0.5,
