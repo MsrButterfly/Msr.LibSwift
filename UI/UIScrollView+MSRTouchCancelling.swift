@@ -76,7 +76,7 @@ extension UIScrollView {
     }
     
     @objc func msr_setTouchesShouldCancel(value: Bool, inContentViewWhichIsMemberOfClass aClass: UIView.Type) {
-        if let index = find(map(msr_classesOfContentViewsWhereTouchesShouldCancel) { aClass.msr_isClass($0.0) }, true) {
+        if let index = find(map(msr_classesOfContentViewsWhereTouchesShouldCancel) { aClass === $0.0 }, true) {
             msr_classesOfContentViewsWhereTouchesShouldCancel[index].1 = value
         } else {
             msr_classesOfContentViewsWhereTouchesShouldCancel.append((aClass, value))
@@ -84,7 +84,7 @@ extension UIScrollView {
     }
     
     @objc func msr_setTouchesShouldCancel(value: Bool, inContentViewWhichIsKindOfClass aClass: UIView.Type) {
-        if let index = find(map(msr_baseClassesOfContentViewsWhereTouchesShouldCancel) { aClass.msr_isClass($0.0) }, true) {
+        if let index = find(map(msr_baseClassesOfContentViewsWhereTouchesShouldCancel) { aClass === $0.0 }, true) {
             msr_baseClassesOfContentViewsWhereTouchesShouldCancel[index].1 = value
         } else if let index = find(map(msr_baseClassesOfContentViewsWhereTouchesShouldCancel) { aClass.isSubclassOfClass($0.0) }, true)  {
             msr_baseClassesOfContentViewsWhereTouchesShouldCancel.insert((aClass, value), atIndex: index)

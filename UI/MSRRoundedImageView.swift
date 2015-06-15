@@ -1,6 +1,6 @@
 import UIKit
 
-@objc class MSRRoundedImageView: UIImageView {
+class MSRRoundedImageView: UIImageView {
     override var image: UIImage? {
         set {
             super.image = newValue?.msr_roundedImage
