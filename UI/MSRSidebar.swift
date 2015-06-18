@@ -14,17 +14,18 @@ import UIKit
 
     init(width: CGFloat, edge: MSRFrameEdge)
 
-    var backgroundView: UIView?     // default is UIVisualEffectView(effect: UIBlurEffect(style: .Dark))
-    var collapsed: Bool             // default is true
-    var contentView: UIView         // the view container
+    var animationDuration: NSTimeInterval  // default is 0.5
+    var backgroundView: UIView?            // default is UIVisualEffectView(effect: UIBlurEffect(style: .Dark))
+    var collapsed: Bool                    // default is true
+    var contentView: UIView                // the view container
     weak var delegate: MSRSidebarDelegate?
-    var edge: MSRFrameEdge { get }  // default is .Left, initialized by init(width:edge:)
-    var enableBouncing: Bool        // default is true
-    var overlay: UIView?            // default is nil, the view above contents and attachs to sidebar
+    var edge: MSRFrameEdge { get }         // default is .Left, initialized by init(width:edge:)
+    var enableBouncing: Bool               // default is true
+    var overlay: UIView?                   // default is nil, the view above contents and attachs to sidebar
     var overlayPanGestureRecognizer: UIPanGestureRecognizer { get }
     var overlayTapGestureRecognizer: UITapGestureRecognizer { get }
     var screenEdgePanGestureRecognizer: UIScreenEdgePanGestureRecognizer { get }
-    var width: CGFloat              // default is 0, animatable
+    var width: CGFloat                     // default is 0, animatable
 
     func collapse()
     func collapse(#animated: Bool)
@@ -74,13 +75,13 @@ import UIKit
         contentView.addConstraint(contentViewWidthConstraint)
     }
     // MARK: - Variables
+    var animationDuration: NSTimeInterval = 0.5
     var backgroundView: UIView? {
         didSet {
             oldValue?.removeFromSuperview()
             if backgroundView != nil {
                 backgroundView!.autoresizingMask = .FlexibleWidth | .FlexibleHeight
-                backgroundView!.bounds = bounds
-                backgroundView!.center = center
+                backgroundView!.frame = bounds
                 insertSubview(backgroundView!, belowSubview: contentView)
             }
         }
@@ -152,7 +153,7 @@ import UIKit
             return
         }
         if animated {
-            UIView.animateWithDuration(0.5,
+            UIView.animateWithDuration(animationDuration,
                 delay: 0,
                 usingSpringWithDamping: collapsed || !enableBouncing ? 1 : 0.5,
                 initialSpringVelocity: 0.7,
