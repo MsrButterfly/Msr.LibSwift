@@ -1,6 +1,10 @@
 import UIKit
 
-@objc protocol MSRSegmentedViewControllerDelegate: NSObjectProtocol {
+@objc protocol MSRSegmentedViewControllerUnit: class {
+    optional func msr_segmentForSegmentedViewController(segmentedViewController: MSRSegmentedViewController) -> MSRSegment?
+}
+
+@objc protocol MSRSegmentedViewControllerDelegate: class {
     optional func msr_segmentedViewController(segmentedViewController: MSRSegmentedViewController, didSelectViewController viewController: UIViewController?)
 }
 
@@ -220,17 +224,21 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         }
         var segments = [MSRSegment]()
         for vc in newViewControllers {
-            let s = MSRDefaultSegment(title: vc.title, image: nil)
-            let sizes: [MSRSegmentedControlPosition: CGFloat] = [
-                .Top: 12,
-                .Bottom: 9
-            ]
-            let position = self.dynamicType.positionOfSegmentedControl
-            s.titleLabel.font = s.titleLabel.font.fontWithSize(sizes[position]!)
-            if position == .Bottom {
-                s.image = UIImage.msr_rectangleWithColor(UIColor.blackColor(), size: CGSize(width: 20, height: 20))
+            if let s = (vc as? MSRSegmentedViewControllerUnit)?.msr_segmentForSegmentedViewController?(self) {
+                segments.append(s)
+            } else {
+                let s = MSRDefaultSegment(title: vc.title, image: nil)
+                let sizes: [MSRSegmentedControlPosition: CGFloat] = [
+                    .Top: 12,
+                    .Bottom: 9
+                ]
+                let position = self.dynamicType.positionOfSegmentedControl
+                s.titleLabel.font = s.titleLabel.font.fontWithSize(sizes[position]!)
+                if position == .Bottom {
+                    s.image = UIImage.msr_rectangleWithColor(UIColor.blackColor(), size: CGSize(width: 20, height: 20))
+                }
+                segments.append(s)
             }
-            segments.append(s)
         }
         segmentedControl.replaceSegmentsInRange(rangeOfSegmentsToBeRemoved, withSegments: segments, animated: animated)
         if segmentedControl.selectedSegmentIndex == nil && viewControllers.count >= 1 {
