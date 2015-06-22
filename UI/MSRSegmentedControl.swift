@@ -24,6 +24,7 @@ Functional Synopsis
                                                   //     indicatorPosition = selectedSegmentIndex if indicatorPosition is an integer (excepts -1 & numberOfSegments)
     var indicator: Indicator                      // default UnderlineIndicator
     var numberOfSegments: Int { get }
+    var scrollView: UIScrollView { get }
     var selected: Bool                            // selectedSegmentIndex != nil. Select 1st if changed false to true from externals.
     var selectedSegmentIndex: Int?                // default nil, range [0, numberOfSegments - 1]
     var selectedSegmentIndexChanged: Bool { get } // true if selectedSegmentIndex has been changed since last .ValueChanged action was sent, otherwise false.
@@ -125,6 +126,7 @@ import UIKit
             oldValue?.removeFromSuperview()
         }
     }
+    let scrollView = UIScrollView()
     weak var delegate: MSRSegmentedControlDelegate?
     var indicator: MSRSegmentedControlIndicator {
         set {
@@ -470,7 +472,6 @@ import UIKit
     private var segmentConstraints = [NSLayoutConstraint]() // initially [left][right]
     private let leftView = _MSRSegmentWrapper()
     private let rightView = _MSRSegmentWrapper()
-    private let scrollView = UIScrollView()
     private let wrappersView = MSRAutoExpandingView()
     private var minWidthConstraint: NSLayoutConstraint!
     private var indicatorWrapperLeftConstraint: NSLayoutConstraint!
