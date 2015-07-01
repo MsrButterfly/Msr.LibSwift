@@ -14,6 +14,7 @@ import UIKit
     }
     private(set) var wrappers = [MSRNavigationWrapperController]()
     let maxDuration = NSTimeInterval(0.5)
+    var backButtonImage: UIImage?
     init(rootViewController: UIViewController) {
         super.init(nibName: nil, bundle: nil)
         msr_initialize()
@@ -360,7 +361,7 @@ import UIKit
         let wrapper = MSRNavigationWrapperController(rootViewController: viewController)
         if viewController.navigationItem.leftBarButtonItems == nil && previousViewController != nil {
             // TODO: - SET TO DEFAULT NAVIGATION BUTTON
-            let backButton = UIBarButtonItem(image: UIImage(named: "Arrow-Left"), style: .Plain, target: self, action: "didPressBackButton")
+            let backButton = UIBarButtonItem(image: backButtonImage, style: .Plain, target: self, action: "didPressBackButton")
             (wrapper.navigationBar.items[0] as! UINavigationItem).leftBarButtonItem = backButton
         }
         return wrapper
