@@ -20,7 +20,7 @@ import UIKit
         msr_initialize()
         pushViewController(rootViewController, animated: false)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -83,7 +83,7 @@ import UIKit
         pushViewController(viewControllers.last!, animated: animated) {
             [weak self] finished in
             if finished && self != nil {
-                for (i, viewController) in enumerate(viewControllers[0..<viewControllers.count - 1]) {
+                for (i, viewController) in viewControllers[0..<viewControllers.count - 1].enumerate() {
                     let wrapper = self!.createWrapperForViewController(viewController, previousViewController: self!.viewControllers[self!.viewControllers.endIndex - viewControllers.count + i - 1])
                     self!.addChildViewController(wrapper)
                     self!.transformAtPercentage(1, frontViewController: nil, backViewController: wrapper)
@@ -162,10 +162,10 @@ import UIKit
         }
         return true
     }
-    func popViewController(#animated: Bool) -> UIViewController {
+    func popViewController(animated animated: Bool) -> UIViewController {
         return popViewController(animated: animated, completion: nil)
     }
-    func popViewController(#animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
+    func popViewController(animated animated: Bool, completion: ((Bool) -> Void)?) -> UIViewController {
         assert(viewControllers.count > 1, "Already at root view controller. Nothing to be popped.")
         if wrappers.msr_penultimate!.view.superview == nil {
             view.insertSubview(wrappers.msr_penultimate!.view, belowSubview: wrappers.last!.view)
@@ -212,13 +212,13 @@ import UIKit
         return popToViewController(viewController, animated: animated, completion: nil)
     }
     func popToViewController(viewController: UIViewController, animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
-        assert(contains(viewControllers, viewController), "The specific view controller is not in the view controller hierarchy.")
-        let p = find(viewControllers, viewController)
+        assert(viewControllers.contains(viewController), "The specific view controller is not in the view controller hierarchy.")
+        let p = viewControllers.indexOf(viewController)
         var viewControllersToBePopped = [UIViewController]()
-        viewControllersToBePopped.extend(viewControllers[p! + 1..<viewControllers.endIndex])
+        viewControllersToBePopped.appendContentsOf(viewControllers[p! + 1..<viewControllers.endIndex])
         let count = viewControllersToBePopped.count
         if count > 0 {
-            for i in 1..<count {
+            for _ in 1..<count {
                 let penultimate = viewControllers.endIndex - 2
                 wrappers[penultimate].viewControllers = []
                 wrappers[penultimate].view.removeFromSuperview()
@@ -232,10 +232,10 @@ import UIKit
         }
         return viewControllersToBePopped
     }
-    func popToRootViewController(#animated: Bool) -> [UIViewController] {
+    func popToRootViewController(animated animated: Bool) -> [UIViewController] {
         return popToRootViewController(animated: animated, completion: nil)
     }
-    func popToRootViewController(#animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
+    func popToRootViewController(animated animated: Bool, completion: ((Bool) -> Void)?) -> [UIViewController] {
         return popToViewController(rootViewController!, animated: animated, completion: completion)
     }
     func replaceCurrentViewControllerWithViewController(viewController: UIViewController, animated: Bool) -> UIViewController {
@@ -295,7 +295,7 @@ import UIKit
                 break
             }
         }
-        var viewControllersToBePopped = [UIViewController](self.viewControllers[i..<self.viewControllers.count])
+        let viewControllersToBePopped = [UIViewController](self.viewControllers[i..<self.viewControllers.count])
         var viewControllersToBePushed = [UIViewController](viewControllers[i..<viewControllers.count])
         let popCount = viewControllersToBePopped.count
         let pushCount = viewControllersToBePushed.count
@@ -362,7 +362,7 @@ import UIKit
         if viewController.navigationItem.leftBarButtonItems == nil && previousViewController != nil {
             // TODO: - SET TO DEFAULT NAVIGATION BUTTON
             let backButton = UIBarButtonItem(image: backButtonImage, style: .Plain, target: self, action: "didPressBackButton")
-            (wrapper.navigationBar.items[0] as! UINavigationItem).leftBarButtonItem = backButton
+            wrapper.navigationBar.items![0].leftBarButtonItem = backButton
         }
         return wrapper
     }

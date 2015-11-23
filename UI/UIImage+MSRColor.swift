@@ -9,20 +9,19 @@ extension UIImage {
         if data == nil {
             return nil
         }
-        var count = 0
         var r: CGFloat = 0
         var g: CGFloat = 0
         var b: CGFloat = 0
         var a: CGFloat = 0
         let width = CGBitmapContextGetWidth(c)
         let height = CGBitmapContextGetHeight(c)
-        var end = width * height / 4
-        for i in 0..<end {
+        let count = width * height / 4
+        for i in 0..<count {
             r += CGFloat(data.advancedBy(i * 4).memory)
             g += CGFloat(data.advancedBy(i * 4 + 1).memory)
             b += CGFloat(data.advancedBy(i * 4 + 2).memory)
             a += CGFloat(data.advancedBy(i * 4 + 3).memory)
         }
-        return UIColor(red: r / (255 * CGFloat(end)), green: g / (255 * CGFloat(end)), blue: b / (255 * CGFloat(end)), alpha: a / (255 * CGFloat(end)))
+        return UIColor(red: r / (255 * CGFloat(count)), green: g / (255 * CGFloat(count)), blue: b / (255 * CGFloat(count)), alpha: a / (255 * CGFloat(count)))
     }
 }

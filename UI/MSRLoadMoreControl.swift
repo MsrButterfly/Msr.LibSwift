@@ -9,7 +9,7 @@ import UIKit
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     func beginLoadingMore() {
@@ -21,10 +21,10 @@ import UIKit
     func endLoadingMore() {
         loadingMore = false
     }
-    internal override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer<()>) {
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
         if object === scrollView {
             if keyPath == "contentOffset" {
-                let offset = (change[NSKeyValueChangeNewKey] as! NSValue).CGPointValue()
+//                let offset = (change![NSKeyValueChangeNewKey] as! NSValue).CGPointValue
                 transform = CGAffineTransformMakeTranslation(0, scrollView!.contentSize.height + overHeight - frame.height)
                 if !loadingMore {
                     alpha = min(max(overHeight, 0), frame.height) / frame.height
@@ -40,7 +40,7 @@ import UIKit
                     alpha = 1
                 }
             } else if keyPath == "frame" {
-                let frame = (change[NSKeyValueChangeNewKey] as! NSValue).CGRectValue()
+                let frame = (change![NSKeyValueChangeNewKey] as! NSValue).CGRectValue()
                 self.frame.size.width = frame.width
             }
         }
@@ -51,7 +51,7 @@ import UIKit
         let lineHeight = CGFloat(5.5)
         let context = UIGraphicsGetCurrentContext()
         let color = tintColor
-        CGContextSetLineCap(context, kCGLineCapRound)
+        CGContextSetLineCap(context, .Round)
         CGContextSetLineWidth(context, lineWidth)
         CGContextTranslateCTM(context, frame.width / 2, frame.height / 2)
         if !loadingMore {
@@ -120,9 +120,9 @@ extension UITableViewController {
         set {
             self.msr_loadMoreControl?.removeFromSuperview()
             self.msr_loadMoreControl?.scrollView = nil
-            objc_setAssociatedObject(self, _UITableViewControllerMSRLoadMoreControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UITableViewControllerMSRLoadMoreControlAssociationKey, newValue, .OBJC_ASSOCIATION_RETAIN)
             if newValue != nil {
-                tableView.insertSubview(newValue!, belowSubview: tableView.subviews[0] as! UIView)
+                tableView.insertSubview(newValue!, belowSubview: tableView.subviews[0])
                 newValue!.scrollView = tableView
             }
         }

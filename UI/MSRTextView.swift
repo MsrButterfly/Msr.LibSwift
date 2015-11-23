@@ -25,7 +25,7 @@ import UIKit
                 attributedPlaceholder = NSAttributedString(
                     string: string,
                     attributes: [
-                        NSFontAttributeName: font,
+                        NSFontAttributeName: font!,
                         NSForegroundColorAttributeName: UIColor(white: 0.7, alpha: 1),
                         NSParagraphStyleAttributeName: s
                     ])
@@ -41,7 +41,7 @@ import UIKit
         }
     }
     
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }

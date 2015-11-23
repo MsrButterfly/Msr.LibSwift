@@ -11,13 +11,13 @@ extension UIImage {
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextClosePath(context)
         CGContextFillPath(context)
-        return self(CGImage: CGBitmapContextCreateImage(context))!
+        return self.init(CGImage: CGBitmapContextCreateImage(context)!)
     }
     class func msr_rectangleWithColor(color: UIColor, size: CGSize) -> Self {
         let context = _MSRDefaultRGBBitmapContextWithSize(size)
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextFillRect(context, CGRect(x: 0, y: 0, width: size.width, height: size.height))
-        return self(CGImage: CGBitmapContextCreateImage(context))!
+        return self.init(CGImage: CGBitmapContextCreateImage(context)!)
     }
     class func msr_roundedRectangleWithColor(color: UIColor, size: CGSize, cornerRadius: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat)) -> Self {
         let context = _MSRDefaultRGBBitmapContextWithSize(size)
@@ -40,6 +40,6 @@ extension UIImage {
         CGContextClosePath(context)
         CGContextSetFillColorWithColor(context, color.CGColor)
         CGContextFillPath(context)
-        return self(CGImage: CGBitmapContextCreateImage(context))!
+        return self.init(CGImage: CGBitmapContextCreateImage(context)!)
     }
 }

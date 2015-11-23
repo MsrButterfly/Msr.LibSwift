@@ -2,23 +2,12 @@ import CoreData
 import Foundation
 
 extension NSManagedObjectContext {
-    @objc func msr_deleteAllObjectsWithEntityName(entityName: String, error: NSErrorPointer) {
+    @objc func msr_deleteAllObjectsWithEntityName(entityName: String) throws {
         let request = NSFetchRequest(entityName: entityName)
         request.predicate = NSPredicate(value: true)
-        let results = executeFetchRequest(request, error: error)
-        if results != nil {
-            for r in results! {
-                deleteObject(r as! NSManagedObject)
-            }
-        } else {
-            if error != nil {
-                error.memory = NSError() // Needs specification
-            }
+        let results = try executeFetchRequest(request)
+        for result in results {
+            deleteObject(result as! NSManagedObject)
         }
-    }
-    @objc func msr_deleteAllObjectsWithEntityName(entityName: String) -> NSError? {
-        var error: NSError?
-        msr_deleteAllObjectsWithEntityName(entityName, error: &error)
-        return error
     }
 }

@@ -8,7 +8,6 @@ extension UIImage {
             return self
         }
         let scaleRatio = destinationSize.width / sourceSize.width
-        var transform = CGAffineTransformIdentity
         switch imageOrientation {
         case .Left, .LeftMirrored, .Right, .RightMirrored:
             sourceSize = %~sourceSize
@@ -20,9 +19,9 @@ extension UIImage {
         let context = _MSRDefaultRGBBitmapContextWithSize(destinationSize)
         CGContextSetShouldAntialias(context, true)
         CGContextSetAllowsAntialiasing(context, true)
-        CGContextSetInterpolationQuality(context, kCGInterpolationHigh)
+        CGContextSetInterpolationQuality(context, .High)
         CGContextScaleCTM(context, scaleRatio, scaleRatio)
         CGContextDrawImage(context, CGRect(origin: CGPointZero, size: sourceSize), CGImage)
-        return UIImage(CGImage: CGBitmapContextCreateImage(context), scale: scale, orientation: imageOrientation)!
+        return UIImage(CGImage: CGBitmapContextCreateImage(context)!, scale: scale, orientation: imageOrientation)
     }
 }

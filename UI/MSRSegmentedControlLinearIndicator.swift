@@ -1,9 +1,9 @@
 import UIKit
 
 @objc class MSRSegmentedControlLinearIndicator: MSRSegmentedControlIndicator {
-    var lineCap: CGLineCap { return kCGLineCapSquare }
+    var lineCap: CGLineCap { return .Square }
     var lineColor: UIColor { return tintColor }
-    var lineJoin: CGLineJoin { return kCGLineJoinMiter }
+    var lineJoin: CGLineJoin { return .Miter }
     var linePath: CGPath { return CGPathCreateMutable() }
     var lineWidth: CGFloat = 3
     override func drawRect(rect: CGRect) {

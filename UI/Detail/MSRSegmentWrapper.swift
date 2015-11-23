@@ -6,7 +6,7 @@ import UIKit
             if newValue != nil {
                 addSubview(newValue!)
                 newValue!.frame = bounds
-                newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                newValue!.translatesAutoresizingMaskIntoConstraints = false
                 newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
             }
         }
@@ -18,7 +18,7 @@ import UIKit
     convenience init() {
         self.init(frame: CGRectZero)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -27,7 +27,7 @@ import UIKit
         msr_initialize()
     }
     func msr_initialize() {
-        msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
         widthConstraint = NSLayoutConstraint(item: self, attribute: .Width, relatedBy: .GreaterThanOrEqual, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: minimumLayoutSize.width)
         addConstraint(widthConstraint)
     }

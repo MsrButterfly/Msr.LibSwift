@@ -1,37 +1,37 @@
 import CoreGraphics
 
-func MSRLinearInterpolation(a: Float, b: Float, progress: Double) -> Float {
+func MSRLinearInterpolation(a a: Float, b: Float, progress: Double) -> Float {
     return (b - a) * Float(progress) + a
 }
 
-func MSRLinearInterpolation(a: Double, b: Double, progress: Double) -> Double {
+func MSRLinearInterpolation(a a: Double, b: Double, progress: Double) -> Double {
     return (b - a) * Double(progress) + a
 }
 
-func MSRLinearInterpolation(a: CGFloat, b: CGFloat, progress: Double) -> CGFloat {
+func MSRLinearInterpolation(a a: CGFloat, b: CGFloat, progress: Double) -> CGFloat {
     return (b - a) * CGFloat(progress) + a
 }
 
-func MSRLinearInterpolation(a: CGSize, b: CGSize, progress: Double) -> CGSize {
+func MSRLinearInterpolation(a a: CGSize, b: CGSize, progress: Double) -> CGSize {
     return CGSize(
-        width: MSRLinearInterpolation(a.width, b.width, progress),
-        height: MSRLinearInterpolation(a.height, b.height, progress))
+        width: MSRLinearInterpolation(a: a.width, b: b.width, progress: progress),
+        height: MSRLinearInterpolation(a: a.height, b: b.height, progress: progress))
 }
 
-func MSRLinearInterpolation(a: CGVector, b: CGVector, progress: Double) -> CGVector {
+func MSRLinearInterpolation(a a: CGVector, b: CGVector, progress: Double) -> CGVector {
     return CGVector(
-        dx: MSRLinearInterpolation(a.dx, b.dx, progress),
-        dy: MSRLinearInterpolation(a.dy, b.dy, progress))
+        dx: MSRLinearInterpolation(a: a.dx, b: b.dx, progress: progress),
+        dy: MSRLinearInterpolation(a: a.dy, b: b.dy, progress: progress))
 }
 
-func MSRLinearInterpolation(a: CGPoint, b: CGPoint, progress: Double) -> CGPoint {
+func MSRLinearInterpolation(a a: CGPoint, b: CGPoint, progress: Double) -> CGPoint {
     return CGPoint(
-        x: MSRLinearInterpolation(a.x, b.x, progress),
-        y: MSRLinearInterpolation(a.y, b.y, progress))
+        x: MSRLinearInterpolation(a: a.x, b: b.x, progress: progress),
+        y: MSRLinearInterpolation(a: a.y, b: b.y, progress: progress))
 }
 
-func MSRLinearInterpolation(a: CGRect, b: CGRect, progress: Double) -> CGRect {
+func MSRLinearInterpolation(a a: CGRect, b: CGRect, progress: Double) -> CGRect {
     return CGRect(
-        origin: MSRLinearInterpolation(a.origin, b.origin, progress),
-        size: MSRLinearInterpolation(a.size, b.size, progress))
+        origin: MSRLinearInterpolation(a: a.origin, b: b.origin, progress: progress),
+        size: MSRLinearInterpolation(a: a.size, b: b.size, progress: progress))
 }

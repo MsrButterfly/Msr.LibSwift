@@ -11,7 +11,7 @@ import UIKit
         view.layer.masksToBounds = false
         overlay.backgroundColor = UIColor.blackColor()
         overlay.alpha = 0
-        interactivePopGestureRecognizer.enabled = false
+        interactivePopGestureRecognizer!.enabled = false
     }
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()

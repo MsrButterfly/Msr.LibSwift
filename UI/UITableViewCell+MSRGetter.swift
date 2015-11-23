@@ -6,7 +6,7 @@ extension UITableViewCell {
         if systemVersion < 7.0 && systemVersion >= 8.0 {
             return nil
         }
-        for view in subviews as! [UIView] {
+        for view in subviews {
             if NSStringFromClass(view.dynamicType).componentsSeparatedByString(".").last == "UITableViewCellScrollView" {
                 return view as? UIScrollView
             }

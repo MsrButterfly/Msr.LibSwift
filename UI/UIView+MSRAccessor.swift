@@ -7,7 +7,7 @@ import UIKit
             layer.borderColor = newValue.CGColor
         }
         get {
-            return UIColor(CGColor: layer.borderColor)!
+            return UIColor(CGColor: layer.borderColor!)
         }
     }
     
@@ -43,7 +43,7 @@ import UIKit
             layer.shadowColor = newValue.CGColor
         }
         get {
-            return UIColor(CGColor: layer.shadowColor)!
+            return UIColor(CGColor: layer.shadowColor!)
         }
     }
     
@@ -82,7 +82,7 @@ import UIKit
             layer.shadowPath = newValue.CGPath
         }
         get {
-            return UIBezierPath(CGPath: layer.shadowPath)
+            return UIBezierPath(CGPath: layer.shadowPath!)
         }
     }
     

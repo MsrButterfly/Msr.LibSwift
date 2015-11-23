@@ -28,7 +28,7 @@ extension UIScrollView {
     private var msr_classesOfContentViewsWhereTouchesShouldCancel: [(UIView.Type, Bool)] {
         set {
             let s = MSRValue(value: newValue)
-            objc_setAssociatedObject(self, _UIScrollViewMSRClassesOfContentViewsWhereTouchesShouldCancelAssociationKey, s, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UIScrollViewMSRClassesOfContentViewsWhereTouchesShouldCancelAssociationKey, s, .OBJC_ASSOCIATION_RETAIN)
         }
         get {
             let getWrapper = {
@@ -45,7 +45,7 @@ extension UIScrollView {
     private var msr_baseClassesOfContentViewsWhereTouchesShouldCancel: [(UIView.Type, Bool)] {
         set {
             let s = MSRValue(value: newValue)
-            objc_setAssociatedObject(self, _UIScrollViewMSRBaseClassesOfContentViewsWhereTouchesShouldCancelAssociationKey, s, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UIScrollViewMSRBaseClassesOfContentViewsWhereTouchesShouldCancelAssociationKey, s, .OBJC_ASSOCIATION_RETAIN)
         }
         get {
             let getWrapper = {
@@ -62,7 +62,7 @@ extension UIScrollView {
     
     private var msr_contentViewsWhereTouchesShouldCancel: [UIView: Bool] {
         set {
-            objc_setAssociatedObject(self, _UIScrollViewMSRContentViewsWhereTouchesShouldCancelAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_COPY))
+            objc_setAssociatedObject(self, _UIScrollViewMSRContentViewsWhereTouchesShouldCancelAssociationKey, newValue, .OBJC_ASSOCIATION_COPY)
         }
         get {
             let getCurrentValue = {
@@ -76,7 +76,7 @@ extension UIScrollView {
     }
     
     @objc func msr_setTouchesShouldCancel(value: Bool, inContentViewWhichIsMemberOfClass aClass: UIView.Type) {
-        if let index = find(map(msr_classesOfContentViewsWhereTouchesShouldCancel) { aClass === $0.0 }, true) {
+        if let index = msr_classesOfContentViewsWhereTouchesShouldCancel.map({ aClass === $0.0 }).indexOf(true) {
             msr_classesOfContentViewsWhereTouchesShouldCancel[index].1 = value
         } else {
             msr_classesOfContentViewsWhereTouchesShouldCancel.append((aClass, value))
@@ -84,9 +84,9 @@ extension UIScrollView {
     }
     
     @objc func msr_setTouchesShouldCancel(value: Bool, inContentViewWhichIsKindOfClass aClass: UIView.Type) {
-        if let index = find(map(msr_baseClassesOfContentViewsWhereTouchesShouldCancel) { aClass === $0.0 }, true) {
+        if let index = msr_baseClassesOfContentViewsWhereTouchesShouldCancel.map({ aClass === $0.0 }).indexOf(true) {
             msr_baseClassesOfContentViewsWhereTouchesShouldCancel[index].1 = value
-        } else if let index = find(map(msr_baseClassesOfContentViewsWhereTouchesShouldCancel) { aClass.isSubclassOfClass($0.0) }, true)  {
+        } else if let index = msr_baseClassesOfContentViewsWhereTouchesShouldCancel.map({ aClass.isSubclassOfClass($0.0) }).indexOf(true) {
             msr_baseClassesOfContentViewsWhereTouchesShouldCancel.insert((aClass, value), atIndex: index)
         } else {
             msr_baseClassesOfContentViewsWhereTouchesShouldCancel.append((aClass, value))

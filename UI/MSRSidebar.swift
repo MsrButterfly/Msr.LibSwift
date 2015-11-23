@@ -53,7 +53,7 @@ import UIKit
         super.init(frame: CGRectZero)
         msr_initialize()
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         edge = .Left
         width = 0
         super.init(coder: aDecoder)
@@ -67,7 +67,7 @@ import UIKit
     }
     func msr_initialize() {
         backgroundView = UIVisualEffectView(effect: UIBlurEffect(style: .Dark))
-        msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
         collapsed = true
         addSubview(contentView)
         contentView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
@@ -80,7 +80,7 @@ import UIKit
         didSet {
             oldValue?.removeFromSuperview()
             if backgroundView != nil {
-                backgroundView!.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+                backgroundView!.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
                 backgroundView!.frame = bounds
                 insertSubview(backgroundView!, belowSubview: contentView)
             }
@@ -98,7 +98,7 @@ import UIKit
     }
     lazy var contentView: UIView = {
         let v = UIView()
-        v.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     weak var delegate: MSRSidebarDelegate?
@@ -108,7 +108,7 @@ import UIKit
         didSet {
             oldValue?.removeFromSuperview()
             if overlay != nil {
-                overlay!.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+                overlay!.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
                 overlay!.bounds = overlayWrapper.bounds
                 overlay!.center = overlayWrapper.center
                 overlayWrapper.addSubview(overlay!)
@@ -143,7 +143,7 @@ import UIKit
     func collapse() {
         collapse(animated: true)
     }
-    func collapse(#animated: Bool) {
+    func collapse(animated animated: Bool) {
         setCollapsed(true, animated: animated)
     }
     func setCollapsed(collapsed: Bool, animated: Bool) {
@@ -167,7 +167,7 @@ import UIKit
     func expand() {
         expand(animated: true)
     }
-    func expand(#animated: Bool) {
+    func expand(animated animated: Bool) {
         setCollapsed(false, animated: animated)
     }
     // MARK: - Override Methods
@@ -214,7 +214,7 @@ import UIKit
     private var edgeConstraint: NSLayoutConstraint?
     private lazy var overlayWrapper: UIView = {
         let v = UIView()
-        v.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     private var widthConstraint: NSLayoutConstraint?

@@ -6,7 +6,7 @@ extension UITableView {
         if systemVersion < 8.0 {
             return nil
         }
-        for view in subviews as! [UIView] {
+        for view in subviews {
             if NSStringFromClass(view.dynamicType).componentsSeparatedByString(".").last == "UITableViewWrapperView" {
                 return view as? UIScrollView
             }

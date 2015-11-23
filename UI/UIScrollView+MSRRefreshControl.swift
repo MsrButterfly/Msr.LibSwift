@@ -12,7 +12,7 @@ extension UIScrollView {
     var msr_uiRefreshControl: UIRefreshControl? {
         set {
             self.msr_uiRefreshControl?.removeFromSuperview()
-            objc_setAssociatedObject(self, _UIScrollViewMSRUIRefreshControlAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UIScrollViewMSRUIRefreshControlAssociationKey, newValue, .OBJC_ASSOCIATION_RETAIN)
             if self.msr_uiRefreshControl != nil {
                 addSubview(self.msr_uiRefreshControl!)
             }

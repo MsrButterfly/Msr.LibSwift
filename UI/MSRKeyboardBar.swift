@@ -8,14 +8,14 @@ import UIKit
                 addSubview(backgroundView!)
                 sendSubviewToBack(backgroundView!)
                 backgroundView!.frame = bounds
-                backgroundView!.autoresizingMask = .FlexibleWidth | .FlexibleHeight
+                backgroundView!.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
             }
         }
     }
     convenience init() {
         self.init(frame: CGRectZero)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -24,8 +24,7 @@ import UIKit
         msr_initialize()
     }
     func msr_initialize() {
-        let views = ["self": self]
-        msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillChangeFrame:", name: UIKeyboardWillChangeFrameNotification, object: nil)
     }
     override func willMoveToSuperview(newSuperview: UIView?) {

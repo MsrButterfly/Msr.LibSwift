@@ -54,7 +54,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         self.init()
         setViewControllers(viewControllers, animated: false)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -75,7 +75,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         let heights: [MSRSegmentedControlPosition: CGFloat] = [
             .Top: _MSRSegmentedControlDefaultHeightAtTop,
             .Bottom: _MSRSegmentedControlDefaultHeightAtBottom]
-        segmentedControl.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         segmentedControl.msr_addHeightConstraintWithValue(heights[position]!)
         segmentedControl.msr_addHorizontalEdgeAttachedConstraintsToSuperview()
         segmentedControl.backgroundView = backgroundBar
@@ -86,7 +86,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         scrollView.delegate = self
         scrollView.pagingEnabled = true
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.msr_addHorizontalEdgeAttachedConstraintsToSuperview()
         leftView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
         leftView.msr_addLeftAttachedConstraintToSuperview()
@@ -96,13 +96,13 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         rightView.msr_addWidthConstraintWithValue(0)
         wrappers = [leftView, rightView]
         let vs: [String: AnyObject] = ["l": leftView, "r": rightView, "sc": segmentedControl, "sv": scrollView, "tg": super.topLayoutGuide, "bg": super.bottomLayoutGuide]
-        wrapperConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
+        wrapperConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: [], metrics: nil, views: vs)
         scrollView.addConstraints(wrapperConstraints)
         let formats: [MSRSegmentedControlPosition: String] = [
             .Top: "V:[tg][sc]-(>=0)-[bg]",
             .Bottom: "V:[tg]-(>=0)-[sc][bg]"]
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(formats[position]!, options: nil, metrics: nil, views: vs))
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[sv]|", options: nil, metrics: nil, views: vs))
+        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(formats[position]!, options: [], metrics: nil, views: vs))
+        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[sv]|", options: [], metrics: nil, views: vs))
         view.addConstraint(NSLayoutConstraint(item: segmentedViewControllerTopLayoutGuide, attribute: .Top, relatedBy: .Equal, toItem: super.topLayoutGuide, attribute: .Top, multiplier: 1, constant: 0))
         view.addConstraint(NSLayoutConstraint(item: segmentedViewControllerTopLayoutGuide, attribute: .Bottom, relatedBy: .Equal, toItem: position == .Top ? segmentedControl : super.topLayoutGuide, attribute: .Bottom, multiplier: 1, constant: 0))
         view.addConstraint(NSLayoutConstraint(item: segmentedViewControllerBottomLayoutGuide, attribute: .Bottom, relatedBy: .Equal, toItem: super.bottomLayoutGuide, attribute: .Bottom, multiplier: 1, constant: 0))
@@ -116,7 +116,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         replaceViewControllersInRange(numberOfViewControllers..<numberOfViewControllers, withViewControllers: viewControllers, animated: animated)
     }
     func indexOfViewController(viewController: UIViewController) -> Int? {
-        return find(viewControllers, viewController)
+        return viewControllers.indexOf(viewController)
     }
     func insertViewController(viewController: UIViewController, atIndex index: Int, animated: Bool) {
         insertViewControllers([viewController], atIndex: index, animated: animated)
@@ -148,8 +148,6 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         let numberOfConstraintsToBeInserted = numberOfWrappersToBeInserted + 1
         let indexOfFirstWrapperToBeRemoved = range.startIndex + 1
         let indexOfLastWrapperToBeRemoved = range.endIndex
-        let indexOfFirstWrapperToBeInserted = indexOfFirstWrapperToBeRemoved
-        let indexOfLastWrapperToBeInserted = indexOfFirstWrapperToBeInserted + numberOfWrappersToBeInserted - 1
         let indexOfFirstConstraintToBeRemoved = indexOfFirstWrapperToBeRemoved - 1
         let indexOfLastConstraintToBeRemoved = indexOfFirstConstraintToBeRemoved + numberOfConstraintsToBeRemoved - 1
         let indexOfFirstConstraintToBeInserted = indexOfFirstConstraintToBeRemoved
@@ -188,7 +186,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
             if i < indexOfLastConstraintToBeInserted {
                 rw.alpha = 0
             }
-            constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
+            constraintsToBeInserted.appendContentsOf(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: [], metrics: nil, views: ["l": lw, "r": rw]))
         }
         wrapperConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
         scrollView.addConstraints(constraintsToBeInserted)
@@ -250,6 +248,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
     }
     func selectViewController(viewController: UIViewController, animated: Bool) {
         let index = indexOfViewController(viewController)!
+        selectViewControllerAtIndex(index, animated: animated)
     }
     func selectViewControllerAtIndex(index: Int?, animated: Bool) {
         if !animated {
@@ -337,7 +336,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         willSet {
             if newValue != nil {
                 addSubview(newValue!)
-                newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                newValue!.translatesAutoresizingMaskIntoConstraints = false
                 newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
             }
         }
@@ -345,7 +344,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
             oldValue?.removeFromSuperview()
         }
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -354,7 +353,7 @@ var _MSRSegmentedControlDefaultHeightAtBottom: CGFloat { return 50 }
         msr_initialize()
     }
     func msr_initialize() {
-        msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
     }
     override func didMoveToSuperview() {
         if superview != nil {

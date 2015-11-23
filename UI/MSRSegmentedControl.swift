@@ -75,7 +75,7 @@ import UIKit
         super.init(frame: frame)
         msr_initialize()
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -85,7 +85,7 @@ import UIKit
         scrollView.addSubview(indicatorWrapper)
         wrappersView.addSubview(leftView)
         wrappersView.addSubview(rightView)
-        scrollView.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.msr_addAllEdgeAttachedConstraintsToSuperview()
         leftView.msr_addVerticalEdgeAttachedConstraintsToSuperview()
         leftView.msr_addLeftAttachedConstraintToSuperview()
@@ -95,13 +95,13 @@ import UIKit
         rightView.msr_addWidthConstraintWithValue(0)
         wrappers = [leftView, rightView]
         let vs = ["l": leftView, "r": rightView]
-        segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: vs) as! [NSLayoutConstraint]
+        segmentConstraints = NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: [], metrics: nil, views: vs)
         minWidthConstraint = NSLayoutConstraint(item: rightView, attribute: .Leading, relatedBy: .GreaterThanOrEqual, toItem: wrappersView, attribute: .Leading, multiplier: 1, constant: 0)
         wrappersView.addConstraints(segmentConstraints)
         wrappersView.addConstraint(minWidthConstraint)
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.delaysContentTouches = true
-        indicatorWrapper.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        indicatorWrapper.translatesAutoresizingMaskIntoConstraints = false
         indicatorWrapper.msr_addVerticalEdgeAttachedConstraintsToSuperview()
         indicatorWrapper.userInteractionEnabled = false
         indicator = MSRSegmentedControlUnderlineIndicator()
@@ -118,7 +118,7 @@ import UIKit
             if newValue != nil {
                 addSubview(newValue!)
                 sendSubviewToBack(newValue!)
-                newValue!.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+                newValue!.translatesAutoresizingMaskIntoConstraints = false
                 newValue!.msr_addAllEdgeAttachedConstraintsToSuperview()
             }
         }
@@ -185,7 +185,7 @@ import UIKit
         if numberOfSegments == 0 {
             return nil
         }
-        return find(map(wrappers[0...wrappers.endIndex - 2], { $0.segment ?? MSRSegment() }), segment)
+        return wrappers[0...wrappers.endIndex - 2].map({ $0.segment ?? MSRSegment() }).indexOf(segment)
     }
     func insertSegment(segment: MSRSegment, atIndex index: Int, animated: Bool) {
         insertSegments([segment], atIndex: index, animated: animated)
@@ -221,8 +221,6 @@ import UIKit
         let indexOfLastSegmentToBeRemoved = range.endIndex - 1
         let indexOfFirstWrapperToBeRemoved = indexOfFirstSegmentToBeRemoved + 1
         let indexOfLastWrapperToBeRemoved = indexOfFirstWrapperToBeRemoved + numberOfWrappersToBeRemoved - 1
-        let indexOfFirstWrapperToBeInserted = indexOfFirstWrapperToBeRemoved
-        let indexOfLastWrapperToBeInserted = indexOfFirstWrapperToBeInserted + numberOfWrappersToBeInserted - 1
         let indexOfFirstConstraintToBeRemoved = indexOfFirstSegmentToBeRemoved
         let indexOfLastConstraintToBeRemoved = indexOfFirstConstraintToBeRemoved + numberOfConstraintsToBeRemoved - 1
         let indexOfFirstConstraintToBeInserted = indexOfFirstConstraintToBeRemoved
@@ -267,12 +265,12 @@ import UIKit
             if i < indexOfLastConstraintToBeInserted {
                 rw.alpha = 0
             }
-            constraintsToBeInserted.extend(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: nil, metrics: nil, views: ["l": lw, "r": rw]) as! [NSLayoutConstraint])
+            constraintsToBeInserted.appendContentsOf(NSLayoutConstraint.constraintsWithVisualFormat("[l][r]", options: [], metrics: nil, views: ["l": lw, "r": rw]))
         }
         segmentConstraints.replaceRange(rangeOfConstraintsToBeRemoved, with: constraintsToBeInserted)
         wrappersView.addConstraints(constraintsToBeInserted)
         // move indicator
-        var indicatorPositionAfterReplacing: Float? = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
+        let indicatorPositionAfterReplacing: Float? = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
         if _indicatorPosition != indicatorPositionAfterReplacing {
             valueChangedByUserInteraction = false
             _indicatorPosition = selectedSegmentIndexAfterReplacing == nil ? nil : Float(selectedSegmentIndexAfterReplacing!)
@@ -381,7 +379,7 @@ import UIKit
         var rp: CGFloat = 0
         var s: CGFloat = 0
         if wrappers.count > 2 {
-            for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
+            for (i, w) in wrappers[1...wrappers.endIndex - 2].enumerate() {
                 let c = w.minimumLayoutSize.width
                 s += c
                 if i < l {
@@ -443,7 +441,7 @@ import UIKit
     }
     internal func handleTapGesture(gestureRecognizer: UITapGestureRecognizer) {
         let sw = gestureRecognizer.view!
-        for (i, w) in enumerate(wrappers[1...wrappers.endIndex - 2]) {
+        for (i, w) in wrappers[1...wrappers.endIndex - 2].enumerate() {
             if w === sw {
                 var shouldBeSelected = true
                 shouldBeSelected = shouldBeSelected && delegate?.msr_segmentedControl?(self, shouldSelectSegmentByUserInteraction: segmentAtIndex(i)) ?? true

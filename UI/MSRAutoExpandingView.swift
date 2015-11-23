@@ -4,7 +4,7 @@ import UIKit
     convenience init() {
         self.init(frame: CGRectZero)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -13,7 +13,7 @@ import UIKit
         msr_initialize()
     }
     func msr_initialize() {
-        msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
     }
     override func willMoveToSuperview(newSuperview: UIView?) {
         if superview != nil {

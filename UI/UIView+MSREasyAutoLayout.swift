@@ -27,18 +27,10 @@ extension UIView {
                 .Bottom: "V:[self]|",
                 .Left: "|[self]",
                 .Right: "[self]|"]
-            let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: nil, metrics: nil, views: views).first as! NSLayoutConstraint
+            let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[edge]!, options: [], metrics: nil, views: views).first!
             let w = MSRWeak(object: c)
-            objc_setAssociatedObject(self, _UIViewMSREdgeAttachedConstraintAssociationKeys[edge]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UIViewMSREdgeAttachedConstraintAssociationKeys[edge]!, w, .OBJC_ASSOCIATION_RETAIN)
             superview!.addConstraint(c)
-        }
-    }
-    @objc var msr_shouldTranslateAutoresizingMaskIntoConstraints: Bool {
-        get {
-            return translatesAutoresizingMaskIntoConstraints()
-        }
-        set {
-            setTranslatesAutoresizingMaskIntoConstraints(newValue)
         }
     }
     @objc var msr_topAttachedConstraint: NSLayoutConstraint? {
@@ -131,9 +123,9 @@ extension UIView {
             let formats: [UILayoutConstraintAxis: String] = [
                 .Horizontal: "[self(==0)]",
                 .Vertical: "V:[self(==0)]"]
-            let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[axis]!, options: nil, metrics: nil, views: views).first as! NSLayoutConstraint
+            let c = NSLayoutConstraint.constraintsWithVisualFormat(formats[axis]!, options: [], metrics: nil, views: views).first!
             let w = MSRWeak(object: c)
-            objc_setAssociatedObject(self, _UIViewMSRSizeConstraintAssociationKeys[axis]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UIViewMSRSizeConstraintAssociationKeys[axis]!, w, .OBJC_ASSOCIATION_RETAIN)
             addConstraint(msr_sizeConstraintForAxis(axis)!)
         }
         msr_sizeConstraintForAxis(axis)!.constant = value
@@ -194,7 +186,7 @@ extension UIView {
                 .Vertical: NSLayoutConstraint(item: self, attribute: .CenterY, relatedBy: .Equal, toItem: superview!, attribute: .CenterY, multiplier: 1, constant: 0)]
             let c = constraints[direction]!
             let w = MSRWeak(object: c)
-            objc_setAssociatedObject(self, _UIViewMSRCenterConstraintAssociationKeys[direction]!, w, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _UIViewMSRCenterConstraintAssociationKeys[direction]!, w, .OBJC_ASSOCIATION_RETAIN)
             superview!.addConstraint(c)
         }
     }

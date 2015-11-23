@@ -14,7 +14,7 @@ extension NSObject {
             return objc_getAssociatedObject(self, _NSObjectMSRUserInfoAssociationKey)
         }
         set {
-            objc_setAssociatedObject(self, _NSObjectMSRUserInfoAssociationKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN))
+            objc_setAssociatedObject(self, _NSObjectMSRUserInfoAssociationKey, newValue, .OBJC_ASSOCIATION_RETAIN)
         }
     }
 }

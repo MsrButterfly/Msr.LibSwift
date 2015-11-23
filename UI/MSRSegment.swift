@@ -64,29 +64,28 @@ import UIKit
         if self != nil {
             cv.addSubview(self!.imageView)
             cv.addSubview(self!.titleLabel)
-            cv.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+            cv.translatesAutoresizingMaskIntoConstraints = false
             self!.imageView.msr_addCenterXConstraintToSuperview()
             self!.titleLabel.msr_addCenterXConstraintToSuperview()
             self!.titleLabel.textAlignment = .Center
             let vs = ["u": self!.imageView, "d": self!.titleLabel]
-            self!.imageTitleDistanceConstraint = NSLayoutConstraint.constraintsWithVisualFormat("V:[u]-5-[d]", options: nil, metrics: nil, views: vs).first as! NSLayoutConstraint
-            cv.addConstraints(
-                [self!.imageTitleDistanceConstraint] +
-                NSLayoutConstraint.constraintsWithVisualFormat("V:|[u]", options: nil, metrics: nil, views: vs) +
-                NSLayoutConstraint.constraintsWithVisualFormat("V:[d]|", options: nil, metrics: nil, views: vs) +
-                NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[u]-(>=10)-|", options: nil, metrics: nil, views: vs) +
-                NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[d]-(>=10)-|", options: nil, metrics: nil, views: vs))
+            self!.imageTitleDistanceConstraint = NSLayoutConstraint.constraintsWithVisualFormat("V:[u]-5-[d]", options: [], metrics: nil, views: vs).first!
+            cv.addConstraint(self!.imageTitleDistanceConstraint)
+            cv.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[u]", options: [], metrics: nil, views: vs))
+            cv.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[d]|", options: [], metrics: nil, views: vs))
+            cv.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[u]-(>=10)-|", options: [], metrics: nil, views: vs))
+            cv.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[d]-(>=10)-|", options: [], metrics: nil, views: vs))
         }
         return cv
     }()
     private(set) lazy var imageView: UIImageView = {
         let iv = UIImageView()
-        iv.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
     private(set) lazy var titleLabel: UILabel = {
         let l = UILabel()
-        l.msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        l.translatesAutoresizingMaskIntoConstraints = false
         l.font = UIFont.systemFontOfSize(10)
         return l
     }()
@@ -115,7 +114,7 @@ import UIKit
         self.title = title
         self.image = image
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
     override init(frame: CGRect) {
@@ -125,7 +124,7 @@ import UIKit
         super.msr_initialize()
         addSubview(containerView)
         let vs = ["c": containerView]
-        addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[c]-(>=10)-|", options: nil, metrics: nil, views: vs))
+        addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("|-(>=10)-[c]-(>=10)-|", options: [], metrics: nil, views: vs))
         containerView.msr_addCenterConstraintsToSuperview()
         opaque = false
     }

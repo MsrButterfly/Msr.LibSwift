@@ -26,7 +26,7 @@ import UIKit
     required convenience init(coder aDecoder: NSCoder) {
         self.init()
     }
-    convenience init(title: String?, message: String?, cancelButtonTitle: String?, otherButtonTitles: String?, [String]?) {
+    convenience init(title: String?, message: String?, cancelButtonTitle: String?, otherButtonTitles: String?, _: [String]?) {
         self.init()
     }
     func show() {
@@ -72,8 +72,6 @@ import UIKit
                 return UIColor.whiteColor()
             case .Destructive:
                 return UIColor.whiteColor()
-            default:
-                return UIColor.clearColor()
             }
         }
         button.setTitle(action.title, forState: .Normal)
@@ -92,7 +90,7 @@ import UIKit
         let width = _contentView.bounds.width / CGFloat(buttons.count)
         let height = 43 as CGFloat
         let radius = cornerRadius
-        for (i, button) in enumerate(buttons) {
+        for (i, button) in buttons.enumerate() {
             button.frame = CGRect(x: width * CGFloat(i), y: contentView.bounds.height, width: width, height: height)
         }
         _contentView.bounds = CGRect(origin: CGPointZero, size: CGSize(width: contentView.bounds.width, height: contentView.bounds.height + height))
@@ -110,8 +108,6 @@ import UIKit
                 return defaultColor
             case .Destructive:
                 return UIColor.redColor().colorWithAlphaComponent(0.9)
-            default:
-                return UIColor.clearColor()
             }
         }
         switch buttons.count {
@@ -135,7 +131,7 @@ import UIKit
                     size: buttons[0].bounds.size,
                     cornerRadius: (0, 0, radius, 0)),
                 forState: .Normal)
-            for (i, button) in enumerate(buttons[1..<buttons.count - 1]) {
+            for (i, button) in buttons[1..<buttons.count - 1].enumerate() {
                 button.setBackgroundImage(
                     UIImage.msr_rectangleWithColor(backgroundColorOfStyle(actions[i + 1].style), size: button.bounds.size),
                     forState: .Normal)

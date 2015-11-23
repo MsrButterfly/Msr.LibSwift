@@ -1,4 +1,4 @@
-@objc class MSRWeak<T: AnyObject> {
+class MSRWeak<T: AnyObject> {
     init(object: T?) {
         self.object = object
     }

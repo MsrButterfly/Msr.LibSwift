@@ -5,7 +5,7 @@ import UIKit
         self.init(frame: CGRectZero)
         // msr_initialize() will be invoked by init(frame:)
     }
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         msr_initialize()
     }
@@ -14,7 +14,7 @@ import UIKit
         msr_initialize()
     }
     func msr_initialize() {
-        msr_shouldTranslateAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = false
         hidden = true
     }
     var length: CGFloat {
